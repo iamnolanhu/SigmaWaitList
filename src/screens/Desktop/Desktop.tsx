@@ -240,7 +240,7 @@ export const Desktop = (): JSX.Element => {
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                   BASED SIGMA FEATURES
                 </h2>
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90">
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90">
                   Based Sigma helps you build your business from scratch, 0 to CEO while you sleep.
                 </p>
               </div>
