@@ -120,8 +120,7 @@ export const Desktop = (): JSX.Element => {
                 </h1>
 
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
-                  Be Sigma. Get the latest Sigma news and early access to our
-                  first build
+                POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 'what if we just... did all of it?'
                 </p>
               </div>
 
