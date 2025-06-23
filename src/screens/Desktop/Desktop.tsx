@@ -234,7 +234,17 @@ export const Desktop = (): JSX.Element => {
             </div>
 
             {/* Feature cards section - responsive */}
-            <div id="feature" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
+              <div id="feature" className="mb-16 lg:mb-24">
+              {/* Section Header */}
+              <div className="text-center mb-12 lg:mb-16">
+                <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                  BASED SIGMA FEATURES
+                </h2>
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90">
+                  Based Sigma helps you build your business from scratch, 0 to CEO while you sleep.
+                </p>
+              </div>
+            <div  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
               {featureCards.map((card, index) => (
                 <div key={index} className="relative group">
                   <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
