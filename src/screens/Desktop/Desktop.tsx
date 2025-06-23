@@ -169,7 +169,7 @@ export const Desktop = (): JSX.Element => {
                 </p>
                 
                 {/* Bold "what if we just did all of it" text */}
-                <p className="font-['Orbitron'] font-black text-[#6ad040] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 matrix-pulse">
+                <p className="font-['Orbitron'] font-black text-[#c5f7b0] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 matrix-pulse">
                   'what if we just... did all of it?'
                 </p>
               </div>
