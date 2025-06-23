@@ -159,11 +159,10 @@ export const Desktop = (): JSX.Element => {
               </p>
 
               {/* Heading and subtext - responsive */}
-              <div className="mb-8 lg:mb-12">
+
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
                   JOIN THE WAITLIST
                 </h1>
-              </div>
 
               {/* Email input and button - responsive */}
               <div className="max-w-lg mx-auto space-y-4">
