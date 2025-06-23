@@ -125,16 +125,16 @@ export const Desktop = (): JSX.Element => {
             <div className="flex items-center gap-4">
               <nav className="hidden md:flex items-center gap-8">
                 <a
-                  href="#"
+                  href="#feature"
+                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+                >
+                  Features
+                </a>
+                <a
+                  href="#team"
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   About Team Sigma
-                </a>
-                <a
-                  href="#"
-                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-                >
-                  Contact Us
                 </a>
               </nav>
 
@@ -234,7 +234,7 @@ export const Desktop = (): JSX.Element => {
             </div>
 
             {/* Feature cards section - responsive */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
+            <div id="feature" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
               {featureCards.map((card, index) => (
                 <div key={index} className="relative group">
                   <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
@@ -284,7 +284,7 @@ export const Desktop = (): JSX.Element => {
               </div>
 
               {/* Team Members Grid - 2 per row with more space */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+              <div id="team" className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
                 {teamMembers.map((member) => (
                   <div key={member.id} className="relative group">
                     <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-8 lg:p-10 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
