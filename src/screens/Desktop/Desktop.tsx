@@ -280,17 +280,17 @@ export const Desktop = (): JSX.Element => {
                 </p>
               </div>
 
-              {/* Team Members Grid - All in one row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {/* Team Members Grid - 2 per row with more space */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
                 {teamMembers.map((member) => (
                   <div key={member.id} className="relative group">
-                    <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
+                    <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-8 lg:p-10 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
                       {/* Matrix-style glow effect on hover */}
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#6ad040]/10 via-transparent to-[#6ad040]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       
                       <div className="relative z-10 text-center">
                         {/* Profile Image */}
-                        <div className="w-20 h-20 lg:w-24 lg:h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-[#6ad040]/50 group-hover:border-[#6ad040] transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#6ad040]/50">
+                        <div className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-6 rounded-full overflow-hidden border-2 border-[#6ad040]/50 group-hover:border-[#6ad040] transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#6ad040]/50">
                           <img
                             src={member.image}
                             alt={member.name}
@@ -299,43 +299,53 @@ export const Desktop = (): JSX.Element => {
                         </div>
 
                         {/* Name */}
-                        <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-lg lg:text-xl mb-2 group-hover:text-[#6ad040] transition-colors duration-300">
+                        <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-xl lg:text-2xl mb-3 group-hover:text-[#6ad040] transition-colors duration-300">
                           {member.name}
                         </h3>
 
                         {/* Role */}
-                        <p className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm lg:text-base mb-3 uppercase tracking-wide">
+                        <p className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-base lg:text-lg mb-4 uppercase tracking-wide">
                           {member.role}
                         </p>
 
                         {/* Bio */}
-                        <p className="font-['Space_Mono'] text-[#b7ffab] text-xs lg:text-sm leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300 mb-4">
+                        <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300 mb-6">
                           {member.bio}
                         </p>
 
                         {/* Social Icons */}
-                        <div className="flex justify-center gap-3">
+                        <div className="flex justify-center gap-4">
                           <a
                             href={member.github}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
                           >
-                            <Github className="w-4 h-4 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                            <Github className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
                           </a>
                           <a
                             href={member.twitter}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
                           >
-                            <Twitter className="w-4 h-4 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                            <Twitter className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
                           </a>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Call to Action under team section */}
+              <div className="text-center mt-12 lg:mt-16">
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base mb-6 opacity-90">
+                  Want to join the sigma squad? We're always looking for based individuals.
+                </p>
+                <Button className="bg-transparent hover:bg-[#6ad040]/10 text-[#6ad040] border-2 border-[#6ad040] hover:border-[#79e74c] font-['Orbitron'] font-bold text-sm lg:text-base px-6 lg:px-8 py-2 lg:py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#6ad040]/30">
+                  Join Team Sigma
+                </Button>
               </div>
             </div>
           </div>
