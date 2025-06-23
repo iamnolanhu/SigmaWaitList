@@ -122,7 +122,6 @@ export const Desktop = (): JSX.Element => {
                   <video
                     className="w-full h-full object-cover rounded-3xl"
                     autoPlay
-                    muted
                     loop
                     playsInline
                     controls
