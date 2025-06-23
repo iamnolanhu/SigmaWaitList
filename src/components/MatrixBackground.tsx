@@ -44,11 +44,24 @@ export const MatrixBackground: React.FC<MatrixBackgroundProps> = ({ className = 
 
       // Draw characters
       for (let i = 0; i < drops.length; i++) {
-        // Random character
-        const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        // Occasionally display "SIGMA" as a complete word (5% chance)
+        let text: string;
+        if (Math.random() < 0.05) {
+          text = 'SIGMA';
+        } else {
+          // Random character from the matrix set
+          text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        }
         
-        // Draw the character
-        ctx.fillText(text, i * fontSize, drops[i]);
+        // Draw the character/word
+        // For "SIGMA", draw each letter vertically stacked
+        if (text === 'SIGMA') {
+          for (let j = 0; j < text.length; j++) {
+            ctx.fillText(text[j], i * fontSize, drops[i] + (j * fontSize));
+          }
+        } else {
+          ctx.fillText(text, i * fontSize, drops[i]);
+        }
 
         // Reset drop to top randomly or when it reaches bottom
         if (drops[i] > canvas.height && Math.random() > 0.975) {

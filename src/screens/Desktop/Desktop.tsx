@@ -110,10 +110,23 @@ export const Desktop = (): JSX.Element => {
             <div className="mb-12 lg:mb-16">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
-                  <div className="text-[#b7ffab]/70 font-['Space_Mono'] text-sm lg:text-base group-hover:text-[#6ad040] transition-colors duration-300">
-                    Video Content Placeholder
-                  </div>
-                  {/* Subtle matrix overlay on video placeholder */}
+                  <video
+                    className="w-full h-full object-cover rounded-3xl"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  >
+                    <source src="/sigma_draft_1.mp4" type="video/mp4" />
+                    {/* Fallback for browsers that don't support video */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-[#b7ffab]/70 font-['Space_Mono'] text-sm lg:text-base group-hover:text-[#6ad040] transition-colors duration-300">
+                        Sigma Demo Video
+                      </div>
+                    </div>
+                  </video>
+                  {/* Subtle matrix overlay on video */}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#6ad040]/5 via-transparent to-[#6ad040]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </CardContent>
               </Card>
