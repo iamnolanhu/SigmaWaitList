@@ -163,18 +163,6 @@ export const Desktop = (): JSX.Element => {
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
                   JOIN THE WAITLIST
                 </h1>
-
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
-                  POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
-                </p>
-                
-                {/* Bold "what if we just did all of it" text with glitch effect */}
-                <p 
-                  className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
-                  data-text="'what if we just... did all of it?'"
-                >
-                  'what if we just... did all of it?'
-                </p>
               </div>
 
               {/* Email input and button - responsive */}
@@ -191,7 +179,19 @@ export const Desktop = (): JSX.Element => {
                 </Button>
               </div>
             </div>
-
+            
+            <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
+              POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
+            </p>
+            
+            {/* Bold "what if we just did all of it" text with glitch effect */}
+            <p 
+              className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+              data-text="'what if we just... did all of it?'"
+            >
+              'what if we just... did all of it?'
+            </p>
+            
             {/* Video/image placeholder - responsive */}
             <div className="mb-12 lg:mb-16">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
