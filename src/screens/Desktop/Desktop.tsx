@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { MatrixBackground } from "../../components/MatrixBackground";
+import { Volume2, VolumeX } from "lucide-react";
 
 export const Desktop = (): JSX.Element => {
+  const [isMuted, setIsMuted] = useState(true); // Start muted by default
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
+
   // Feature card data for mapping - now with different images
   const featureCards = [
     {
@@ -120,8 +131,10 @@ export const Desktop = (): JSX.Element => {
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
+                    ref={videoRef}
                     className="w-full h-full object-cover rounded-3xl"
                     autoPlay
+                    muted
                     loop
                     playsInline
                     controls
@@ -134,6 +147,20 @@ export const Desktop = (): JSX.Element => {
                       </div>
                     </div>
                   </video>
+                  
+                  {/* Mute/Unmute Button */}
+                  <button
+                    onClick={toggleMute}
+                    className="absolute top-4 right-4 w-10 h-10 bg-black/60 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/80 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 z-20"
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5 text-[#b7ffab] hover:text-[#6ad040] transition-colors duration-300" />
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-[#6ad040] hover:text-[#79e74c] transition-colors duration-300" />
+                    )}
+                  </button>
+                  
                   {/* Subtle matrix overlay on video */}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#6ad040]/5 via-transparent to-[#6ad040]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </CardContent>
