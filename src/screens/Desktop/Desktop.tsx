@@ -111,21 +111,26 @@ export const Desktop = (): JSX.Element => {
             {/* Waitlist section - responsive */}
             <div className="text-center mb-12 lg:mb-16">
               {/* Logo - responsive */}
-              <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-s sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
-                business automation for sigmas
-                </p>
+              <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
+              
+              {/* Tagline under logo */}
+              <p className="font-['Orbitron'] font-semibold text-[#6ad040] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-8 drop-shadow-lg drop-shadow-[#6ad040]/50 matrix-glow">
+                Business automation for Sigmas
+              </p>
+
               {/* Heading and subtext - responsive */}
               <div className="mb-8 lg:mb-12">
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
                   JOIN THE WAITLIST
                 </h1>
 
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
-                POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
+                  POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
                 </p>
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-s sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
-                'what if we just... did all of it?'
+                
+                {/* Bold "what if we just did all of it" text */}
+                <p className="font-['Orbitron'] font-black text-[#6ad040] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 matrix-pulse">
+                  'what if we just... did all of it?'
                 </p>
               </div>
 
