@@ -168,7 +168,7 @@ export const Desktop = (): JSX.Element => {
               <div className="max-w-lg mx-auto space-y-4">
                 <div className="relative">
                   <Input
-                    className="w-full h-12 lg:h-14 px-6 bg-black/40 backdrop-blur-md border-2 border-[#6ad040]/50 rounded-full text-[#b7ffab] font-['Space_Grotesk'] font-bold text-center placeholder:text-[#b7ffab]/60 text-base focus-visible:ring-2 focus-visible:ring-[#6ad040] focus-visible:border-[#6ad040] focus-visible:shadow-lg focus-visible:shadow-[#6ad040]/30 transition-all duration-300"
+                    className="w-full h-12 lg:h-14 px-6 bg-black/40 backdrop-blur-md border-2 border-[#6ad040]/50 rounded-full text-[#b7ffab] font-['Space_Grotesk'] font-bold text-center placeholder:text-[#b7ffab]/60 text focus-visible:ring-2 focus-visible:ring-[#6ad040] focus-visible:border-[#6ad040] focus-visible:shadow-lg focus-visible:shadow-[#6ad040]/30 transition-all duration-300"
                     placeholder="youremail@sigma.com"
                   />
                 </div>
@@ -286,7 +286,7 @@ export const Desktop = (): JSX.Element => {
             </div>
 
             {/* Team Sigma Section */}
-            <div className="mb-16 lg:mb-24">
+            <div id="team" className="mb-16 lg:mb-24">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
@@ -299,7 +299,7 @@ export const Desktop = (): JSX.Element => {
               </div>
 
               {/* Team Members Grid - 2 per row with more space */}
-              <div id="team" className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
                 {teamMembers.map((member) => (
                   <div key={member.id} className="relative group">
                     <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-8 lg:p-10 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
