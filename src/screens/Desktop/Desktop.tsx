@@ -292,6 +292,7 @@ export const Desktop = (): JSX.Element => {
                   Meet the absolute legends building the future of business automation. Pure sigma energy, zero corporate BS.
                 </p>
               </div>
+              </div>
 
               {/* Team Members Grid - 2 per row with more space */}
               <div id="team" className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
