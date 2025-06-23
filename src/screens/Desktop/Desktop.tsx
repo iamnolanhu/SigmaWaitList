@@ -20,30 +20,44 @@ export const Desktop = (): JSX.Element => {
   const featureCards = [
     {
       id: 1,
-      title: "Join Waitlist",
+      title: "Legal Paper work",
       description:
-        "Be Sigma. Get the latest Sigma news and early access to our first build",
+        "Boring but necessary. Based Sigma will handle it all for you.",
       image: "/SigmaGuy.svg", // You can change this to any image path
     },
     {
       id: 2,
-      title: "Join Waitlist",
+      title: "Branding",
       description:
-        "Be Sigma. Get the latest Sigma news and early access to our first build",
+        "Brand that doesn't look like Canva threw up",
       image: "/SigmaGuy.svg", // You can change this to a different image
     },
     {
       id: 3,
-      title: "Join Waitlist",
+      title: "Website",
       description:
-        "Be Sigma. Get the latest Sigma news and early access to our first build",
+        "Website that converts (not just exists), brings all the Sigma to your backyard",
       image: "/SigmaGuy.svg", // You can change this to another different image
     },
     {
       id: 4,
-      title: "Join Waitlist",
+      title: "Payment Processing",
       description:
-        "Be Sigma. Get the latest Sigma news and early access to our first build",
+        "Payment processing that WORKS",
+      image: "/SigmaGuy.svg", // You can change this to another different image
+    },
+      {
+      id: 5,
+      title: "Business Banking",
+      description:
+        "Skip the bank small talk and get your business running",
+      image: "/SigmaGuy.svg", // You can change this to another different image
+    },
+      {
+      id: 6,
+      title: "Marketing",
+      description:
+        "Marketing that runs itself, promoting your business is now a piece of cake",
       image: "/SigmaGuy.svg", // You can change this to another different image
     },
   ];
