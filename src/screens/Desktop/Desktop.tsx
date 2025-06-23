@@ -355,10 +355,10 @@ export const Desktop = (): JSX.Element => {
               {/* Call to Action under team section */}
               <div className="text-center mt-12 lg:mt-16">
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base mb-6 opacity-90">
-                  Want to join the sigma squad? We're always looking for based individuals.
+                  Want to become a CEO overnight?
                 </p>
                 <Button className="bg-transparent hover:bg-[#6ad040]/10 text-[#6ad040] border-2 border-[#6ad040] hover:border-[#79e74c] font-['Orbitron'] font-bold text-sm lg:text-base px-6 lg:px-8 py-2 lg:py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#6ad040]/30">
-                  Join Team Sigma
+                  TRY TEAM SIGMA NOW
                 </Button>
               </div>
             </div>
