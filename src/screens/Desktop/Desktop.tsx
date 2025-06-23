@@ -114,7 +114,7 @@ export const Desktop = (): JSX.Element => {
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
-              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-8 drop-shadow-lg drop-shadow-[#6ad040]/50 matrix-glow">
+              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-8 drop-shadow-lg drop-shadow-[#6ad040]/200 matrix-glow">
                 Business automation for Sigmas
               </p>
 
