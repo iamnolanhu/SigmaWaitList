@@ -272,7 +272,7 @@ export const Desktop = (): JSX.Element => {
             <div className="mb-16 lg:mb-24">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
-                <h2 className="font-['Orbitron'] font-black text-[#6ad040] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                   TEAM SIGMA
                 </h2>
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90">
