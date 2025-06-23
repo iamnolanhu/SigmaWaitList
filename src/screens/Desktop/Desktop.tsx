@@ -373,6 +373,13 @@ export const Desktop = (): JSX.Element => {
         <div className="md:hidden fixed bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md rounded-2xl border border-[#6ad040]/30 p-4 shadow-xl shadow-[#6ad040]/20 z-50">
           <div className="flex items-center justify-between">
             <div className="flex gap-6">
+              
+              <a
+                href="#"
+                className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
+              >
+                Home
+              </a>
               <a
                 href="#feature"
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
@@ -383,7 +390,7 @@ export const Desktop = (): JSX.Element => {
                 href="#team"
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
               >
-                About Us
+                About
               </a>
             </div>
             <Button className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30">
