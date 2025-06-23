@@ -94,12 +94,19 @@
 @layer utilities {
   @keyframes matrix-glow {
     0%, 100% { 
-      text-shadow: 0 0 2px rgba(106, 208, 64, 0.5), 0 0 4px rgba(106, 208, 64, 0.2), 0 0 6px rgba(106, 208, 64, 0.1);
+      text-shadow: 
+        0 0 3px rgba(106, 208, 64, 0.7), 
+        0 0 6px rgba(106, 208, 64, 0.4), 
+        0 0 10px rgba(106, 208, 64, 0.2);
     }
     50% { 
-      text-shadow: 0 0 4px rgba(106, 208, 64, 0.6), 0 0 8px rgba(106, 208, 64, 0.3), 0 0 12px rgba(106, 208, 64, 0.2);
+      text-shadow: 
+        0 0 6px rgba(106, 208, 64, 0.8), 
+        0 0 12px rgba(106, 208, 64, 0.5), 
+        0 0 20px rgba(106, 208, 64, 0.3);
     }
   }
+}
   
   @keyframes matrix-pulse {
     0%, 100% { 
