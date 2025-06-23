@@ -180,7 +180,7 @@ export const Desktop = (): JSX.Element => {
             </div>
             
             <div className="mb-8 lg:mb-12">
-              <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
                 POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
               </p>
               
