@@ -66,7 +66,7 @@ export const Desktop = (): JSX.Element => {
   const teamMembers = [
     {
       id: 1,
-      name: "Alex Chen",
+      name: "Sigma888",
       role: "Lead Developer",
       bio: "Full-stack wizard who turns coffee into code. Built 3 unicorns before breakfast.",
       image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
@@ -75,7 +75,7 @@ export const Desktop = (): JSX.Element => {
     },
     {
       id: 2,
-      name: "Sarah Kim",
+      name: "Apoorva",
       role: "Product Designer",
       bio: "UX/UI genius who makes interfaces so smooth they're basically illegal.",
       image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
@@ -84,8 +84,8 @@ export const Desktop = (): JSX.Element => {
     },
     {
       id: 3,
-      name: "Marcus Johnson",
-      role: "Business Strategist",
+      name: "Honey B",
+      role: "Marketing Wizard",
       bio: "The guy who sees opportunities where others see problems. Pure sigma energy.",
       image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
       github: "https://github.com/marcusj",
@@ -93,12 +93,12 @@ export const Desktop = (): JSX.Element => {
     },
     {
       id: 4,
-      name: "Emma Rodriguez",
-      role: "AI Engineer",
-      bio: "Teaching machines to be as sigma as humans. Spoiler: they're getting close.",
+      name: "Suzanna Codes",
+      role: "Designer and Front-End Developer",
+      bio: "A sigma designer that is obsessed with coffee and making websites. Based in Toronto!",
       image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
-      github: "https://github.com/emmarodriguez",
-      twitter: "https://twitter.com/emmarodriguez"
+      github: "https://github.com/codesuzyworld",
+      twitter: "https://x.com/CodesSuzy19017"
     }
   ];
 
