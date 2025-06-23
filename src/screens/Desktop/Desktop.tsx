@@ -112,7 +112,9 @@ export const Desktop = (): JSX.Element => {
             <div className="text-center mb-12 lg:mb-16">
               {/* Logo - responsive */}
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
-
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-s sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
+                business automation for sigmas
+                </p>
               {/* Heading and subtext - responsive */}
               <div className="mb-8 lg:mb-12">
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
