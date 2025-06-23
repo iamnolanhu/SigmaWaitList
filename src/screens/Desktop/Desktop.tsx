@@ -155,7 +155,7 @@ export const Desktop = (): JSX.Element => {
               
               {/* Tagline under logo */}
               <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-8 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
-                Business automation for Sigmas
+                AI Business automation for Sigmas
               </p>
 
               {/* Heading and subtext - responsive */}
