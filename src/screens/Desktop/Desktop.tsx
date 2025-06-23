@@ -186,7 +186,7 @@ export const Desktop = (): JSX.Element => {
               
               {/* Bold "what if we just did all of it" text with glitch effect */}
               <p 
-                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl text-center max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
                 data-text="'what if we just... did all of it?'"
               >
                 'what if we just... did all of it?'
