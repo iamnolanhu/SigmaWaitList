@@ -96,7 +96,7 @@
     0%, 100% { 
       text-shadow: 0 0 5px #6ad040, 0 0 10px #6ad040, 0 0 15px #6ad040;
     }
-    50% { 
+    20% { 
       text-shadow: 0 0 10px #6ad040, 0 0 20px #6ad040, 0 0 30px #6ad040;
     }
   }
