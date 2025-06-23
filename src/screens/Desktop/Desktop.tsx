@@ -179,17 +179,19 @@ export const Desktop = (): JSX.Element => {
               </div>
             </div>
             
-            <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
-              POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
-            </p>
-            
-            {/* Bold "what if we just did all of it" text with glitch effect */}
-            <p 
-              className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
-              data-text="'what if we just... did all of it?'"
-            >
-              'what if we just... did all of it?'
-            </p>
+            <div className="mb-8 lg:mb-12">
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
+                POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
+              </p>
+              
+              {/* Bold "what if we just did all of it" text with glitch effect */}
+              <p 
+                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                data-text="'what if we just... did all of it?'"
+              >
+                'what if we just... did all of it?'
+              </p>
+            </div>
             
             {/* Video/image placeholder - responsive */}
             <div className="mb-12 lg:mb-16">
