@@ -168,8 +168,11 @@ export const Desktop = (): JSX.Element => {
                   POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
                 </p>
                 
-                {/* Bold "what if we just did all of it" text */}
-                <p className="font-['Orbitron'] font-black text-[#c5f7b0] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 matrix-pulse">
+                {/* Bold "what if we just did all of it" text with glitch effect */}
+                <p 
+                  className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                  data-text="'what if we just... did all of it?'"
+                >
                   'what if we just... did all of it?'
                 </p>
               </div>
