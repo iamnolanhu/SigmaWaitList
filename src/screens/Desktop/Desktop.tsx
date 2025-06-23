@@ -169,7 +169,7 @@ export const Desktop = (): JSX.Element => {
                 <div className="relative">
                   <Input
                     className="w-full h-12 lg:h-14 px-6 bg-black/40 backdrop-blur-md border-2 border-[#6ad040]/50 rounded-full text-[#b7ffab] font-['Space_Grotesk'] font-bold text-center placeholder:text-[#b7ffab]/60 focus-visible:ring-2 focus-visible:ring-[#6ad040] focus-visible:border-[#6ad040] focus-visible:shadow-lg focus-visible:shadow-[#6ad040]/30 transition-all duration-300"
-                    placeholder="your@email.com"
+                    placeholder="youremail@sigma.com"
                   />
                 </div>
 
