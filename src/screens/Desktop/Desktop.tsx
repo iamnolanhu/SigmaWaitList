@@ -28,6 +28,13 @@ export const Desktop = (): JSX.Element => {
         "Be Sigma. Get the latest Sigma news and early access to our first build",
       image: "/SigmaGuy.svg", // You can change this to another different image
     },
+    {
+      id: 4,
+      title: "Join Waitlist",
+      description:
+        "Be Sigma. Get the latest Sigma news and early access to our first build",
+      image: "/SigmaGuy.svg", // You can change this to another different image
+    },
   ];
 
   return (
@@ -50,24 +57,26 @@ export const Desktop = (): JSX.Element => {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
             
-            <nav className="hidden md:flex items-center gap-8">
-              <a
-                href="#"
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-              >
-                About Team Sigma
-              </a>
-              <a
-                href="#"
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-              >
-                Contact Us
-              </a>
-            </nav>
+            <div className="flex items-center gap-4">
+              <nav className="hidden md:flex items-center gap-8">
+                <a
+                  href="#"
+                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+                >
+                  About Team Sigma
+                </a>
+                <a
+                  href="#"
+                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+                >
+                  Contact Us
+                </a>
+              </nav>
 
-            <Button className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#6ad040]/50 border border-[#6ad040]/30">
-              Try Sigma
-            </Button>
+              <Button className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#6ad040]/50 border border-[#6ad040]/30">
+                Try Sigma
+              </Button>
+            </div>
           </div>
         </header>
 
