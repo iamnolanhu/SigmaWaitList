@@ -122,7 +122,7 @@ export const Desktop = (): JSX.Element => {
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
                 POV: you want to start a business but every tutorial means you gotta listen to some based sigma said 
                 </p>
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-s sm:text-base lg:text-lg max-w-md mx-auto leading-relaxed opacity-90 drop-shadow-lg">
                 'what if we just... did all of it?'
                 </p>
               </div>
