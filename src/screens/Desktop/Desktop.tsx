@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { MatrixBackground } from "../../components/MatrixBackground";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Github, Twitter } from "lucide-react";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(true); // Start muted by default
@@ -60,6 +60,46 @@ export const Desktop = (): JSX.Element => {
         "Marketing that runs itself, promoting your business is now a piece of cake",
       image: "/SigmaGuy.svg", // You can change this to another different image
     },
+  ];
+
+  // Team members data
+  const teamMembers = [
+    {
+      id: 1,
+      name: "Alex Chen",
+      role: "Lead Developer",
+      bio: "Full-stack wizard who turns coffee into code. Built 3 unicorns before breakfast.",
+      image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      github: "https://github.com/alexchen",
+      twitter: "https://twitter.com/alexchen"
+    },
+    {
+      id: 2,
+      name: "Sarah Kim",
+      role: "Product Designer",
+      bio: "UX/UI genius who makes interfaces so smooth they're basically illegal.",
+      image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      github: "https://github.com/sarahkim",
+      twitter: "https://twitter.com/sarahkim"
+    },
+    {
+      id: 3,
+      name: "Marcus Johnson",
+      role: "Business Strategist",
+      bio: "The guy who sees opportunities where others see problems. Pure sigma energy.",
+      image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      github: "https://github.com/marcusj",
+      twitter: "https://twitter.com/marcusj"
+    },
+    {
+      id: 4,
+      name: "Emma Rodriguez",
+      role: "AI Engineer",
+      bio: "Teaching machines to be as sigma as humans. Spoiler: they're getting close.",
+      image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      github: "https://github.com/emmarodriguez",
+      twitter: "https://twitter.com/emmarodriguez"
+    }
   ];
 
   return (
@@ -191,7 +231,7 @@ export const Desktop = (): JSX.Element => {
             </div>
 
             {/* Feature cards section - responsive */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
               {featureCards.map((card, index) => (
                 <div key={index} className="relative group">
                   <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
@@ -226,6 +266,87 @@ export const Desktop = (): JSX.Element => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Team Sigma Section */}
+            <div className="mb-16 lg:mb-24">
+              {/* Section Header */}
+              <div className="text-center mb-12 lg:mb-16">
+                <h2 className="font-['Orbitron'] font-black text-[#6ad040] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                  TEAM SIGMA
+                </h2>
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90">
+                  Meet the absolute legends building the future of business automation. Pure sigma energy, zero corporate BS.
+                </p>
+              </div>
+
+              {/* Team Members Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="relative group">
+                    <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
+                      {/* Matrix-style glow effect on hover */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#6ad040]/10 via-transparent to-[#6ad040]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <div className="relative z-10 text-center">
+                        {/* Profile Image */}
+                        <div className="w-20 h-20 lg:w-24 lg:h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-[#6ad040]/50 group-hover:border-[#6ad040] transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#6ad040]/50">
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        </div>
+
+                        {/* Name */}
+                        <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-lg lg:text-xl mb-2 group-hover:text-[#6ad040] transition-colors duration-300">
+                          {member.name}
+                        </h3>
+
+                        {/* Role */}
+                        <p className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm lg:text-base mb-3 uppercase tracking-wide">
+                          {member.role}
+                        </p>
+
+                        {/* Bio */}
+                        <p className="font-['Space_Mono'] text-[#b7ffab] text-xs lg:text-sm leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300 mb-4">
+                          {member.bio}
+                        </p>
+
+                        {/* Social Icons */}
+                        <div className="flex justify-center gap-3">
+                          <a
+                            href={member.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                          >
+                            <Github className="w-4 h-4 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                          </a>
+                          <a
+                            href={member.twitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                          >
+                            <Twitter className="w-4 h-4 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Call to Action under team section */}
+              <div className="text-center mt-12 lg:mt-16">
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base mb-6 opacity-90">
+                  Want to join the sigma squad? We're always looking for based individuals.
+                </p>
+                <Button className="bg-transparent hover:bg-[#6ad040]/10 text-[#6ad040] border-2 border-[#6ad040] hover:border-[#79e74c] font-['Orbitron'] font-bold text-sm lg:text-base px-6 lg:px-8 py-2 lg:py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#6ad040]/30">
+                  Join Team Sigma
+                </Button>
+              </div>
             </div>
           </div>
         </main>
