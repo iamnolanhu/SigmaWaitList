@@ -58,7 +58,7 @@ export const Desktop = (): JSX.Element => {
       title: "Marketing",
       description:
         "Marketing that runs itself, promoting your business is now a piece of cake",
-      image: "/SigmaGuy.svg", // You can change this to another different image
+      image: "/sigmaguy.svg", // You can change this to another different image
     },
   ];
 
