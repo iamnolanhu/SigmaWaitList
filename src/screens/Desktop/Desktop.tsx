@@ -37,21 +37,21 @@ export const Desktop = (): JSX.Element => {
       title: "Website",
       description:
         "Website that converts (not just exists), brings all the Sigma to your backyard",
-      image: "/SigmaGuy.svg", // You can change this to another different image
+      image: "/website.svg", // You can change this to another different image
     },
     {
       id: 4,
       title: "Payment Processing",
       description:
         "Payment processing that WORKS",
-      image: "/SigmaGuy.svg", // You can change this to another different image
+      image: "/payment.svg", // You can change this to another different image
     },
       {
       id: 5,
       title: "Business Banking",
       description:
         "Skip the bank small talk and get your business running",
-      image: "/SigmaGuy.svg", // You can change this to another different image
+      image: "/businessBanking.svg", // You can change this to another different image
     },
       {
       id: 6,
