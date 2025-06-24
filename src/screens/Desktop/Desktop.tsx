@@ -23,14 +23,14 @@ export const Desktop = (): JSX.Element => {
       title: "Legal Paper work",
       description:
         "Boring but necessary. Based Sigma will handle it all for you.",
-      image: "/SigmaGuy.svg", // You can change this to any image path
+      image: "legalPaper.svg", // You can change this to any image path
     },
     {
       id: 2,
       title: "Branding",
       description:
         "Brand that doesn't look like Canva threw up",
-      image: "/SigmaGuy.svg", // You can change this to a different image
+      image: "/branding.svg", // You can change this to a different image
     },
     {
       id: 3,
