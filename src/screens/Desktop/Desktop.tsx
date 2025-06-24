@@ -265,7 +265,7 @@ export const Desktop = (): JSX.Element => {
                     <div className="pt-6 lg:pt-8 relative z-10">
                       {/* Icon - now uses the image from the card data */}
                       <img
-                        className="w-12 h-14 lg:w-16 lg:h-20 mb-4 lg:mb-6 opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 filter group-hover:drop-shadow-lg group-hover:drop-shadow-[#6ad040]/50"
+                        className="w-22 h-24 lg:w-16 lg:h-20 mb-4 lg:mb-6 opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 filter group-hover:drop-shadow-lg group-hover:drop-shadow-[#6ad040]/50"
                         alt="Feature icon"
                         src={card.image}
                       />
