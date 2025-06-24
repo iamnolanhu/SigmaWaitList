@@ -200,6 +200,7 @@ export const Desktop = (): JSX.Element => {
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover rounded-3xl"
+                    muted
                     autoPlay
                     loop
                     playsInline
