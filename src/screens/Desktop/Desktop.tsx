@@ -96,7 +96,7 @@ export const Desktop = (): JSX.Element => {
       name: "Suzanna Codes",
       role: "Designer and Front-End Developer",
       bio: "A sigma designer that is obsessed with coffee and making websites. Based in Toronto!",
-      image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      image: "/suzannaPFP.png",
       github: "https://github.com/codesuzyworld",
       twitter: "https://x.com/CodesSuzy19017"
     }
