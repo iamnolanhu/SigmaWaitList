@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -6,8 +6,33 @@ import { MatrixBackground } from "../../components/MatrixBackground";
 import { Volume2, VolumeX, Github, Twitter } from "lucide-react";
 
 export const Desktop = (): JSX.Element => {
-  const [isMuted, setIsMuted] = useState(true); // Start muted by default
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Try to play video with sound on component mount
+  useEffect(() => {
+    const playVideoWithSound = async () => {
+      if (videoRef.current) {
+        try {
+          videoRef.current.muted = false;
+          await videoRef.current.play();
+          setIsMuted(false);
+        } catch (error) {
+          // If autoplay with sound fails, fallback to muted autoplay
+          console.log("Autoplay with sound blocked, falling back to muted");
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          try {
+            await videoRef.current.play();
+          } catch (mutedError) {
+            console.log("Muted autoplay also failed");
+          }
+        }
+      }
+    };
+
+    playVideoWithSound();
+  }, []);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -186,7 +211,7 @@ export const Desktop = (): JSX.Element => {
               
               {/* Bold "what if we just did all of it" text with glitch effect */}
               <p 
-                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl text-center max-w-md mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
                 data-text="'what if we just... did all of it?'"
               >
                 'what if we just... did all of it?'
@@ -200,7 +225,6 @@ export const Desktop = (): JSX.Element => {
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover rounded-3xl"
-                    muted
                     autoPlay
                     loop
                     playsInline
