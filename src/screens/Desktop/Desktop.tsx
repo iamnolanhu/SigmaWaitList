@@ -91,12 +91,12 @@ export const Desktop = (): JSX.Element => {
   const teamMembers = [
     {
       id: 1,
-      name: "Sigma888",
-      role: "Lead Developer",
+      name: "Nolan Hu",
+      role: "Backend Developer",
       bio: "Full-stack wizard who turns coffee into code. Built 3 unicorns before breakfast.",
-      image: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
-      github: "https://github.com/alexchen",
-      twitter: "https://twitter.com/alexchen"
+      image: "/nolanPFP.png",
+      github: "https://github.com/iamnolanhu",
+      twitter: "https://x.com/its_nolan_hu"
     },
     {
       id: 2,
