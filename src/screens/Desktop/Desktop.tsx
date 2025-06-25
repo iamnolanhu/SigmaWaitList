@@ -132,19 +132,19 @@ export const Desktop = (): JSX.Element => {
     {
       name: "Bolt",
       description: "AI-powered development platform",
-      logo: "⚡",
+      logo: "/boltnewLogo.svg",
       color: "#6ad040"
     },
     {
       name: "Next.js",
       description: "React framework for production",
-      logo: "▲",
+      logo: "/nextJSLogo.svg",
       color: "#ffffff"
     },
     {
       name: "Supabase",
-      description: "Open source Firebase alternative",
-      logo: "🚀",
+      description: "Open source Postgres Development Platform.",
+      logo: "/supabaseLogo.svg",
       color: "#3ecf8e"
     }
   ];
@@ -197,19 +197,21 @@ export const Desktop = (): JSX.Element => {
           <div className="max-w-4xl mx-auto">
             {/* Waitlist section - responsive */}
             <div className="text-center mb-12 lg:mb-16">
+
               {/* Logo - responsive */}
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
-              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
+              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-10 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
                 AI Business automation for Sigmas
               </p>
 
               {/* Powered by Bolt text */}
-              <p className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70 mb-8">
-                Powered by Bolt ⚡
-              </p>
-
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">Built with</span>
+                <img src="/boltnewLogo.svg" alt="Bolt" className="w-16 h-6 sm:w-20 sm:h-8 object-contain" />
+                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">For the Sigmas</span>
+              </div>
               {/* Heading and subtext - responsive */}
 
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
@@ -349,7 +351,7 @@ export const Desktop = (): JSX.Element => {
               </div>
 
               {/* Tech Stack Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
                 {techStack.map((tech, index) => (
                   <div key={index} className="relative group">
                     <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2 text-center">
@@ -358,14 +360,14 @@ export const Desktop = (): JSX.Element => {
                       
                       <div className="relative z-10">
                         {/* Logo/Icon */}
-                        <div className="text-4xl lg:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                          {tech.logo}
+                        <div className="flex justify-center items-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                          <img src={tech.logo} alt={tech.name} className="w-36 h-16 lg:w-40 lg:h-20 object-contain" />
                         </div>
 
                         {/* Tech Name */}
-                        <h3 className="font-['Orbitron'] font-black text-[#b7ffab] text-xl lg:text-2xl mb-3 group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
+                        {/* <h3 className="font-['Orbitron'] font-black text-[#b7ffab] text-xl lg:text-2xl mb-3 group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
                           {tech.name}
-                        </h3>
+                        </h3> */}
 
                         {/* Description */}
                         <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300">
