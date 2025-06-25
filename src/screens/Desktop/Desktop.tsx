@@ -127,6 +127,28 @@ export const Desktop = (): JSX.Element => {
     }
   ];
 
+  // Tech stack data
+  const techStack = [
+    {
+      name: "Bolt",
+      description: "AI-powered development platform",
+      logo: "⚡",
+      color: "#6ad040"
+    },
+    {
+      name: "Next.js",
+      description: "React framework for production",
+      logo: "▲",
+      color: "#ffffff"
+    },
+    {
+      name: "Supabase",
+      description: "Open source Firebase alternative",
+      logo: "🚀",
+      color: "#3ecf8e"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
       {/* Matrix Background Animation */}
@@ -179,8 +201,13 @@ export const Desktop = (): JSX.Element => {
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
-              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-8 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
+              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
                 AI Business automation for Sigmas
+              </p>
+
+              {/* Powered by Bolt text */}
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70 mb-8">
+                Powered by Bolt ⚡
               </p>
 
               {/* Heading and subtext - responsive */}
@@ -307,6 +334,48 @@ export const Desktop = (): JSX.Element => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Tech Stack Section */}
+            <div className="mb-16 lg:mb-24">
+              {/* Section Header */}
+              <div className="text-center mb-12 lg:mb-16">
+                <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                  TECH STACK
+                </h2>
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90">
+                  Built with cutting-edge technology for maximum sigma performance.
+                </p>
+              </div>
+
+              {/* Tech Stack Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-3xl mx-auto">
+                {techStack.map((tech, index) => (
+                  <div key={index} className="relative group">
+                    <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2 text-center">
+                      {/* Matrix-style glow effect on hover */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#6ad040]/10 via-transparent to-[#6ad040]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <div className="relative z-10">
+                        {/* Logo/Icon */}
+                        <div className="text-4xl lg:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                          {tech.logo}
+                        </div>
+
+                        {/* Tech Name */}
+                        <h3 className="font-['Orbitron'] font-black text-[#b7ffab] text-xl lg:text-2xl mb-3 group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
+                          {tech.name}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                          {tech.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Team Sigma Section */}
