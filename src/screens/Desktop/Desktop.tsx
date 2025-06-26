@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { MatrixBackground } from "../../components/MatrixBackground";
-import { Volume2, VolumeX, Github, Twitter } from "lucide-react";
+import { Volume2, VolumeX, Github, Twitter, Linkedin } from "lucide-react";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
@@ -87,7 +87,7 @@ export const Desktop = (): JSX.Element => {
     },
   ];
 
-  // Team members data
+  // Team members data - now with optional social links
   const teamMembers = [
     {
       id: 1,
@@ -96,7 +96,8 @@ export const Desktop = (): JSX.Element => {
       bio: "Full-stack wizard who turns coffee into code. Built 3 unicorns before breakfast.",
       image: "/nolanPFP.png",
       github: "https://github.com/iamnolanhu",
-      twitter: "https://x.com/its_nolan_hu"
+      twitter: "https://x.com/its_nolan_hu",
+      linkedin: "https://linkedin.com/in/nolan-hu"
     },
     {
       id: 2,
@@ -105,7 +106,8 @@ export const Desktop = (): JSX.Element => {
       bio: "The product designer who sees opportunities where others see problems. Pure sigma energy..",
       image: "/aporvaPFP.jpg",
       github: "https://github.com/ApoorvaMahajan",
-      twitter: "https://x.com/ApoorvaM94"
+      twitter: "https://x.com/ApoorvaM94",
+      linkedin: "https://linkedin.com/in/apoorva-mahajan"
     },
     {
       id: 3,
@@ -113,7 +115,8 @@ export const Desktop = (): JSX.Element => {
       role: "Marketing Wizard",
       bio: "Spreads Sigma energy worldwide through marketing and content creation, based video editing skills",
       image: "/honeybPFP.jpg",
-      twitter: "https://x.com/honeybdot"
+      twitter: "https://x.com/honeybdot",
+      linkedin: "https://linkedin.com/in/brian-cardova"
     },
     {
       id: 4,
@@ -122,7 +125,8 @@ export const Desktop = (): JSX.Element => {
       bio: "A sigma designer that is obsessed with coffee and making websites. Based in Toronto!",
       image: "/suzannaPFP.png",
       github: "https://github.com/codesuzyworld",
-      twitter: "https://x.com/CodesSuzy19017"
+      twitter: "https://x.com/CodesSuzy19017",
+      linkedin: "https://linkedin.com/in/suzanna-codes"
     }
   ];
 
@@ -201,12 +205,12 @@ export const Desktop = (): JSX.Element => {
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
-              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-10 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
+              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
                 AI Business automation for Sigmas
               </p>
 
               {/* Powered by Bolt text */}
-              <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="flex items-center justify-center gap-2 mb-10">
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">Built with</span>
                 <img src="/boltnewLogo.svg" alt="Bolt" className="w-16 h-6 sm:w-20 sm:h-8 object-contain" />
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">For the Sigmas</span>
@@ -425,24 +429,38 @@ export const Desktop = (): JSX.Element => {
                           {member.bio}
                         </p>
 
-                        {/* Social Icons */}
+                        {/* Social Icons - Only show if the link exists */}
                         <div className="flex justify-center gap-4">
-                          <a
-                            href={member.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
-                          >
-                            <Github className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
-                          </a>
-                          <a
-                            href={member.twitter}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
-                          >
-                            <Twitter className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
-                          </a>
+                          {member.github && (
+                            <a
+                              href={member.github}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                            >
+                              <Github className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                            </a>
+                          )}
+                          {member.twitter && (
+                            <a
+                              href={member.twitter}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                            >
+                              <Twitter className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                            </a>
+                          )}
+                          {member.linkedin && (
+                            <a
+                              href={member.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
+                            >
+                              <Linkedin className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
