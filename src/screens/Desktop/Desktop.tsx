@@ -104,8 +104,8 @@ export const Desktop = (): JSX.Element => {
       role: "Product Designer and Front-End Sigma",
       bio: "The product designer who sees opportunities where others see problems. Pure sigma energy..",
       image: "/aporvaPFP.jpg",
-      github: "https://github.com/sarahkim",
-      twitter: "https://twitter.com/sarahkim"
+      github: "https://github.com/ApoorvaMahajan",
+      twitter: "https://x.com/ApoorvaM94"
     },
     {
       id: 3,
@@ -113,8 +113,7 @@ export const Desktop = (): JSX.Element => {
       role: "Marketing Wizard",
       bio: "Spreads Sigma energy worldwide through marketing and content creation, based video editing skills",
       image: "/honeybPFP.jpg",
-      github: "https://github.com/marcusj",
-      twitter: "https://twitter.com/marcusj"
+      twitter: "https://x.com/honeybdot"
     },
     {
       id: 4,
