@@ -92,8 +92,8 @@ export const Desktop = (): JSX.Element => {
     {
       id: 1,
       name: "Nolan Hu",
-      role: "Backend Developer",
-      bio: "Full-stack wizard who turns coffee into code. Built 3 unicorns before breakfast.",
+      role: "BASED dev",
+      bio: "Puts the “based” in Based Sigma. Architect of systems that just work.",
       image: "/nolanPFP.png",
       github: "https://github.com/iamnolanhu",
       twitter: "https://x.com/its_nolan_hu",
@@ -107,7 +107,7 @@ export const Desktop = (): JSX.Element => {
       image: "/aporvaPFP.jpg",
       github: "https://github.com/ApoorvaMahajan",
       twitter: "https://x.com/ApoorvaM94",
-      linkedin: "https://linkedin.com/in/apoorva-mahajan"
+      linkedin: "https://www.linkedin.com/in/apoorva-mahajan94/"
     },
     {
       id: 3,
@@ -116,7 +116,7 @@ export const Desktop = (): JSX.Element => {
       bio: "Spreads Sigma energy worldwide through marketing and content creation, based video editing skills",
       image: "/honeybPFP.jpg",
       twitter: "https://x.com/honeybdot",
-      linkedin: "https://linkedin.com/in/brian-cardova"
+      linkedin: "https://www.linkedin.com/in/cellocordova/"
     },
     {
       id: 4,
