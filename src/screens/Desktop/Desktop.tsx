@@ -325,7 +325,7 @@ export const Desktop = (): JSX.Element => {
                       />
 
                       {/* Title */}
-                      <h3 className="font-['Orbitron'] font-black text-[#79e84c] text-lg lg:text-xl xl:text-2xl mb-3 lg:mb-4 text-center group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
+                      <h3 className="font-['Orbitron'] font-black text-[#79e84c] text-lg lg:text-xl xl:text-2xl mb-3 lg:mb-4 text-center group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg min-h-[3.5rem] flex items-center justify-center">
                         {card.title}
                       </h3>
 
