@@ -13,12 +13,28 @@
     <link href="tailwind.css" rel="stylesheet" />
     
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      // GA_MEASUREMENT_ID will be replaced with actual ID when environment variable is set
+      // Initialize Google Analytics if measurement ID is provided
+      if (window.location.hostname !== 'localhost') {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        // This will be replaced at build time with actual GA ID
+        const gaId = '%VITE_GA_MEASUREMENT_ID%';
+        if (gaId && gaId !== '%VITE_GA_MEASUREMENT_ID%') {
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+          document.head.appendChild(script);
+          
+          gtag('config', gaId, {
+            page_title: 'Sigma AI Business Partner',
+            page_location: window.location.href,
+            send_page_view: true
+          });
+        }
+      }
     </script>
   </head>
   <body>

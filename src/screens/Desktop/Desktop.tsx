@@ -4,11 +4,16 @@ import { Card, CardContent } from "../../components/ui/card";
 import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
-import { trackVideoInteraction, trackSectionView } from "../../lib/analytics";
+import { trackVideoInteraction, trackSectionView, initializeAnalytics } from "../../lib/analytics";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Initialize analytics on component mount
+  useEffect(() => {
+    initializeAnalytics()
+  }, [])
 
   // Try to play video with sound on component mount
   useEffect(() => {

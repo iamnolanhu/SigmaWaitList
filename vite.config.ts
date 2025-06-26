@@ -11,4 +11,8 @@ export default defineConfig({
       plugins: [tailwind()],
     },
   },
+  define: {
+    // Replace environment variables in HTML at build time
+    '%VITE_GA_MEASUREMENT_ID%': JSON.stringify(process.env.VITE_GA_MEASUREMENT_ID || ''),
+  },
 });

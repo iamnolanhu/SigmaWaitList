@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 
 interface WaitlistState {
   loading: boolean
@@ -60,19 +61,23 @@ export const useWaitlist = () => {
       setState({ loading: false, success: true, error: null })
 
       // Track conversion event
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'sign_up', {
-          method: 'email',
-          event_category: 'engagement',
-          event_label: 'waitlist_signup'
-        })
-      }
+      trackEvent('sign_up', {
+        method: 'email',
+        event_label: 'waitlist_signup',
+        value: 1
+      })
 
     } catch (error) {
       setState({ 
         loading: false, 
         success: false, 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      })
+      
+      // Track error event
+      trackEvent('form_error', {
+        error_message: error instanceof Error ? error.message : 'unknown_error',
+        event_label: 'waitlist_signup_error'
       })
     }
   }
