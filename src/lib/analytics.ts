@@ -3,19 +3,67 @@ export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID
 
 // Check if we're in production and GA is available
 const isProduction = window.location.hostname !== 'localhost'
-const isGAAvailable = typeof gtag !== 'undefined' && GA_MEASUREMENT_ID
+
+// Declare gtag function for TypeScript
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void
+    dataLayer: any[]
+  }
+}
+
+// Initialize Google Analytics
+const initializeGA = () => {
+  if (!isProduction || !GA_MEASUREMENT_ID) return false
+
+  // Create dataLayer
+  window.dataLayer = window.dataLayer || []
+  
+  // Define gtag function
+  function gtag(...args: any[]) {
+    window.dataLayer.push(args)
+  }
+  window.gtag = gtag
+
+  // Initialize gtag
+  gtag('js', new Date())
+  
+  // Load GA script
+  const script = document.createElement('script')
+  script.async = true
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
+  document.head.appendChild(script)
+  
+  // Configure GA
+  gtag('config', GA_MEASUREMENT_ID, {
+    page_title: 'Sigma AI Business Partner',
+    page_location: window.location.href,
+    send_page_view: true
+  })
+  
+  return true
+}
+
+// Initialize GA on first load
+let isGAInitialized = false
+const ensureGAInitialized = () => {
+  if (!isGAInitialized) {
+    isGAInitialized = initializeGA()
+  }
+  return isGAInitialized
+}
 
 // Initialize analytics on page load
 export const initializeAnalytics = () => {
-  if (isGAAvailable && isProduction) {
+  if (ensureGAInitialized()) {
     trackPageView(window.location.pathname)
   }
 }
 
 // Track page views
 export const trackPageView = (url: string) => {
-  if (isGAAvailable && isProduction) {
-    gtag('config', GA_MEASUREMENT_ID, {
+  if (ensureGAInitialized() && window.gtag) {
+    window.gtag('config', GA_MEASUREMENT_ID, {
       page_path: url,
       page_title: 'Sigma AI Business Partner',
       page_location: window.location.href
@@ -25,8 +73,8 @@ export const trackPageView = (url: string) => {
 
 // Track custom events
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
-  if (isGAAvailable && isProduction) {
-    gtag('event', eventName, {
+  if (ensureGAInitialized() && window.gtag) {
+    window.gtag('event', eventName, {
       event_category: 'engagement',
       event_label: 'sigma_ai',
       ...parameters
