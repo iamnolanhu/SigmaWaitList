@@ -101,9 +101,9 @@ export const Desktop = (): JSX.Element => {
     {
       id: 2,
       name: "Apoorva",
-      role: "Product Designer",
-      bio: "UX/UI genius who makes interfaces so smooth they're basically illegal.",
-      image: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+      role: "Product Designer and Front-End Sigma",
+      bio: "The product designer who sees opportunities where others see problems. Pure sigma energy..",
+      image: "/aprovaPFP.png",
       github: "https://github.com/sarahkim",
       twitter: "https://twitter.com/sarahkim"
     },
