@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
 import { MatrixBackground } from "../../components/MatrixBackground";
+import { WaitlistForm } from "../../components/WaitlistForm";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
+import { trackVideoInteraction, trackSectionView } from "../../lib/analytics";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
@@ -38,6 +39,7 @@ export const Desktop = (): JSX.Element => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(videoRef.current.muted);
+      trackVideoInteraction(videoRef.current.muted ? 'mute' : 'unmute');
     }
   };
 
@@ -188,12 +190,14 @@ export const Desktop = (): JSX.Element => {
               <nav className="hidden md:flex items-center gap-8">
                 <a
                   href="#feature"
+                  onClick={() => trackSectionView('features')}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   Features
                 </a>
                 <a
                   href="#team"
+                  onClick={() => trackSectionView('team')}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   About Team Sigma
@@ -234,18 +238,7 @@ export const Desktop = (): JSX.Element => {
                 </h1>
 
               {/* Email input and button - responsive */}
-              <div className="max-w-lg mx-auto space-y-4">
-                <div className="relative">
-                  <Input
-                    className="w-full h-12 lg:h-14 px-6 bg-black/40 backdrop-blur-md border-2 border-[#6ad040]/50 rounded-full text-[#b7ffab] font-['Space_Grotesk'] font-bold text-center placeholder:text-[#b7ffab]/60 text focus-visible:ring-2 focus-visible:ring-[#6ad040] focus-visible:border-[#6ad040] focus-visible:shadow-lg focus-visible:shadow-[#6ad040]/30 transition-all duration-300"
-                    placeholder="youremail@sigma.com"
-                  />
-                </div>
-
-                <Button className="w-full sm:w-auto bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-lg lg:text-xl px-8 lg:px-12 py-3 lg:py-4 rounded-full border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60 active:scale-95">
-                  Join Waitlist
-                </Button>
-              </div>
+              <WaitlistForm />
             </div>
             
             <div className="mb-8 lg:mb-12">
