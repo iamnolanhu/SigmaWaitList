@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { MatrixBackground } from "../../components/MatrixBackground";
-import { Volume2, VolumeX, Github, Twitter, Linkedin } from "lucide-react";
+import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
@@ -40,6 +40,18 @@ export const Desktop = (): JSX.Element => {
       setIsMuted(videoRef.current.muted);
     }
   };
+
+  // Custom X (Twitter) icon component
+  const XIcon = ({ className }: { className?: string }) => (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+  );
 
   // Feature card data for mapping - now with different images
   const featureCards = [
@@ -93,7 +105,7 @@ export const Desktop = (): JSX.Element => {
       id: 1,
       name: "Nolan Hu",
       role: "BASED dev",
-      bio: "Puts the “based” in Based Sigma. Architect of systems that just work.",
+      bio: "Puts the "based" in Based Sigma. Architect of systems that just work.",
       image: "/nolanPFP.png",
       github: "https://github.com/iamnolanhu",
       twitter: "https://x.com/its_nolan_hu",
@@ -448,7 +460,7 @@ export const Desktop = (): JSX.Element => {
                               rel="noopener noreferrer"
                               className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/50 flex items-center justify-center hover:bg-black/60 hover:border-[#6ad040] transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-[#6ad040]/50 group/icon"
                             >
-                              <Twitter className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
+                              <XIcon className="w-5 h-5 text-[#b7ffab] group-hover/icon:text-[#6ad040] transition-colors duration-300" />
                             </a>
                           )}
                           {member.linkedin && (
