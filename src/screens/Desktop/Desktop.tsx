@@ -12,7 +12,12 @@ export const Desktop = (): JSX.Element => {
 
   // Initialize analytics on component mount
   useEffect(() => {
-    initializeAnalytics()
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initializeAnalytics()
+    }, 500)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   // Try to play video with sound on component mount
