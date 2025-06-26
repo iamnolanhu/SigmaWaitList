@@ -109,7 +109,7 @@ export const Desktop = (): JSX.Element => {
       image: "/nolanPFP.png",
       github: "https://github.com/iamnolanhu",
       twitter: "https://x.com/its_nolan_hu",
-      linkedin: "https://linkedin.com/in/nolan-hu"
+      linkedin: "https://www.linkedin.com/in/nolanhu/"
     },
     {
       id: 2,
