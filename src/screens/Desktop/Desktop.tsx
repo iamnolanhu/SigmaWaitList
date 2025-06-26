@@ -323,14 +323,7 @@ export const Desktop = (): JSX.Element => {
                     {/* Matrix-style glow effect on hover */}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#6ad040]/10 via-transparent to-[#6ad040]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
-                    {/* Card number */}
-                    <div className="absolute -top-4 -left-4 w-12 h-12 lg:w-16 lg:h-16 bg-black/80 backdrop-blur-md rounded-full border border-[#6ad040]/60 flex items-center justify-center group-hover:border-[#6ad040] transition-all duration-300 group-hover:shadow-xl group-hover:shadow-[#6ad040]/50 z-10">
-                      <span className="font-['Azeret_Mono'] font-medium text-[#b7ffab] text-lg lg:text-2xl group-hover:text-[#6ad040] transition-colors duration-300">
-                        {card.id}
-                      </span>
-                    </div>
-
-                    <div className="pt-6 lg:pt-8 relative z-10">
+                    <div className="relative z-10">
                       {/* Icon - now uses the image from the card data */}
                       <img
                         className="w-22 h-24 lg:w-26 lg:h-30 mb-4 lg:mb-6 opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 filter group-hover:drop-shadow-lg group-hover:drop-shadow-[#6ad040]/50"
