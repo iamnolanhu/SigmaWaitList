@@ -319,13 +319,13 @@ export const Desktop = (): JSX.Element => {
                     <div className="relative z-10">
                       {/* Icon - now uses the image from the card data */}
                       <img
-                        className="w-22 h-24 lg:w-26 lg:h-30 mb-4 lg:mb-6 opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 filter group-hover:drop-shadow-lg group-hover:drop-shadow-[#6ad040]/50"
+                        className="w-22 h-24 lg:w-26 lg:h-30 mb-4 lg:mb-6 mx-auto opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 filter group-hover:drop-shadow-lg group-hover:drop-shadow-[#6ad040]/50"
                         alt="Feature icon"
                         src={card.image}
                       />
 
                       {/* Title */}
-                      <h3 className="font-['Orbitron'] font-black text-[#79e84c] text-lg lg:text-xl xl:text-2xl mb-3 lg:mb-4 group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
+                      <h3 className="font-['Orbitron'] font-black text-[#79e84c] text-lg lg:text-xl xl:text-2xl mb-3 lg:mb-4 text-center group-hover:text-[#6ad040] transition-colors duration-300 group-hover:drop-shadow-lg">
                         {card.title}
                       </h3>
 
