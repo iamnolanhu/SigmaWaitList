@@ -37,13 +37,13 @@ export const useWaitlist = () => {
         .from('leads')
         .select('email')
         .eq('email', email.trim().toLowerCase())
-        .single()
+        .limit(1)
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         throw new Error('Database error occurred')
       }
 
-      if (existingLead) {
+      if (existingLead && existingLead.length > 0) {
         throw new Error('This email is already on the waitlist')
       }
 
