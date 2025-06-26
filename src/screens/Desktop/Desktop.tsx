@@ -103,7 +103,7 @@ export const Desktop = (): JSX.Element => {
       name: "Apoorva",
       role: "Product Designer and Front-End Sigma",
       bio: "The product designer who sees opportunities where others see problems. Pure sigma energy..",
-      image: "/aprovaPFP.png",
+      image: "/aprovaPFP.jpg",
       github: "https://github.com/sarahkim",
       twitter: "https://twitter.com/sarahkim"
     },
