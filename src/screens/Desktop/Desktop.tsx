@@ -109,7 +109,7 @@ export const Desktop = (): JSX.Element => {
     },
     {
       id: 3,
-      name: "Honey B",
+      name: "Brian Cardova",
       role: "Marketing Wizard",
       bio: "The guy who sees opportunities where others see problems. Pure sigma energy.",
       image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
