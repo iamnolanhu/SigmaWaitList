@@ -112,7 +112,7 @@ export const Desktop = (): JSX.Element => {
       name: "Brian Cardova",
       role: "Marketing Wizard",
       bio: "Spreads Sigma energy worldwide through marketing and content creation, based video editing skills",
-      image: "/honeybPFP.jpeg",
+      image: "/honeybPFP.jpg",
       github: "https://github.com/marcusj",
       twitter: "https://twitter.com/marcusj"
     },
