@@ -126,7 +126,7 @@ export const Desktop = (): JSX.Element => {
       image: "/suzannaPFP.png",
       github: "https://github.com/codesuzyworld",
       twitter: "https://x.com/CodesSuzy19017",
-      linkedin: "https://linkedin.com/in/suzanna-codes"
+      linkedin: "https://www.linkedin.com/in/codessuzy/"
     }
   ];
 
