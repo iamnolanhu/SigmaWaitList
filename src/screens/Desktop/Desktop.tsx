@@ -105,7 +105,7 @@ export const Desktop = (): JSX.Element => {
       id: 1,
       name: "Nolan Hu",
       role: "BASED dev",
-      bio: "Puts the \"based" in Based Sigma. Architect of systems that just work.",
+      bio: "Puts the \"based\" in Based Sigma. Architect of systems that just work.",
       image: "/nolanPFP.png",
       github: "https://github.com/iamnolanhu",
       twitter: "https://x.com/its_nolan_hu",
