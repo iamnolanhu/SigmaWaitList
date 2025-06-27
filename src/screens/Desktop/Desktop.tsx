@@ -191,8 +191,8 @@ export const Desktop = (): JSX.Element => {
 
       {/* Main content container - responsive */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header/Navigation - responsive */}
-        <header className="w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10">
+        {/* Header/Navigation - fixed and responsive */}
+        <header className="fixed top-0 left-0 right-0 w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10 z-50">
           <div className="container mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
             
@@ -200,21 +200,33 @@ export const Desktop = (): JSX.Element => {
               <nav className="hidden md:flex items-center gap-8">
                 <a
                   href="#feature"
-                  onClick={() => trackSectionView('features')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('feature')?.scrollIntoView({ behavior: 'smooth' });
+                    trackSectionView('features');
+                  }}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   Features
                 </a>
                 <a
                   href="#tech"
-                  onClick={() => trackSectionView('tech')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('tech')?.scrollIntoView({ behavior: 'smooth' });
+                    trackSectionView('tech');
+                  }}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   Tech
                 </a>
                 <a
                   href="#team"
-                  onClick={() => trackSectionView('team')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
+                    trackSectionView('team');
+                  }}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
                   Team
@@ -234,8 +246,8 @@ export const Desktop = (): JSX.Element => {
           </div>
         </header>
 
-        {/* Main content - responsive */}
-        <main className="flex-1">
+        {/* Main content - responsive with top padding for fixed header */}
+        <main className="flex-1 pt-20">
           {/* Hero Section */}
           <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-8 lg:py-16">
           <div className="max-w-4xl mx-auto">
@@ -534,21 +546,33 @@ export const Desktop = (): JSX.Element => {
               </a>
               <a
                 href="#feature"
-                onClick={() => trackSectionView('features')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('feature')?.scrollIntoView({ behavior: 'smooth' });
+                  trackSectionView('features');
+                }}
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Features
               </a>
               <a
                 href="#tech"
-                onClick={() => trackSectionView('tech')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('tech')?.scrollIntoView({ behavior: 'smooth' });
+                  trackSectionView('tech');
+                }}
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Tech
               </a>
               <a
                 href="#team"
-                onClick={() => trackSectionView('team')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
+                  trackSectionView('team');
+                }}
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Team
