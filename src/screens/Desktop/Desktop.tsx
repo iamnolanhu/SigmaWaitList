@@ -291,7 +291,7 @@ export const Desktop = (): JSX.Element => {
         {/* Main content - responsive with top padding for fixed header */}
         <main className="flex-1 pt-16 md:pt-20">
           {/* Hero Section */}
-          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-2 md:py-8 lg:py-16">
+          <section className="h-screen flex items-center justify-center container mx-auto px-4" style={{ height: 'calc(100vh - 4rem)' }}>
           <div className="max-w-4xl mx-auto">
             {/* Waitlist section - responsive */}
             <div className="text-center mb-6 md:mb-12 lg:mb-16">
