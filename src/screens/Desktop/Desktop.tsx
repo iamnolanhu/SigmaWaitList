@@ -196,7 +196,7 @@ export const Desktop = (): JSX.Element => {
           <div className="container mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-8">
               <nav className="hidden md:flex items-center gap-8">
                 <a
                   href="#feature"
@@ -213,26 +213,16 @@ export const Desktop = (): JSX.Element => {
                   Team
                 </a>
               </nav>
-
-              <Button 
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                  trackEvent('desktop_nav_cta_click', { location: 'header_nav' });
-                }}
-                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
-              >
-                Join Waitlist
-              </Button>
             </div>
           </div>
         </header>
 
         {/* Main content - responsive */}
-        <main className="flex-1 container mx-auto px-4 py-8 lg:py-16 pb-24 md:pb-8">
+        <main className="flex-1">
+          {/* Hero Section - Full Viewport */}
+          <section className="min-h-screen flex items-center justify-center container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            {/* Waitlist section - responsive */}
-            <div className="text-center mb-12 lg:mb-16">
-
+              <div className="text-center">
               {/* Logo - responsive */}
               <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
@@ -250,7 +240,7 @@ export const Desktop = (): JSX.Element => {
 
             </div>
             
-            <div className="mb-6 lg:mb-8">
+                <div className="mb-6 lg:mb-8">
               <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
                 POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
               </p>
@@ -263,9 +253,13 @@ export const Desktop = (): JSX.Element => {
                 'what if we just... did all of it?'
               </p>
             </div>
+              </div>
+            </div>
+          </section>
             
-            {/* Video/image placeholder - responsive */}
-            <div className="mb-8 lg:mb-12">
+          {/* Video Section - Full Viewport */}
+          <section className="min-h-screen flex items-center justify-center container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
@@ -303,11 +297,14 @@ export const Desktop = (): JSX.Element => {
                 </CardContent>
               </Card>
             </div>
+          </section>
 
-            {/* Feature cards section - responsive */}
-              <div id="feature" className="mb-16 lg:mb-24">
+          {/* Features Section - Full Viewport */}
+          <section id="feature" className="min-h-screen flex items-center justify-center">
+            <div className="container mx-auto px-4">
+              <div className="max-w-6xl mx-auto">
               {/* Section Header */}
-              <div className="text-center mb-12 lg:mb-16">
+                <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                   BASED SIGMA FEATURES
                 </h2>
@@ -318,7 +315,8 @@ export const Desktop = (): JSX.Element => {
                   0 to CEO while you sleep.
                 </p>
               </div>
-            <div  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-24">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {featureCards.map((card, index) => (
                 <div key={index} className="relative group">
                   <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
@@ -347,9 +345,14 @@ export const Desktop = (): JSX.Element => {
                 </div>
               ))}
             </div>
+              </div>
+            </div>
+          </section>
 
-            {/* Tech Stack Section */}
-            <div className="mb-16 lg:mb-24">
+          {/* Tech Stack Section - Full Viewport */}
+          <section className="min-h-screen flex items-center justify-center">
+            <div className="container mx-auto px-4">
+              <div className="max-w-5xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
@@ -361,7 +364,7 @@ export const Desktop = (): JSX.Element => {
               </div>
 
               {/* Tech Stack Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                 {techStack.map((tech, index) => (
                   <div key={index} className="relative group">
                     <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 lg:p-8 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2 text-center">
@@ -389,11 +392,15 @@ export const Desktop = (): JSX.Element => {
                 ))}
               </div>
             </div>
+              </div>
+          </section>
 
-            {/* Team Sigma Section */}
-            <div id="team" className="mb-16 lg:mb-24">
+          {/* Team Section - Full Viewport */}
+          <section id="team" className="min-h-screen flex items-center justify-center">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
               {/* Section Header */}
-              <div className="text-center mb-12 lg:mb-16">
+                <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                   TEAM SIGMA
                 </h2>
@@ -401,10 +408,9 @@ export const Desktop = (): JSX.Element => {
                   Meet the absolute legends building the future of business automation. Pure sigma energy, zero corporate BS.
                 </p>
               </div>
-              </div>
 
               {/* Team Members Grid - 2 per row with more space */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
                 {teamMembers.map((member) => (
                   <div key={member.id} className="relative group">
                     <div className="relative bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-8 lg:p-10 h-full transition-all duration-500 hover:border-[#6ad040] hover:shadow-2xl hover:shadow-[#6ad040]/30 hover:bg-black/50 hover:scale-105 hover:-translate-y-2">
@@ -474,11 +480,16 @@ export const Desktop = (): JSX.Element => {
                   </div>
                 ))}
               </div>
+              </div>
+            </div>
+          </section>
 
             </div>
 
-            {/* Waitlist Section at Bottom */}
-            <div className="text-center mt-16 lg:mt-24 mb-16 lg:mb-24">
+          {/* Waitlist Section - Full Viewport */}
+          <section className="min-h-screen flex items-center justify-center">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto text-center">
               <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                 JOIN THE WAITLIST
               </h2>
@@ -487,7 +498,8 @@ export const Desktop = (): JSX.Element => {
               </p>
               <WaitlistForm />
             </div>
-          </div>
+            </div>
+          </section>
         </main>
 
         {/* Mobile navigation */}
