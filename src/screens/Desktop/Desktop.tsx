@@ -204,7 +204,7 @@ export const Desktop = (): JSX.Element => {
       `}</style>
 
       {/* Bolt.new Badge - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-20 right-4 z-40">
         <a 
           href="https://bolt.new/?rid=os72mi" 
           target="_blank" 
@@ -214,7 +214,7 @@ export const Desktop = (): JSX.Element => {
           <img 
             src="https://storage.bolt.army/white_circle_360x360.png" 
             alt="Built with Bolt.new badge" 
-            className="w-20 h-20 md:w-28 md:h-28 rounded-full shadow-lg bolt-badge bolt-badge-intro"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-full shadow-lg bolt-badge bolt-badge-intro"
             onAnimationEnd={(e) => e.currentTarget.classList.add('animated')}
           />
         </a>
