@@ -313,22 +313,8 @@ export const Desktop = (): JSX.Element => {
 
             </div>
             
-            <div className="mb-4 md:mb-6 lg:mb-8">
-              <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-xs sm:text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-3 md:mb-4">
-                POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
-              </p>
-              
-              {/* Bold "what if we just did all of it" text with glitch effect */}
-              <p 
-                className="font-['Orbitron'] font-black text-[#b7ffab] text-base sm:text-lg md:text-xl lg:text-2xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
-                data-text="'what if we just... did all of it?'"
-              >
-                'what if we just... did all of it?'
-              </p>
-            </div>
-            
-            {/* Video/image placeholder - responsive */}
-            <div className="mb-6 md:mb-8 lg:mb-12">
+            {/* Video/image placeholder - responsive - MOVED UP */}
+            <div className="mb-3 md:mb-4 lg:mb-6">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
@@ -365,6 +351,20 @@ export const Desktop = (): JSX.Element => {
                   <div className="absolute inset-0 bg-gradient-to-br from-[#6ad040]/5 via-transparent to-[#6ad040]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </CardContent>
               </Card>
+            </div>
+            
+            <div className="mb-2 md:mb-3 lg:mb-4">
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-xs sm:text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-3 md:mb-4">
+                POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
+              </p>
+              
+              {/* Bold "what if we just did all of it" text with glitch effect */}
+              <p 
+                className="font-['Orbitron'] font-black text-[#b7ffab] text-base sm:text-lg md:text-xl lg:text-2xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                data-text="'what if we just... did all of it?'"
+              >
+                'what if we just... did all of it?'
+              </p>
             </div>
           </div>
           </section>
