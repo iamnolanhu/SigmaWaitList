@@ -214,7 +214,6 @@ export const Desktop = (): JSX.Element => {
                 </a>
               </nav>
 
-              <Button className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30">
               <Button 
                 onClick={() => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
