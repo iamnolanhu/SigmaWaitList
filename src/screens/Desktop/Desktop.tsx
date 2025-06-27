@@ -496,8 +496,6 @@ export const Desktop = (): JSX.Element => {
                   </div>
                 ))}
               </div>
-
-            </div>
             </div>
           </section>
 
