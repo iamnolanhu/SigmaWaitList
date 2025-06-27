@@ -210,7 +210,7 @@ export const Desktop = (): JSX.Element => {
                   onClick={() => trackSectionView('team')}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
                 >
-                  About Team Sigma
+                  Team
                 </a>
               </nav>
 
