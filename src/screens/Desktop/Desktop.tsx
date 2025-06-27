@@ -289,38 +289,38 @@ export const Desktop = (): JSX.Element => {
         </header>
 
         {/* Main content - responsive with top padding for fixed header */}
-        <main className="flex-1 pt-20">
+        <main className="flex-1 pt-16 md:pt-20">
           {/* Hero Section */}
-          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-8 lg:py-16">
+          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-4 md:py-8 lg:py-16">
           <div className="max-w-4xl mx-auto">
             {/* Waitlist section - responsive */}
-            <div className="text-center mb-12 lg:mb-16">
+            <div className="text-center mb-8 md:mb-12 lg:mb-16">
 
               {/* Logo - responsive */}
-              <div className="w-48 h-12 sm:w-64 sm:h-16 lg:w-80 lg:h-20 mx-auto mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
+              <div className="w-40 h-10 sm:w-48 sm:h-12 md:w-64 md:h-16 lg:w-80 lg:h-20 mx-auto mb-3 md:mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
-              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-sm sm:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
+              <p className="font-['Orbitron'] font-semibold text-[#ffff] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
                 AI Business automation for Sigmas
               </p>
 
               {/* Powered by Bolt text */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">Built with</span>
-                <img src="/boltnewLogo.svg" alt="Bolt" className="w-16 h-6 sm:w-20 sm:h-8 object-contain" />
-                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">For the Sigmas</span>
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4 md:mb-6">
+                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs opacity-70">Built with</span>
+                <img src="/boltnewLogo.svg" alt="Bolt" className="w-12 h-5 sm:w-16 sm:h-6 md:w-20 md:h-8 object-contain" />
+                <span className="font-['Space_Mono'] text-[#b7ffab] text-xs opacity-70">For the Sigmas</span>
               </div>
 
             </div>
             
-            <div className="mb-6 lg:mb-8">
-              <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
+            <div className="mb-4 md:mb-6 lg:mb-8">
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-xs sm:text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-3 md:mb-4">
                 POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
               </p>
               
               {/* Bold "what if we just did all of it" text with glitch effect */}
               <p 
-                className="font-['Orbitron'] font-black text-[#b7ffab] text-lg sm:text-xl lg:text-2xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
+                className="font-['Orbitron'] font-black text-[#b7ffab] text-base sm:text-lg md:text-xl lg:text-2xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow-xl drop-shadow-[#6ad040]/60 glitch-hover cursor-pointer"
                 data-text="'what if we just... did all of it?'"
               >
                 'what if we just... did all of it?'
@@ -328,7 +328,7 @@ export const Desktop = (): JSX.Element => {
             </div>
             
             {/* Video/image placeholder - responsive */}
-            <div className="mb-8 lg:mb-12">
+            <div className="mb-6 md:mb-8 lg:mb-12">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
