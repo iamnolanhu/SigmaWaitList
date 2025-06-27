@@ -206,6 +206,13 @@ export const Desktop = (): JSX.Element => {
                   Features
                 </a>
                 <a
+                  href="#tech"
+                  onClick={() => trackSectionView('tech')}
+                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+                >
+                  Tech
+                </a>
+                <a
                   href="#team"
                   onClick={() => trackSectionView('team')}
                   className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
@@ -216,7 +223,7 @@ export const Desktop = (): JSX.Element => {
 
               <Button 
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
                   trackEvent('desktop_nav_cta_click', { location: 'header_nav' });
                 }}
                 className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
@@ -228,7 +235,9 @@ export const Desktop = (): JSX.Element => {
         </header>
 
         {/* Main content - responsive */}
-        <main className="flex-1 container mx-auto px-4 py-8 lg:py-16 pb-24 md:pb-8">
+        <main className="flex-1">
+          {/* Hero Section */}
+          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-8 lg:py-16">
           <div className="max-w-4xl mx-auto">
             {/* Waitlist section - responsive */}
             <div className="text-center mb-12 lg:mb-16">
@@ -303,9 +312,13 @@ export const Desktop = (): JSX.Element => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+          </section>
 
-            {/* Feature cards section - responsive */}
-              <div id="feature" className="mb-16 lg:mb-24">
+          {/* Features Section */}
+          <section id="feature" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] relative">
+            <div className="container mx-auto px-4 py-16 lg:py-24">
+            <div className="max-w-6xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
@@ -347,9 +360,14 @@ export const Desktop = (): JSX.Element => {
                 </div>
               ))}
             </div>
+            </div>
+            </div>
+          </section>
 
-            {/* Tech Stack Section */}
-            <div className="mb-16 lg:mb-24">
+          {/* Tech Stack Section */}
+          <section id="tech" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] relative">
+            <div className="container mx-auto px-4 py-16 lg:py-24">
+            <div className="max-w-5xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
@@ -389,9 +407,13 @@ export const Desktop = (): JSX.Element => {
                 ))}
               </div>
             </div>
+            </div>
+          </section>
 
-            {/* Team Sigma Section */}
-            <div id="team" className="mb-16 lg:mb-24">
+          {/* Team Section */}
+          <section id="team" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] relative">
+            <div className="container mx-auto px-4 py-16 lg:py-24">
+            <div className="max-w-4xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
                 <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
@@ -476,9 +498,14 @@ export const Desktop = (): JSX.Element => {
               </div>
 
             </div>
+            </div>
+          </section>
 
-            {/* Waitlist Section at Bottom */}
-            <div className="text-center mt-16 lg:mt-24 mb-16 lg:mb-24">
+          {/* Waitlist Section */}
+          <section id="waitlist" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] relative">
+            <div className="container mx-auto px-4 py-16 lg:py-24">
+            <div className="max-w-4xl mx-auto">
+            <div className="text-center">
               <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
                 JOIN THE WAITLIST
               </h2>
@@ -487,7 +514,9 @@ export const Desktop = (): JSX.Element => {
               </p>
               <WaitlistForm />
             </div>
-          </div>
+            </div>
+            </div>
+          </section>
         </main>
 
         {/* Mobile navigation */}
@@ -513,6 +542,13 @@ export const Desktop = (): JSX.Element => {
                 Features
               </a>
               <a
+                href="#tech"
+                onClick={() => trackSectionView('tech')}
+                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
+              >
+                Tech
+              </a>
+              <a
                 href="#team"
                 onClick={() => trackSectionView('team')}
                 className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
@@ -524,7 +560,7 @@ export const Desktop = (): JSX.Element => {
             {/* CTA Button */}
             <Button 
               onClick={() => {
-                document.querySelector('.max-w-lg')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
                 trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
               }}
               className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
