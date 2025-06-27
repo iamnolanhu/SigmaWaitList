@@ -206,7 +206,7 @@ export const Desktop = (): JSX.Element => {
       {/* Bolt.new Badge - Top Right */}
       <div className="fixed top-20 right-4 z-40">
         <a 
-          href="https://bolt.new/?rid=os72mi" 
+          href="https://bolt.new/?rid=hnomli" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="block transition-all duration-300 hover:shadow-2xl"
@@ -291,13 +291,13 @@ export const Desktop = (): JSX.Element => {
         {/* Main content - responsive with top padding for fixed header */}
         <main className="flex-1 pt-16 md:pt-20">
           {/* Hero Section */}
-          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-4 md:py-8 lg:py-16">
+          <section className="min-h-screen flex items-center justify-center container mx-auto px-4 py-2 md:py-8 lg:py-16">
           <div className="max-w-4xl mx-auto">
             {/* Waitlist section - responsive */}
-            <div className="text-center mb-8 md:mb-12 lg:mb-16">
+            <div className="text-center mb-6 md:mb-12 lg:mb-16">
 
               {/* Logo - responsive */}
-              <div className="w-40 h-10 sm:w-48 sm:h-12 md:w-64 md:h-16 lg:w-80 lg:h-20 mx-auto mb-3 md:mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
+              <div className="w-40 h-10 sm:w-48 sm:h-12 md:w-64 md:h-16 lg:w-80 lg:h-20 mx-auto mb-2 md:mb-4 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-2xl drop-shadow-[#6ad040]/30" />
               
               {/* Tagline under logo */}
               <p className="font-['Orbitron'] font-semibold text-[#ffff] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-wider mb-2 drop-shadow-lg drop-shadow-[#6ad040]/20 matrix-glow">
@@ -305,7 +305,7 @@ export const Desktop = (): JSX.Element => {
               </p>
 
               {/* Powered by Bolt text */}
-              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4 md:mb-6">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-3 md:mb-6">
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs opacity-70">Built with</span>
                 <img src="/boltnewLogo.svg" alt="Bolt" className="w-12 h-5 sm:w-16 sm:h-6 md:w-20 md:h-8 object-contain" />
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs opacity-70">For the Sigmas</span>
@@ -313,7 +313,7 @@ export const Desktop = (): JSX.Element => {
 
             </div>
             
-            <div className="mb-4 md:mb-6 lg:mb-8">
+            <div className="mb-3 md:mb-6 lg:mb-8">
               <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-xs sm:text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-3 md:mb-4">
                 POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
               </p>
@@ -328,7 +328,7 @@ export const Desktop = (): JSX.Element => {
             </div>
             
             {/* Video/image placeholder - responsive */}
-            <div className="mb-6 md:mb-8 lg:mb-12">
+            <div className="mb-4 md:mb-8 lg:mb-12">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
@@ -370,8 +370,8 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Features Section */}
-          <section id="feature" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative">
-            <div className="container mx-auto px-4 py-16 lg:py-24">
+          <section id="feature" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative pt-8 md:pt-0">
+            <div className="container mx-auto px-4 py-12 md:py-16 lg:py-24">
             <div className="max-w-6xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
@@ -419,8 +419,8 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Tech Stack Section */}
-          <section id="tech" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative">
-            <div className="container mx-auto px-4 py-16 lg:py-24">
+          <section id="tech" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative pt-8 md:pt-0">
+            <div className="container mx-auto px-4 py-12 md:py-16 lg:py-24">
             <div className="max-w-5xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
@@ -465,8 +465,8 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Team Section */}
-          <section id="team" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative">
-            <div className="container mx-auto px-4 py-16 lg:py-24">
+          <section id="team" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative pt-8 md:pt-0">
+            <div className="container mx-auto px-4 py-12 md:py-16 lg:py-24">
             <div className="max-w-4xl mx-auto">
               {/* Section Header */}
               <div className="text-center mb-12 lg:mb-16">
@@ -554,8 +554,8 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Waitlist Section */}
-          <section id="waitlist" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative">
-            <div className="container mx-auto px-4 py-16 lg:py-24">
+          <section id="waitlist" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative pt-8 md:pt-0">
+            <div className="container mx-auto px-4 py-12 md:py-16 lg:py-24">
             <div className="max-w-4xl mx-auto">
             <div className="text-center">
               <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
