@@ -242,20 +242,15 @@ export const Desktop = (): JSX.Element => {
               </p>
 
               {/* Powered by Bolt text */}
-              <div className="flex items-center justify-center gap-2 mb-10">
+              <div className="flex items-center justify-center gap-2 mb-6">
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">Built with</span>
                 <img src="/boltnewLogo.svg" alt="Bolt" className="w-16 h-6 sm:w-20 sm:h-8 object-contain" />
                 <span className="font-['Space_Mono'] text-[#b7ffab] text-xs sm:text-sm opacity-70">For the Sigmas</span>
               </div>
-              {/* Heading and subtext - responsive */}
-
-                <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
-                  Welcome to SIGMA
-                </h1>
 
             </div>
             
-            <div className="mb-8 lg:mb-12">
+            <div className="mb-6 lg:mb-8">
               <p className="font-['Space_Mono'] text-[#b7ffab] text-center text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed opacity-90 drop-shadow-lg mb-4">
                 POV: you want to start a business but every tutorial means you gotta listen to another NPC "expert"
               </p>
@@ -270,7 +265,7 @@ export const Desktop = (): JSX.Element => {
             </div>
             
             {/* Video/image placeholder - responsive */}
-            <div className="mb-12 lg:mb-16">
+            <div className="mb-8 lg:mb-12">
               <Card className="w-full max-w-2xl mx-auto aspect-video bg-black/40 backdrop-blur-md rounded-3xl border border-[#6ad040]/50 overflow-hidden hover:border-[#6ad040] transition-all duration-300 hover:shadow-2xl hover:shadow-[#6ad040]/30 group">
                 <CardContent className="p-0 h-full flex items-center justify-center relative">
                   <video
