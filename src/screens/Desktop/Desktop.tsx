@@ -193,7 +193,7 @@ export const Desktop = (): JSX.Element => {
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header/Navigation - responsive */}
         <header className="w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="container mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
             
             <div className="flex items-center gap-4">
@@ -494,7 +494,7 @@ export const Desktop = (): JSX.Element => {
         </main>
 
         {/* Mobile navigation */}
-        <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-3 shadow-2xl shadow-[#6ad040]/30 z-50">
+        <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 px-6 py-3 shadow-2xl shadow-[#6ad040]/30 z-50">
           <div className="flex items-center justify-between">
             {/* Navigation Links */}
             <div className="flex gap-4 sm:gap-6">
