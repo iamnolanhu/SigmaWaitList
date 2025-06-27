@@ -488,34 +488,48 @@ export const Desktop = (): JSX.Element => {
         </main>
 
         {/* Mobile navigation */}
-        <div className="md:hidden fixed bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md rounded-2xl border border-[#6ad040]/30 p-4 shadow-xl shadow-[#6ad040]/20 z-50">
+        <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-3 shadow-2xl shadow-[#6ad040]/30 z-50">
           <div className="flex items-center justify-between">
-            <div className="flex gap-6">
-              
+            {/* Navigation Links */}
+            <div className="flex gap-4 sm:gap-6">
               <a
                 href="#"
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Home
               </a>
               <a
                 href="#feature"
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
+                onClick={() => trackSectionView('features')}
+                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Features
               </a>
               <a
                 href="#team"
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-colors font-['Space_Mono'] text-sm"
+                onClick={() => trackSectionView('team')}
+                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
               >
                 Team
               </a>
             </div>
-            <Button className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30">
-              Try Sigma
+            
+            {/* CTA Button */}
+            <Button 
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
+              }}
+              className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
+            >
+              Join Now
             </Button>
           </div>
-        </div>
+        </nav>
       </div>
     </div>
   );
