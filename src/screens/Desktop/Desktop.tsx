@@ -250,11 +250,9 @@ export const Desktop = (): JSX.Element => {
               {/* Heading and subtext - responsive */}
 
                 <h1 className="font-['Orbitron'] font-semibold text-[#b7ffab] text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 animate-pulse">
-                  JOIN THE WAITLIST
+                  Welcome to SIGMA
                 </h1>
 
-              {/* Email input and button - responsive */}
-              <WaitlistForm />
             </div>
             
             <div className="mb-8 lg:mb-12">
@@ -482,13 +480,17 @@ export const Desktop = (): JSX.Element => {
                 ))}
               </div>
 
-              {/* Call to Action under team section */}
-              <div className="text-center mt-12 lg:mt-16">
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base mb-6 opacity-90">
-                  Want to become a CEO overnight?
-                </p>
-                <WaitlistForm />
-              </div>
+            </div>
+
+            {/* Waitlist Section at Bottom */}
+            <div className="text-center mt-16 lg:mt-24 mb-16 lg:mb-24">
+              <h2 className="font-['Orbitron'] font-black text-[#ffff] text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight mb-6 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                JOIN THE WAITLIST
+              </h2>
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-sm lg:text-base mb-8 opacity-90 max-w-2xl mx-auto">
+                Ready to become a CEO while you sleep? Join the Sigma revolution and let AI handle the business building while you focus on your vision.
+              </p>
+              <WaitlistForm />
             </div>
           </div>
         </main>
@@ -527,7 +529,7 @@ export const Desktop = (): JSX.Element => {
             {/* CTA Button */}
             <Button 
               onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.querySelector('.max-w-lg')?.scrollIntoView({ behavior: 'smooth' });
                 trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
               }}
               className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
