@@ -179,13 +179,13 @@ export const Desktop = (): JSX.Element => {
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
       {/* Matrix Background Animation */}
-      <MatrixBackground />
+      <MatrixBackground className="z-[5]" />
       
       {/* Subtle overlay gradient for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/80 via-[#1a1a1a]/60 to-[#1a1a1a]/80 pointer-events-none z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/70 via-[#1a1a1a]/50 to-[#1a1a1a]/70 pointer-events-none z-[6]" />
 
       {/* Top radial gradient accent */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[120vw] h-[60vh] pointer-events-none z-[2]">
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[120vw] h-[60vh] pointer-events-none z-[7]">
         <div className="w-full h-full rounded-full [background:radial-gradient(50%_50%_at_50%_50%,rgba(106,208,64,0.15)_0%,rgba(106,208,64,0.08)_30%,rgba(27,27,27,0)_70%)]" />
       </div>
 
@@ -316,7 +316,7 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Features Section */}
-          <section id="feature" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] relative">
+          <section id="feature" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative">
             <div className="container mx-auto px-4 py-16 lg:py-24">
             <div className="max-w-6xl mx-auto">
               {/* Section Header */}
@@ -365,7 +365,7 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Tech Stack Section */}
-          <section id="tech" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] relative">
+          <section id="tech" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative">
             <div className="container mx-auto px-4 py-16 lg:py-24">
             <div className="max-w-5xl mx-auto">
               {/* Section Header */}
@@ -411,7 +411,7 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Team Section */}
-          <section id="team" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] relative">
+          <section id="team" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a1a]/60 to-[#0f0f0f]/60 relative">
             <div className="container mx-auto px-4 py-16 lg:py-24">
             <div className="max-w-4xl mx-auto">
               {/* Section Header */}
@@ -500,7 +500,7 @@ export const Desktop = (): JSX.Element => {
           </section>
 
           {/* Waitlist Section */}
-          <section id="waitlist" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f] to-[#1a1a1a] relative">
+          <section id="waitlist" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f0f]/60 to-[#1a1a1a]/60 relative">
             <div className="container mx-auto px-4 py-16 lg:py-24">
             <div className="max-w-4xl mx-auto">
             <div className="text-center">
