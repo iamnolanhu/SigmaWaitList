@@ -71,20 +71,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loadUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
       if (error) {
-        console.log('Profile not found, will create on first app access')
+        console.log('User profile not found, will create on first app access')
         return
       }
 
       setUserProfile(data)
       setAppMode({ 
         isAppMode: false, // Start with waitlist view
-        hasAccess: data?.has_access || false 
+        hasAccess: true // User has access if they're authenticated
       })
     } catch (error) {
       console.error('Error loading user profile:', error)

@@ -1,15 +1,28 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
+import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
+import { ProfileSetup } from '../../components/profile'
 import { Button } from '../../components/ui/button'
-import { ArrowLeft, Settings, User, Zap } from 'lucide-react'
+import { ArrowLeft, Settings, User, Zap, CheckCircle } from 'lucide-react'
 
 export const AppDashboard: React.FC = () => {
-  const { user, userProfile, setAppMode } = useApp()
+  const { user, setAppMode, signOut } = useApp()
+  const { profile, loading: profileLoading } = useUserProfile()
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
 
   const handleBackToWaitlist = () => {
     setAppMode({ isAppMode: false, hasAccess: true })
   }
+
+  const handleSignOut = async () => {
+    await signOut()
+    handleBackToWaitlist()
+  }
+
+  // If profile is incomplete, show profile setup
+  const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
+  const shouldShowProfileSetup = !profileLoading && !isProfileComplete && currentView === 'dashboard'
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
@@ -37,44 +50,74 @@ export const AppDashboard: React.FC = () => {
           
           <div className="flex items-center gap-4">
             <span className="text-[#b7ffab] font-['Space_Mono'] text-sm">
-              Welcome, {userProfile?.name || user?.email?.split('@')[0] || 'Sigma'}
+              Welcome, {profile?.name || user?.email?.split('@')[0] || 'Sigma'}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setCurrentView(currentView === 'profile' ? 'dashboard' : 'profile')}
+                variant="ghost"
+                size="sm"
+                className="text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+              <Button
+                onClick={handleSignOut}
+                variant="ghost"
+                size="sm"
+                className="text-[#b7ffab] hover:text-red-400 hover:bg-red-500/10"
+              >
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto">
+        {currentView === 'profile' ? (
+          <ProfileSetup />
+        ) : shouldShowProfileSetup ? (
+          <div className="max-w-2xl mx-auto">
+            {/* Profile Setup Prompt */}
+            <div className="text-center mb-8">
+              <h1 className="font-['Orbitron'] font-black text-[#ffff] text-3xl lg:text-4xl mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50">
+                WELCOME TO SIGMA
+              </h1>
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-lg mb-6 opacity-90">
+                Let's set up your profile to personalize your business automation experience
+              </p>
+            </div>
+            <ProfileSetup />
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto">
           {/* Welcome Section */}
           <div className="text-center mb-12">
             <h1 className="font-['Orbitron'] font-black text-[#ffff] text-4xl lg:text-6xl mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
               SIGMA COMMAND CENTER
             </h1>
             <p className="font-['Space_Mono'] text-[#b7ffab] text-lg mb-6 opacity-90">
-              Your AI business automation platform is coming online...
+              Your AI business automation platform is ready for action
             </p>
             
-            {/* Status Indicator */}
-            <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-md rounded-full px-6 py-3 border border-[#6ad040]/40">
-              <Zap className="w-5 h-5 text-[#6ad040] animate-pulse" />
-              <span className="font-['Space_Grotesk'] text-[#6ad040] font-bold">
-                SYSTEM INITIALIZING
-              </span>
-            </div>
+            {/* Profile Status */}
+            {profile && (
+              <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-md rounded-full px-6 py-3 border border-[#6ad040]/40">
+                <CheckCircle className="w-5 h-5 text-[#6ad040]" />
+                <span className="font-['Space_Grotesk'] text-[#6ad040] font-bold">
+                  PROFILE {profile.completion_percentage}% COMPLETE
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Coming Soon Modules Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { name: 'AI Onboarding', status: 'Coming Soon', icon: '🤖' },
+              { name: 'AI Onboarding', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '🤖', ready: isProfileComplete },
               { name: 'Business Branding', status: 'Coming Soon', icon: '🎨' },
               { name: 'Legal Setup', status: 'Coming Soon', icon: '⚖️' },
               { name: 'Marketing AI', status: 'Coming Soon', icon: '📈' },
@@ -83,13 +126,19 @@ export const AppDashboard: React.FC = () => {
             ].map((module, index) => (
               <div
                 key={index}
-                className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 hover:border-[#6ad040] transition-all duration-300 hover:shadow-lg hover:shadow-[#6ad040]/20"
+                className={`bg-black/30 backdrop-blur-md rounded-2xl border p-6 transition-all duration-300 ${
+                  module.ready 
+                    ? 'border-[#6ad040] shadow-lg shadow-[#6ad040]/20 hover:scale-105 cursor-pointer' 
+                    : 'border-[#6ad040]/40 hover:border-[#6ad040] hover:shadow-lg hover:shadow-[#6ad040]/20'
+                }`}
               >
                 <div className="text-4xl mb-4">{module.icon}</div>
                 <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-lg mb-2">
                   {module.name}
                 </h3>
-                <p className="font-['Space_Mono'] text-[#6ad040] text-sm">
+                <p className={`font-['Space_Mono'] text-sm ${
+                  module.ready ? 'text-[#6ad040] font-bold' : 'text-[#6ad040]'
+                }`}>
                   {module.status}
                 </p>
               </div>
@@ -110,6 +159,7 @@ export const AppDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
       </main>
     </div>
   )
