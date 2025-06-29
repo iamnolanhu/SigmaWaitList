@@ -82,8 +82,6 @@ export const AppDashboard: React.FC = () => {
                 </div>
               </div>
               </div>
-            ))}
-          </div>
 
               {/* Profile Status */}
               <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
