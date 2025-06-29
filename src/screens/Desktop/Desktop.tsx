@@ -5,10 +5,12 @@ import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
 import { trackVideoInteraction, trackSectionView, initializeAnalytics, trackEvent } from "../../lib/analytics";
+import { useApp } from "../../contexts/AppContext";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { appMode, setAppMode, user } = useApp();
 
   // Initialize analytics on component mount
   useEffect(() => {
@@ -275,15 +277,27 @@ export const Desktop = (): JSX.Element => {
                 </a>
               </nav>
 
-              <Button 
-                onClick={() => {
-                  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
-                  trackEvent('desktop_nav_cta_click', { location: 'header_nav' });
-                }}
-                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
-              >
-                Join Waitlist
-              </Button>
+              {user ? (
+                <Button 
+                  onClick={() => {
+                    setAppMode({ isAppMode: true, hasAccess: true });
+                    trackEvent('enter_app_click', { location: 'header_nav' });
+                  }}
+                  className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
+                >
+                  Enter App
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
+                    trackEvent('desktop_nav_cta_click', { location: 'header_nav' });
+                  }}
+                  className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
+                >
+                  Join Waitlist
+                </Button>
+              )}
             </div>
           </div>
         </header>
@@ -622,15 +636,27 @@ export const Desktop = (): JSX.Element => {
             </div>
             
             {/* CTA Button */}
-            <Button 
-              onClick={() => {
-                document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
-                trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
-              }}
-              className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
-            >
-              Join Now
-            </Button>
+            {user ? (
+              <Button 
+                onClick={() => {
+                  setAppMode({ isAppMode: true, hasAccess: true });
+                  trackEvent('enter_app_click', { location: 'mobile_bottom_nav' });
+                }}
+                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
+              >
+                Enter App
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => {
+                  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
+                  trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
+                }}
+                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
+              >
+                Join Now
+              </Button>
+            )}
           </div>
         </nav>
       </div>
