@@ -4,6 +4,7 @@ import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileSetup } from '../../components/profile'
 import { Navbar } from '../../components/Navbar'
+import { ChatBox } from '../../components/ChatBox'
 import { 
   CheckCircle, 
   Zap, 
@@ -367,6 +368,9 @@ export const AppDashboard: React.FC = () => {
         </div>
         )}
       </main>
+
+      {/* Sigma AI Chatbox */}
+      <ChatBox />
     </div>
   )
 }
