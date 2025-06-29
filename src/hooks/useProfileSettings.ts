@@ -50,25 +50,54 @@ export const useProfileSettings = () => {
     setError(null)
 
     try {
+      console.log('Loading profile for user:', user.id)
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
 
+      console.log('Profile query result:', { data, error })
+
       if (error) {
+        console.error('Profile query error:', error)
         throw error
       } else {
         if (data) {
+          console.log('Profile found:', data)
           setProfile(data)
         } else {
+          console.log('No profile found, creating initial profile')
           // Profile doesn't exist, create a basic one
           await createInitialProfile()
         }
       }
     } catch (err: any) {
+      console.error('Error in loadProfile:', err)
       setError(err.message)
-      console.error('Error loading user profile:', err)
+      // Set loading to false even on error
+      setLoading(false)
+      // Set a basic profile so UI can render
+      setProfile({
+        id: user.id,
+        name: '',
+        username: '',
+        bio: '',
+        profile_visibility: 'public',
+        contact_preferences: {
+          email: true,
+          phone: false,
+          marketing: false
+        },
+        notification_preferences: {
+          email: true,
+          push: true,
+          in_app: true,
+          marketing: false
+        },
+        email_verified: false
+      })
     } finally {
       setLoading(false)
     }
@@ -79,6 +108,8 @@ export const useProfileSettings = () => {
     if (!user?.id) return
 
     try {
+      console.log('Creating initial profile for user:', user.id)
+      
       const initialProfile = {
         id: user.id,
         name: '',
@@ -104,6 +135,8 @@ export const useProfileSettings = () => {
         .insert(initialProfile)
         .select()
         .single()
+
+      console.log('Profile creation result:', { data, error })
 
       if (error) throw error
 
@@ -328,7 +361,39 @@ export const useProfileSettings = () => {
 
   useEffect(() => {
     if (user?.id) {
-      loadProfile()
+      // Add a timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          console.warn('Profile loading timeout, setting fallback profile')
+          setLoading(false)
+          setError('Profile loading timed out')
+          setProfile({
+            id: user.id,
+            name: '',
+            username: '',
+            bio: '',
+            profile_visibility: 'public',
+            contact_preferences: {
+              email: true,
+              phone: false,
+              marketing: false
+            },
+            notification_preferences: {
+              email: true,
+              push: true,
+              in_app: true,
+              marketing: false
+            },
+            email_verified: false
+          })
+        }
+      }, 10000) // 10 second timeout
+
+      loadProfile().finally(() => {
+        clearTimeout(timeoutId)
+      })
+
+      return () => clearTimeout(timeoutId)
     }
   }, [user?.id])
 
