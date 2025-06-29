@@ -42,104 +42,10 @@ export const useProfileSettings = () => {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  // Load user profile
-  const loadProfile = async () => {
-    if (!user?.id) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      console.log('Loading profile for user:', user.id)
-      
-      // Just use the existing profiles table for now
-      console.log('Loading from profiles table directly')
-      await loadFromProfilesTable()
-      
-    } catch (err: any) {
-      console.error('Error in loadProfile:', err)
-      setError(err.message)
-      // Always ensure we have a profile, even if it's just a fallback
-      await createFallbackProfile()
-    } finally {
-      console.log('Setting loading to false')
-      setLoading(false)
-    }
-  }
-
-  // Fallback to load from the existing profiles table
-  const loadFromProfilesTable = async () => {
-    if (!user?.id) return
-
-    try {
-      console.log('Trying to load from profiles table for user:', user.id)
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      console.log('Profiles table query result:', { data, error })
-
-      if (error) {
-        console.error('Profiles table query error:', error)
-        console.log('Profiles table not available, using fallback profile')
-        await createFallbackProfile()
-        return
-      }
-
-      if (data) {
-        console.log('Profile found in profiles table:', data)
-        // Map the profiles table data to our ProfileSettings interface
-        const mappedProfile: ProfileSettings = {
-          id: data.id,
-          name: data.name || '',
-          username: '', // Not in profiles table
-          bio: '', // Not in profiles table
-          profile_picture_url: data.image || '',
-          profile_visibility: 'public', // Default
-          contact_preferences: {
-            email: true,
-            phone: false,
-            marketing: false
-          },
-          notification_preferences: {
-            email: true,
-            push: true,
-            in_app: true,
-            marketing: false
-          },
-          email_verified: false,
-          // Map existing fields
-          language: data.language,
-          region: data.region,
-          stealth_mode: data.stealth_mode,
-          sdg_goals: data.sdg_goals,
-          low_tech_access: data.low_tech_access,
-          business_type: data.business_type,
-          time_commitment: data.time_commitment,
-          capital_level: data.capital_level,
-          completion_percentage: data.completion_percentage,
-          created_at: data.created_at,
-          updated_at: data.updated_at
-        }
-        setProfile(mappedProfile)
-      } else {
-        console.log('No profile found in profiles table, creating fallback')
-        await createFallbackProfile()
-      }
-    } catch (err: any) {
-      console.error('Error loading from profiles table:', err)
-      await createFallbackProfile()
-    }
-  }
-
-  // Create a fallback profile when all else fails
-  const createFallbackProfile = async () => {
+  // Create a guaranteed fallback profile
+  const createFallbackProfile = () => {
     console.log('Creating fallback profile for user:', user?.id)
-    // Always create a fallback profile regardless of database state
-    setProfile({
+    const fallbackProfile: ProfileSettings = {
       id: user?.id || '',
       name: '',
       username: '',
@@ -156,54 +62,128 @@ export const useProfileSettings = () => {
         in_app: true,
         marketing: false
       },
-      email_verified: false
-    })
+      email_verified: false,
+      language: 'en',
+      region: '',
+      stealth_mode: false,
+      sdg_goals: [],
+      low_tech_access: false,
+      business_type: '',
+      time_commitment: '',
+      capital_level: '',
+      completion_percentage: 0
+    }
+    setProfile(fallbackProfile)
     console.log('Fallback profile created successfully')
+    return fallbackProfile
   }
 
-  // Create initial profile if it doesn't exist
-  const createInitialProfile = async () => {
-    if (!user?.id) return
+  // Load user profile
+  const loadProfile = async () => {
+    if (!user?.id) {
+      console.log('No user ID available')
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    console.log('Starting profile load for user:', user.id)
 
     try {
-      console.log('Creating initial profile for user:', user.id)
-      
-      const initialProfile = {
-        id: user.id,
-        name: '',
-        username: '',
-        bio: '',
-        profile_visibility: 'public',
-        contact_preferences: {
-          email: true,
-          phone: false,
-          marketing: false
-        },
-        notification_preferences: {
-          email: true,
-          push: true,
-          in_app: true,
-          marketing: false
-        },
-        email_verified: false
+      // First try to load from user_profiles table (new table with all columns)
+      console.log('Attempting to load from user_profiles table')
+      const { data: userProfileData, error: userProfileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      console.log('user_profiles query result:', { data: userProfileData, error: userProfileError })
+
+      if (userProfileData) {
+        console.log('Found profile in user_profiles table')
+        setProfile(userProfileData)
+        return
       }
 
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .insert(initialProfile)
-        .select()
-        .single()
+      if (userProfileError && userProfileError.code !== 'PGRST116') {
+        console.error('user_profiles query error:', userProfileError)
+      }
 
-      console.log('Profile creation result:', { data, error })
+      // If no profile in user_profiles, try to create one from the profiles table data
+      console.log('No profile in user_profiles, checking profiles table')
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
 
-      if (error) throw error
+      console.log('profiles query result:', { data: profileData, error: profileError })
 
-      setProfile(data)
-      console.log('Created initial user profile')
+      if (profileData) {
+        console.log('Found data in profiles table, creating user_profiles record')
+        // Create a user_profiles record from the profiles data
+        const newUserProfile = {
+          id: profileData.id,
+          name: profileData.name || '',
+          language: 'en',
+          region: '',
+          stealth_mode: false,
+          sdg_goals: [],
+          low_tech_access: false,
+          business_type: '',
+          time_commitment: '',
+          capital_level: '',
+          completion_percentage: 0,
+          username: '',
+          bio: '',
+          profile_picture_url: profileData.image || '',
+          profile_visibility: 'public',
+          contact_preferences: {
+            email: true,
+            phone: false,
+            marketing: false
+          },
+          notification_preferences: {
+            email: true,
+            push: true,
+            in_app: true,
+            marketing: false
+          },
+          email_verified: false
+        }
+
+        // Try to insert into user_profiles
+        const { data: insertedData, error: insertError } = await supabase
+          .from('user_profiles')
+          .insert(newUserProfile)
+          .select()
+          .single()
+
+        if (insertError) {
+          console.error('Failed to create user_profiles record:', insertError)
+          // Use the data we have as fallback
+          setProfile(newUserProfile)
+        } else {
+          console.log('Successfully created user_profiles record')
+          setProfile(insertedData)
+        }
+        return
+      }
+
+      // If we get here, no profile exists anywhere - create fallback
+      console.log('No profile found in any table, creating fallback')
+      createFallbackProfile()
+
     } catch (err: any) {
-      console.error('Error creating initial profile:', err)
-      // Fallback to creating a basic profile object
-      await createFallbackProfile()
+      console.error('Error in loadProfile:', err)
+      setError(err.message)
+      // Always provide a fallback profile
+      createFallbackProfile()
+    } finally {
+      console.log('Setting loading to false')
+      setLoading(false)
     }
   }
 
@@ -215,50 +195,26 @@ export const useProfileSettings = () => {
     setError(null)
 
     try {
-      let data, error
+      console.log('Updating profile with:', updates)
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single()
 
-      // Try to update user_profiles first
-      try {
-        const result = await supabase
-          .from('user_profiles')
-          .update(updates)
-          .eq('id', user.id)
-          .select()
-          .single()
-        
-        data = result.data
-        error = result.error
-        
-        if (error) throw error
-      } catch (userProfilesError) {
-        console.log('user_profiles update failed, trying profiles table:', userProfilesError)
-        
-        // Fallback to updating the profiles table with compatible fields
-        const profilesUpdates: any = {}
-        if (updates.name !== undefined) profilesUpdates.name = updates.name
-        if (updates.profile_picture_url !== undefined) profilesUpdates.image = updates.profile_picture_url
-        
-        if (Object.keys(profilesUpdates).length > 0) {
-          const result = await supabase
-            .from('profiles')
-            .update(profilesUpdates)
-            .eq('id', user.id)
-            .select()
-            .single()
-          
-          data = result.data
-          error = result.error
-          
-          if (error) throw error
-        }
+      if (error) {
+        console.error('Update error:', error)
+        throw error
       }
 
-      // Update local state
-      setProfile(prev => prev ? { ...prev, ...updates } : null)
+      console.log('Update successful:', data)
+      setProfile(data)
       return { data, error: null }
     } catch (err: any) {
-      setError(err.message)
       console.error('Error updating user profile:', err)
+      setError(err.message)
       return { data: null, error: err.message }
     } finally {
       setSaving(false)
@@ -286,45 +242,13 @@ export const useProfileSettings = () => {
     }
   }
 
-  // Upload profile picture
+  // Upload profile picture - simplified to avoid storage issues for now
   const uploadProfilePicture = async (file: File): Promise<{ url?: string; error?: string }> => {
     if (!user?.id) return { error: 'User not authenticated' }
 
     try {
-      // Validate file
-      if (!file.type.startsWith('image/')) {
-        return { error: 'Please select an image file' }
-      }
-
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        return { error: 'Image size must be less than 5MB' }
-      }
-
-      // Create unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`
-
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('profile-pictures')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('profile-pictures')
-        .getPublicUrl(fileName)
-
-      const publicUrl = urlData.publicUrl
-
-      // Update profile with new picture URL
-      await updateProfile({ profile_picture_url: publicUrl })
-
-      return { url: publicUrl }
+      // For now, just return an error since storage might not be set up
+      return { error: 'Profile picture upload is not yet available. Coming soon!' }
     } catch (err: any) {
       console.error('Error uploading profile picture:', err)
       return { error: err.message }
@@ -336,20 +260,8 @@ export const useProfileSettings = () => {
     if (!user?.id || !profile?.profile_picture_url) return { error: 'No profile picture to delete' }
 
     try {
-      // Extract file path from URL
-      const url = new URL(profile.profile_picture_url)
-      const filePath = url.pathname.split('/').slice(-2).join('/')
-
-      // Delete from storage
-      const { error: deleteError } = await supabase.storage
-        .from('profile-pictures')
-        .remove([filePath])
-
-      if (deleteError) throw deleteError
-
       // Update profile to remove picture URL
       await updateProfile({ profile_picture_url: null })
-
       return {}
     } catch (err: any) {
       console.error('Error deleting profile picture:', err)
@@ -391,40 +303,28 @@ export const useProfileSettings = () => {
   }
 
   useEffect(() => {
+    console.log('useProfileSettings effect triggered, user:', user?.id)
+    
     if (user?.id) {
-      // Add a timeout to prevent infinite loading
+      // Set a timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
         if (loading) {
-          console.warn('Profile loading timeout, setting fallback profile')
+          console.warn('Profile loading timeout - force creating fallback')
           setLoading(false)
           setError('Profile loading timed out')
-          setProfile({
-            id: user.id,
-            name: '',
-            username: '',
-            bio: '',
-            profile_visibility: 'public',
-            contact_preferences: {
-              email: true,
-              phone: false,
-              marketing: false
-            },
-            notification_preferences: {
-              email: true,
-              push: true,
-              in_app: true,
-              marketing: false
-            },
-            email_verified: false
-          })
+          createFallbackProfile()
         }
-      }, 10000) // 10 second timeout
+      }, 5000) // 5 second timeout
 
       loadProfile().finally(() => {
         clearTimeout(timeoutId)
       })
 
       return () => clearTimeout(timeoutId)
+    } else {
+      // No user, immediately stop loading
+      setLoading(false)
+      setProfile(null)
     }
   }, [user?.id])
 
