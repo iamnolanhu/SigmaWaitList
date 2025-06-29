@@ -64,37 +64,71 @@ If the user's request relates to business automation, identify the specific modu
   }
 
   async chat(messages: MistralMessage[]): Promise<string> {
-    if (!this.apiKey) {
+    if (!this.apiKey || this.apiKey === 'your-mistral-api-key') {
       return this.getMockResponse(messages[messages.length - 1]?.content || '')
     }
 
     try {
+      const requestBody = {
+        model: 'mistral-small-latest', // Changed from mistral-large-latest to a more commonly available model
+        messages: [
+          { role: 'system', content: this.getSystemPrompt() },
+          ...messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        ],
+        max_tokens: 500,
+        temperature: 0.7,
+        stream: false // Explicitly set stream to false
+      }
+
+      console.log('Sending request to Mistral API:', {
+        url: `${this.baseURL}/chat/completions`,
+        model: requestBody.model,
+        messageCount: requestBody.messages.length
+      })
+
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`
         },
-        body: JSON.stringify({
-          model: 'mistral-large-latest',
-          messages: [
-            { role: 'system', content: this.getSystemPrompt() },
-            ...messages
-          ],
-          max_tokens: 500,
-          temperature: 0.7
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
-        throw new Error(`Mistral API error: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`Mistral API error ${response.status}:`, errorText)
+        
+        // Handle specific error cases
+        if (response.status === 422) {
+          console.error('422 Error - Request validation failed. This could be due to:')
+          console.error('- Invalid API key format')
+          console.error('- Unsupported model name')
+          console.error('- Invalid request parameters')
+          return 'I encountered a configuration issue. Using offline mode for now. ' + this.getMockResponse(messages[messages.length - 1]?.content || '')
+        }
+        
+        if (response.status === 401) {
+          console.error('401 Error - Authentication failed. Please check your API key.')
+          return 'Authentication failed. Using offline mode. ' + this.getMockResponse(messages[messages.length - 1]?.content || '')
+        }
+        
+        throw new Error(`Mistral API error: ${response.status} - ${errorText}`)
       }
 
       const data: MistralResponse = await response.json()
+      
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('No response choices returned from Mistral API')
+      }
+
       return data.choices[0]?.message?.content || 'Sorry, I encountered an error. Please try again.'
     } catch (error) {
       console.error('Mistral API error:', error)
-      return this.getMockResponse(messages[messages.length - 1]?.content || '')
+      return 'I encountered a technical issue. Using offline mode: ' + this.getMockResponse(messages[messages.length - 1]?.content || '')
     }
   }
 
