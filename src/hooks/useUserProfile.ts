@@ -24,49 +24,6 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load user profile
-  const loadProfile = async () => {
-    if (!user?.id) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist yet - create it
-          const { data: newProfile, error: createError } = await supabase
-            .from('user_profiles')
-            .insert({ id: user.id })
-            .select()
-            .single()
-
-          if (createError) {
-            throw createError
-          }
-          
-          setProfile(newProfile)
-          console.log('Created new user profile')
-        } else {
-          throw error
-        }
-      } else {
-        setProfile(data)
-      }
-    } catch (err: any) {
-      setError(err.message)
-      console.error('Error loading user profile:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // Calculate completion percentage
   const calculateCompletion = (profileData: UserProfile) => {
     const fields = [
@@ -85,29 +42,108 @@ export const useUserProfile = () => {
     return Math.round((completed / fields.length) * 100)
   }
 
-  // Update user profile
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.id) {
-      return { data: null, error: 'User not authenticated' }
-    }
+  // Load user profile
+  const loadProfile = async () => {
+    if (!user?.id) return
 
     setLoading(true)
     setError(null)
 
     try {
+      console.log('Loading profile for user:', user.id)
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error loading profile:', error)
+        throw error
+      }
+
+      if (data) {
+        console.log('Profile loaded:', data)
+        setProfile(data)
+      } else {
+        console.log('No profile found, creating new one')
+        // Create a new profile if none exists
+        const newProfile = {
+          id: user.id,
+          completion_percentage: 0
+        }
+        
+        const { data: createdProfile, error: createError } = await supabase
+          .from('user_profiles')
+          .insert(newProfile)
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Error creating profile:', createError)
+          throw createError
+        }
+
+        console.log('Profile created:', createdProfile)
+        setProfile(createdProfile)
+      }
+    } catch (err: any) {
+      console.error('Profile loading error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Update user profile
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user?.id) {
+      console.error('No user ID available')
+      return { data: null, error: 'User not authenticated' }
+    }
+
+    console.log('Updating profile with:', updates)
+    setLoading(true)
+    setError(null)
+
+    try {
       // Calculate completion percentage with the updates
-      const updatedProfileData = { ...profile, ...updates }
+      const currentProfile = profile || { id: user.id }
+      const updatedProfileData = { ...currentProfile, ...updates }
       const completion = calculateCompletion(updatedProfileData as UserProfile)
       
       // Include completion percentage in the update
       const finalUpdates = {
         ...updates,
-        completion_percentage: completion
+        completion_percentage: completion,
+        updated_at: new Date().toISOString()
       }
 
-      // First, ensure the profile exists
-      if (!profile) {
-        const { data: newProfile, error: createError } = await supabase
+      console.log('Final updates to save:', finalUpdates)
+
+      // Check if profile exists first
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      let result
+
+      if (existingProfile) {
+        // Update existing profile
+        console.log('Updating existing profile')
+        result = await supabase
+          .from('user_profiles')
+          .update(finalUpdates)
+          .eq('id', user.id)
+          .select()
+          .single()
+      } else {
+        // Insert new profile
+        console.log('Creating new profile')
+        result = await supabase
           .from('user_profiles')
           .insert({ 
             id: user.id,
@@ -115,37 +151,33 @@ export const useUserProfile = () => {
           })
           .select()
           .single()
-
-        if (createError) throw createError
-
-        setProfile(newProfile)
-        return { data: newProfile, error: null }
       }
 
-      // Update existing profile
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(finalUpdates)
-        .eq('id', user.id)
-        .select()
-        .single()
+      const { data, error } = result
 
-      if (error) throw error
+      if (error) {
+        console.error('Database error:', error)
+        throw error
+      }
 
+      console.log('Profile saved successfully:', data)
       setProfile(data)
       return { data, error: null }
     } catch (err: any) {
+      console.error('Error updating profile:', err)
       setError(err.message)
-      console.error('Error updating user profile:', err)
       return { data: null, error: err.message }
     } finally {
       setLoading(false)
     }
   }
 
+  // Load profile when user changes
   useEffect(() => {
     if (user?.id) {
       loadProfile()
+    } else {
+      setProfile(null)
     }
   }, [user?.id])
 
