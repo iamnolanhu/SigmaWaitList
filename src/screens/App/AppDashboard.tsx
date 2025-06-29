@@ -3,22 +3,13 @@ import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileSetup } from '../../components/profile'
-import { Button } from '../../components/ui/button'
-import { ArrowLeft, Settings, User, Zap, CheckCircle } from 'lucide-react'
+import { Navbar } from '../../components/Navbar'
+import { CheckCircle } from 'lucide-react'
 
 export const AppDashboard: React.FC = () => {
-  const { user, setAppMode, signOut } = useApp()
+  const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
   const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
-
-  const handleBackToWaitlist = () => {
-    setAppMode({ isAppMode: false, hasAccess: true })
-  }
-
-  const handleSignOut = async () => {
-    await signOut()
-    handleBackToWaitlist()
-  }
 
   // If profile is incomplete, show profile setup
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
@@ -32,51 +23,13 @@ export const AppDashboard: React.FC = () => {
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/70 via-[#1a1a1a]/50 to-[#1a1a1a]/70 pointer-events-none z-[6]" />
 
-      {/* Header */}
-      <header className="relative z-20 w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10">
-        <div className="container mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={handleBackToWaitlist}
-              variant="ghost"
-              size="sm"
-              className="text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Waitlist
-            </Button>
-            <div className="w-24 h-6 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <span className="text-[#b7ffab] font-['Space_Mono'] text-sm">
-              Welcome, {profile?.name || user?.email?.split('@')[0] || 'Sigma'}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setCurrentView(currentView === 'profile' ? 'dashboard' : 'profile')}
-                variant="ghost"
-                size="sm"
-                className="text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </Button>
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="sm"
-                className="text-[#b7ffab] hover:text-red-400 hover:bg-red-500/10"
-              >
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Enhanced Navbar */}
+      <Navbar onNavigate={(section) => {
+        if (section === 'profile') setCurrentView('profile')
+      }} />
 
       {/* Main Content */}
-      <main className="relative z-10 container mx-auto px-6 py-8">
+      <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
         {currentView === 'profile' ? (
           <ProfileSetup />
         ) : shouldShowProfileSetup ? (
