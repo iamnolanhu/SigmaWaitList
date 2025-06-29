@@ -67,9 +67,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         <div 
           className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg cursor-pointer hover:scale-105 transition-transform"
           onClick={() => {
-            if (appMode.isAppMode) {
-              handleBackToWaitlist()
+            if (user) {
+              // If user is logged in, logo always goes to app
+              if (!appMode.isAppMode) {
+                handleEnterApp()
+              }
+              // If already in app, stay in app (could scroll to top of dashboard)
             } else {
+              // If not logged in, scroll to top of waitlist page
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }
           }}
