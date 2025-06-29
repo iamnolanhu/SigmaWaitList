@@ -42,59 +42,80 @@ export const useUserProfile = () => {
     return Math.round((completed / fields.length) * 100)
   }
 
-  // Load user profile
-  const loadProfile = async () => {
-    if (!user?.id) return
+  // Load user profile - only when user changes
+  useEffect(() => {
+    let mounted = true
 
-    setLoading(true)
-    setError(null)
-
-    try {
-      console.log('Loading profile for user:', user.id)
-      
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (error) {
-        console.error('Error loading profile:', error)
-        throw error
+    const loadProfile = async () => {
+      if (!user?.id) {
+        setProfile(null)
+        setLoading(false)
+        return
       }
 
-      if (data) {
-        console.log('Profile loaded:', data)
-        setProfile(data)
-      } else {
-        console.log('No profile found, creating new one')
-        // Create a new profile if none exists
-        const newProfile = {
-          id: user.id,
-          completion_percentage: 0
-        }
+      setLoading(true)
+      setError(null)
+
+      try {
+        console.log('Loading profile for user:', user.id)
         
-        const { data: createdProfile, error: createError } = await supabase
+        const { data, error } = await supabase
           .from('user_profiles')
-          .insert(newProfile)
-          .select()
-          .single()
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle()
 
-        if (createError) {
-          console.error('Error creating profile:', createError)
-          throw createError
+        if (!mounted) return
+
+        if (error) {
+          console.error('Error loading profile:', error)
+          throw error
         }
 
-        console.log('Profile created:', createdProfile)
-        setProfile(createdProfile)
+        if (data) {
+          console.log('Profile loaded:', data)
+          setProfile(data)
+        } else {
+          console.log('No profile found, creating new one')
+          // Create a new profile if none exists
+          const newProfile = {
+            id: user.id,
+            completion_percentage: 0
+          }
+          
+          const { data: createdProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert(newProfile)
+            .select()
+            .single()
+
+          if (!mounted) return
+
+          if (createError) {
+            console.error('Error creating profile:', createError)
+            throw createError
+          }
+
+          console.log('Profile created:', createdProfile)
+          setProfile(createdProfile)
+        }
+      } catch (err: any) {
+        if (!mounted) return
+        console.error('Profile loading error:', err)
+        setError(err.message)
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
       }
-    } catch (err: any) {
-      console.error('Profile loading error:', err)
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    loadProfile()
+
+    return () => {
+      mounted = false
+    }
+  }, [user?.id]) // Only depend on user.id
 
   // Update user profile
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -172,21 +193,11 @@ export const useUserProfile = () => {
     }
   }
 
-  // Load profile when user changes
-  useEffect(() => {
-    if (user?.id) {
-      loadProfile()
-    } else {
-      setProfile(null)
-    }
-  }, [user?.id])
-
   return {
     profile,
     loading,
     error,
     updateProfile,
-    loadProfile,
     calculateCompletion
   }
 }

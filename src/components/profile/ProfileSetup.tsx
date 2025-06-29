@@ -19,9 +19,9 @@ export const ProfileSetup: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  // Update form data when profile loads
+  // Update form data when profile loads - only once
   useEffect(() => {
-    if (profile) {
+    if (profile && !saving) {
       console.log('Updating form with profile data:', profile)
       setFormData({
         name: profile.name || '',
@@ -32,7 +32,7 @@ export const ProfileSetup: React.FC = () => {
         stealth_mode: profile.stealth_mode || false
       })
     }
-  }, [profile])
+  }, [profile?.id]) // Only update when profile ID changes
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
