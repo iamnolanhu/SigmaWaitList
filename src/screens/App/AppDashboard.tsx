@@ -81,7 +81,6 @@ export const AppDashboard: React.FC = () => {
                   <span className="font-['Space_Mono'] text-[#6ad040] text-xs">ONLINE</span>
                 </div>
               </div>
-              </div>
 
               {/* Profile Status */}
               <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
