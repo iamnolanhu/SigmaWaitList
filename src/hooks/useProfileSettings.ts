@@ -52,48 +52,17 @@ export const useProfileSettings = () => {
     try {
       console.log('Loading profile for user:', user.id)
       
-      // First check if the table exists and what columns are available
-      const { data: tableInfo, error: tableError } = await supabase
-        .from('user_profiles')
-        .select('id')
-        .limit(1)
+      // Just use the existing profiles table for now
+      console.log('Loading from profiles table directly')
+      await loadFromProfilesTable()
       
-      console.log('Table check result:', { tableInfo, tableError })
-      
-      if (tableError) {
-        console.error('Table does not exist or no access:', tableError)
-        // Try to use the existing profiles table instead
-        return await loadFromProfilesTable()
-      }
-      
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      console.log('Profile query result:', { data, error })
-
-      if (error) {
-        console.error('Profile query error:', error)
-        // If user_profiles fails, try the profiles table
-        return await loadFromProfilesTable()
-      } else {
-        if (data) {
-          console.log('Profile found:', data)
-          setProfile(data)
-        } else {
-          console.log('No profile found, creating initial profile')
-          // Profile doesn't exist, create a basic one
-          await createInitialProfile()
-        }
-      }
     } catch (err: any) {
       console.error('Error in loadProfile:', err)
       setError(err.message)
-      // Try fallback to profiles table
-      await loadFromProfilesTable()
+      // Always ensure we have a profile, even if it's just a fallback
+      await createFallbackProfile()
     } finally {
+      console.log('Setting loading to false')
       setLoading(false)
     }
   }
@@ -115,7 +84,9 @@ export const useProfileSettings = () => {
 
       if (error) {
         console.error('Profiles table query error:', error)
-        throw error
+        console.log('Profiles table not available, using fallback profile')
+        await createFallbackProfile()
+        return
       }
 
       if (data) {
@@ -167,6 +138,7 @@ export const useProfileSettings = () => {
   // Create a fallback profile when all else fails
   const createFallbackProfile = async () => {
     console.log('Creating fallback profile for user:', user?.id)
+    // Always create a fallback profile regardless of database state
     setProfile({
       id: user?.id || '',
       name: '',
@@ -186,6 +158,7 @@ export const useProfileSettings = () => {
       },
       email_verified: false
     })
+    console.log('Fallback profile created successfully')
   }
 
   // Create initial profile if it doesn't exist
