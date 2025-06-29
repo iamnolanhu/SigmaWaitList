@@ -39,18 +39,10 @@ export const useUserProfile = () => {
         .single()
 
       if (error) {
-        // If profile doesn't exist, create one
         if (error.code === 'PGRST116') {
-          const { data: newProfile, error: createError } = await supabase
-            .from('user_profiles')
-            .insert({ id: user.id })
-            .select()
-            .single()
-
-          if (createError) {
-            throw createError
-          }
-          setProfile(newProfile)
+          // Profile doesn't exist yet - will be created by database trigger
+          setProfile(null)
+          console.log('User profile not found - will be created automatically')
         } else {
           throw error
         }
