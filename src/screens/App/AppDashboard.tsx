@@ -2,7 +2,7 @@ import React from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
-import { ProfileSetup } from '../../components/profile'
+import { ProfileSetup, ProfileSettings } from '../../components/profile'
 import { Navbar } from '../../components/Navbar'
 import { 
   CheckCircle, 
@@ -20,7 +20,7 @@ import {
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
-  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'profile-settings'>('dashboard')
 
   // If profile is incomplete, show profile setup
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
@@ -37,11 +37,14 @@ export const AppDashboard: React.FC = () => {
       {/* Enhanced Navbar */}
       <Navbar onNavigate={(section) => {
         if (section === 'profile') setCurrentView('profile')
+        if (section === 'profile-settings') setCurrentView('profile-settings')
       }} />
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
-        {currentView === 'profile' ? (
+        {currentView === 'profile-settings' ? (
+          <ProfileSettings />
+        ) : currentView === 'profile' ? (
           <ProfileSetup />
         ) : shouldShowProfileSetup ? (
           <div className="max-w-2xl mx-auto">
