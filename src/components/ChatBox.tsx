@@ -35,7 +35,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
     {
       id: '1',
       role: 'assistant',
-      content: "👋 Hey there, future CEO! I'm Sigma AI, your business automation partner. What's your vision? I can help you start a business, handle legal paperwork, create branding, build websites, or set up payments. Let's turn your ideas into reality! 💪",
+      content: "👋 Hey there, future CEO! I'm Sigma AI, your business automation partner. What's your vision? I can help you start a business, handle legal paperwork, create branding, build websites, set up payments, or automate marketing. Let's turn your ideas into reality! 💪",
       timestamp: new Date()
     }
   ])

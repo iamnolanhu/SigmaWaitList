@@ -3,6 +3,7 @@ import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileSetup } from '../../components/profile'
+import { AutomationDashboard } from '../../components/automation'
 import { Navbar } from '../../components/Navbar'
 import { ChatBox } from '../../components/ChatBox'
 import { 
@@ -21,11 +22,25 @@ import {
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
-  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'automation'>('dashboard')
 
   // If profile is incomplete, show profile setup
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
   const shouldShowProfileSetup = !profileLoading && !isProfileComplete && currentView === 'dashboard'
+
+  // Convert profile to BusinessProfile format for automation
+  const businessProfile = profile ? {
+    user_id: user?.id || '',
+    business_name: profile.name || '',
+    business_type: profile.business_type || '',
+    industry: profile.business_type || '',
+    description: `${profile.business_type} business` || '',
+    target_market: '',
+    budget_range: profile.capital_level || '',
+    timeline: profile.time_commitment || '',
+    legal_structure: 'LLC' as const,
+    state_of_incorporation: profile.region || ''
+  } : undefined
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
@@ -38,12 +53,15 @@ export const AppDashboard: React.FC = () => {
       {/* Enhanced Navbar */}
       <Navbar onNavigate={(section) => {
         if (section === 'profile') setCurrentView('profile')
+        if (section === 'automation') setCurrentView('automation')
       }} />
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
         {currentView === 'profile' ? (
           <ProfileSetup />
+        ) : currentView === 'automation' ? (
+          <AutomationDashboard businessProfile={businessProfile} />
         ) : shouldShowProfileSetup ? (
           <div className="max-w-2xl mx-auto">
             {/* Profile Setup Prompt */}
@@ -142,6 +160,7 @@ export const AppDashboard: React.FC = () => {
                   {/* Quick Actions */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <button 
+                      onClick={() => setCurrentView('profile')}
                       className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
                         isProfileComplete 
                           ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20 hover:scale-105' 
@@ -160,13 +179,14 @@ export const AppDashboard: React.FC = () => {
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
                         {isProfileComplete 
-                          ? 'Ready to begin AI onboarding' 
+                          ? 'Ready to begin AI automation' 
                           : 'Required to unlock AI features'
                         }
                       </p>
                     </button>
 
                     <button 
+                      onClick={() => setCurrentView('automation')}
                       className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
                         isProfileComplete 
                           ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20 hover:scale-105' 
@@ -177,7 +197,7 @@ export const AppDashboard: React.FC = () => {
                       <div className="flex items-center gap-3 mb-2">
                         <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-gray-500'}`} />
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
-                          START AI ONBOARDING
+                          START AUTOMATION
                         </span>
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
@@ -192,10 +212,11 @@ export const AppDashboard: React.FC = () => {
                     <div className="space-y-3">
                       {[
                         { name: 'Profile Setup', completed: isProfileComplete, current: !isProfileComplete },
-                        { name: 'AI Onboarding', completed: false, current: isProfileComplete },
-                        { name: 'Business Formation', completed: false, current: false },
+                        { name: 'Business Formation', completed: false, current: isProfileComplete },
                         { name: 'Brand Development', completed: false, current: false },
                         { name: 'Digital Presence', completed: false, current: false },
+                        { name: 'Payment Processing', completed: false, current: false },
+                        { name: 'Marketing Launch', completed: false, current: false },
                       ].map((step, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full ${
@@ -316,16 +337,16 @@ export const AppDashboard: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { name: 'AI Onboarding', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '🤖', ready: isProfileComplete },
-                  { name: 'Legal Setup', status: 'Coming Soon', icon: '⚖️' },
-                  { name: 'Business Branding', status: 'Coming Soon', icon: '🎨' },
-                  { name: 'Website Builder', status: 'Coming Soon', icon: '🌐' },
-                  { name: 'Payment Processing', status: 'Coming Soon', icon: '💳' },
-                  { name: 'Business Banking', status: 'Coming Soon', icon: '🏦' },
-                  { name: 'Marketing AI', status: 'Coming Soon', icon: '📈' },
+                  { name: 'Business Setup', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '⚖️', ready: isProfileComplete },
+                  { name: 'Brand Identity', status: 'Ready', icon: '🎨', ready: isProfileComplete },
+                  { name: 'Website Builder', status: 'Ready', icon: '🌐', ready: isProfileComplete },
+                  { name: 'Payment Setup', status: 'Ready', icon: '💳', ready: isProfileComplete },
+                  { name: 'Business Banking', status: 'Ready', icon: '🏦', ready: isProfileComplete },
+                  { name: 'Marketing AI', status: 'Ready', icon: '📈', ready: isProfileComplete },
                 ].map((module, index) => (
                   <div
                     key={index}
+                    onClick={() => module.ready && setCurrentView('automation')}
                     className={`bg-black/20 backdrop-blur-md rounded-xl border p-4 transition-all duration-300 text-center ${
                       module.ready 
                         ? 'border-[#6ad040] shadow-lg shadow-[#6ad040]/20 hover:scale-105 cursor-pointer' 
@@ -350,17 +371,17 @@ export const AppDashboard: React.FC = () => {
             <div className="mt-8 text-center">
               <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 max-w-3xl mx-auto">
                 <h3 className="font-['Orbitron'] font-bold text-[#6ad040] text-xl mb-4">
-                  ⚡ SIGMA DEVELOPMENT STATUS ⚡
+                  ⚡ SIGMA AUTOMATION STATUS ⚡
                 </h3>
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm leading-relaxed opacity-90 mb-4">
-                  The full AI Business Partner platform is in active development. Each module will be implemented 
+                  The full AI Business Partner platform is now operational. Each module provides complete automation 
                   with cutting-edge AI capabilities and the same Matrix aesthetic. Complete your profile to unlock 
-                  the AI Onboarding module and begin your automation journey.
+                  all automation modules and begin your journey to CEO status.
                 </p>
                 <div className="inline-flex items-center gap-2 bg-[#6ad040]/20 rounded-full px-4 py-2 border border-[#6ad040]/50">
                   <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
                   <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-                    BUILDING THE FUTURE OF BUSINESS AUTOMATION
+                    FULL AUTOMATION SUITE ACTIVE
                   </span>
                 </div>
               </div>
