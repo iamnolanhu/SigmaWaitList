@@ -5,10 +5,13 @@ import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
 import { trackVideoInteraction, trackSectionView, initializeAnalytics, trackEvent } from "../../lib/analytics";
+import { useApp } from "../../contexts/AppContext";
+import { Navbar } from "../../components/Navbar";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { appMode, setAppMode, user } = useApp();
 
   // Initialize analytics on component mount
   useEffect(() => {
@@ -233,60 +236,8 @@ export const Desktop = (): JSX.Element => {
 
       {/* Main content container - responsive */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header/Navigation - fixed and responsive */}
-        <header className="fixed top-0 left-0 right-0 w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10 z-50">
-          <div className="container mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg" />
-            
-            <div className="flex items-center gap-4">
-              <nav className="hidden md:flex items-center gap-8">
-                <a
-                  href="#feature"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('feature')?.scrollIntoView({ behavior: 'smooth' });
-                    trackSectionView('features');
-                  }}
-                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-                >
-                  Features
-                </a>
-                <a
-                  href="#tech"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('tech')?.scrollIntoView({ behavior: 'smooth' });
-                    trackSectionView('tech');
-                  }}
-                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-                >
-                  Tech
-                </a>
-                <a
-                  href="#team"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
-                    trackSectionView('team');
-                  }}
-                  className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm lg:text-base hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-                >
-                  Team
-                </a>
-              </nav>
-
-              <Button 
-                onClick={() => {
-                  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
-                  trackEvent('desktop_nav_cta_click', { location: 'header_nav' });
-                }}
-                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
-              >
-                Join Waitlist
-              </Button>
-            </div>
-          </div>
-        </header>
+        {/* Enhanced Navbar */}
+        <Navbar />
 
         {/* Main content - responsive with top padding for fixed header */}
         <main className="flex-1 pt-16 md:pt-20">
@@ -571,68 +522,6 @@ export const Desktop = (): JSX.Element => {
           </section>
         </main>
 
-        {/* Mobile navigation */}
-        <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 px-6 py-3 shadow-2xl shadow-[#6ad040]/30 z-50">
-          <div className="flex items-center justify-between">
-            {/* Navigation Links */}
-            <div className="flex gap-4 sm:gap-6">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
-              >
-                Home
-              </a>
-              <a
-                href="#feature"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('feature')?.scrollIntoView({ behavior: 'smooth' });
-                  trackSectionView('features');
-                }}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
-              >
-                Features
-              </a>
-              <a
-                href="#tech"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('tech')?.scrollIntoView({ behavior: 'smooth' });
-                  trackSectionView('tech');
-                }}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
-              >
-                Tech
-              </a>
-              <a
-                href="#team"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
-                  trackSectionView('team');
-                }}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-xs sm:text-sm hover:scale-105 active:scale-95"
-              >
-                Team
-              </a>
-            </div>
-            
-            {/* CTA Button */}
-            <Button 
-              onClick={() => {
-                document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
-                trackEvent('mobile_nav_cta_click', { location: 'mobile_bottom_nav' });
-              }}
-              className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#6ad040]/50 border border-[#6ad040]/30 active:scale-95"
-            >
-              Join Now
-            </Button>
-          </div>
-        </nav>
       </div>
     </div>
   );
