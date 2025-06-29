@@ -54,24 +54,83 @@ export const useProfileSettings = () => {
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist yet - will be created by database trigger
-          setProfile(null)
-          console.log('User profile not found - will be created automatically')
-        } else {
-          throw error
-        }
+        throw error
       } else {
-        setProfile(data)
+        if (data) {
+          setProfile(data)
+        } else {
+          // Profile doesn't exist, create a basic one
+          await createInitialProfile()
+        }
       }
     } catch (err: any) {
       setError(err.message)
       console.error('Error loading user profile:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Create initial profile if it doesn't exist
+  const createInitialProfile = async () => {
+    if (!user?.id) return
+
+    try {
+      const initialProfile = {
+        id: user.id,
+        name: '',
+        username: '',
+        bio: '',
+        profile_visibility: 'public',
+        contact_preferences: {
+          email: true,
+          phone: false,
+          marketing: false
+        },
+        notification_preferences: {
+          email: true,
+          push: true,
+          in_app: true,
+          marketing: false
+        },
+        email_verified: false
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert(initialProfile)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setProfile(data)
+      console.log('Created initial user profile')
+    } catch (err: any) {
+      console.error('Error creating initial profile:', err)
+      // Set a basic profile object even if creation fails
+      setProfile({
+        id: user.id,
+        name: '',
+        username: '',
+        bio: '',
+        profile_visibility: 'public',
+        contact_preferences: {
+          email: true,
+          phone: false,
+          marketing: false
+        },
+        notification_preferences: {
+          email: true,
+          push: true,
+          in_app: true,
+          marketing: false
+        },
+        email_verified: false
+      })
     }
   }
 
@@ -83,12 +142,51 @@ export const useProfileSettings = () => {
     setError(null)
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single()
+      let data, error
+
+      if (profile) {
+        // Update existing profile
+        const result = await supabase
+          .from('user_profiles')
+          .update(updates)
+          .eq('id', user.id)
+          .select()
+          .single()
+        
+        data = result.data
+        error = result.error
+      } else {
+        // Create new profile with updates
+        const newProfile = {
+          id: user.id,
+          name: '',
+          username: '',
+          bio: '',
+          profile_visibility: 'public',
+          contact_preferences: {
+            email: true,
+            phone: false,
+            marketing: false
+          },
+          notification_preferences: {
+            email: true,
+            push: true,
+            in_app: true,
+            marketing: false
+          },
+          email_verified: false,
+          ...updates
+        }
+
+        const result = await supabase
+          .from('user_profiles')
+          .insert(newProfile)
+          .select()
+          .single()
+        
+        data = result.data
+        error = result.error
+      }
 
       if (error) throw error
 
