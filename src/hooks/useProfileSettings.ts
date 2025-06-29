@@ -89,7 +89,7 @@ export const useProfileSettings = () => {
       
       // Try to get profile with a promise timeout
       const profilePromise = supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
@@ -134,7 +134,7 @@ export const useProfileSettings = () => {
 
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update(updates)
         .eq('id', user.id)
         .select()
@@ -158,7 +158,7 @@ export const useProfileSettings = () => {
 
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('username')
         .eq('username', username.toLowerCase())
         .neq('id', user?.id || '')
@@ -206,7 +206,7 @@ export const useProfileSettings = () => {
 
     try {
       await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update(updates)
         .eq('id', user.id)
 
