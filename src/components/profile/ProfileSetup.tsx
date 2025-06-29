@@ -1,30 +1,48 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
-import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield } from 'lucide-react'
+import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2 } from 'lucide-react'
 
 export const ProfileSetup: React.FC = () => {
   const { profile, loading, updateProfile } = useUserProfile()
   const [formData, setFormData] = useState({
-    name: profile?.name || '',
-    region: profile?.region || '',
-    business_type: profile?.business_type || '',
-    time_commitment: profile?.time_commitment || '',
-    capital_level: profile?.capital_level || '',
-    stealth_mode: profile?.stealth_mode || false
+    name: '',
+    region: '',
+    business_type: '',
+    time_commitment: '',
+    capital_level: '',
+    stealth_mode: false
   })
   const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        region: profile.region || '',
+        business_type: profile.business_type || '',
+        time_commitment: profile.time_commitment || '',
+        capital_level: profile.capital_level || '',
+        stealth_mode: profile.stealth_mode || false
+      })
+    }
+  }, [profile])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
+    setSaveSuccess(false)
 
     const { error } = await updateProfile(formData)
     
     if (!error) {
-      // Success feedback could go here
+      setSaveSuccess(true)
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000)
     }
     
     setSaving(false)
@@ -41,6 +59,11 @@ export const ProfileSetup: React.FC = () => {
     'Content Creation',
     'Freelancing',
     'Physical Products',
+    'Cryptocurrency/Blockchain',
+    'Healthcare',
+    'Finance',
+    'Education',
+    'Real Estate',
     'Other'
   ]
 
@@ -95,6 +118,18 @@ export const ProfileSetup: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Message */}
+      {saveSuccess && (
+        <div className="bg-green-500/10 backdrop-blur-md border border-green-500/30 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <p className="font-['Space_Mono'] text-green-400 text-sm font-bold">
+              Profile saved successfully! Your automation preferences have been updated.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
@@ -242,9 +277,16 @@ export const ProfileSetup: React.FC = () => {
         <Button
           type="submit"
           disabled={saving || loading}
-          className="w-full font-['Orbitron'] font-black text-lg px-8 py-4 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60"
+          className="w-full font-['Orbitron'] font-black text-lg px-8 py-4 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {saving ? 'Saving Profile...' : 'Save Profile'}
+          {saving ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Saving Profile...
+            </>
+          ) : (
+            'Save Profile'
+          )}
         </Button>
       </form>
     </div>

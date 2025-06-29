@@ -121,7 +121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (error.code !== 'PGRST116') {
           console.error('Error loading user profile:', error)
         } else {
-          console.log('User profile not found, will create on first app access')
+          console.log('User profile not found, will be created on first app access')
         }
         return
       }
@@ -135,6 +135,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Error loading user profile:', error)
     }
   }
+
+  // Listen for profile updates in real-time
+  useEffect(() => {
+    if (!user?.id) return
+
+    const subscription = supabase
+      .channel('user_profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated:', payload)
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            setUserProfile(payload.new)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [user?.id])
 
   const updateModuleProgress = (module: string, progress: Partial<ModuleProgress[string]>) => {
     setModuleProgress(prev => ({

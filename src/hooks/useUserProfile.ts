@@ -40,9 +40,19 @@ export const useUserProfile = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // Profile doesn't exist yet - will be created by database trigger
-          setProfile(null)
-          console.log('User profile not found - will be created automatically')
+          // Profile doesn't exist yet - create it
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({ id: user.id })
+            .select()
+            .single()
+
+          if (createError) {
+            throw createError
+          }
+          
+          setProfile(newProfile)
+          console.log('Created new user profile')
         } else {
           throw error
         }
@@ -57,17 +67,65 @@ export const useUserProfile = () => {
     }
   }
 
+  // Calculate completion percentage
+  const calculateCompletion = (profileData: UserProfile) => {
+    const fields = [
+      'name',
+      'region', 
+      'business_type',
+      'time_commitment',
+      'capital_level'
+    ]
+    
+    const completed = fields.filter(field => {
+      const value = profileData[field as keyof UserProfile]
+      return value && value !== ''
+    }).length
+
+    return Math.round((completed / fields.length) * 100)
+  }
+
   // Update user profile
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.id || !profile) return
+    if (!user?.id) {
+      return { data: null, error: 'User not authenticated' }
+    }
 
     setLoading(true)
     setError(null)
 
     try {
+      // Calculate completion percentage with the updates
+      const updatedProfileData = { ...profile, ...updates }
+      const completion = calculateCompletion(updatedProfileData as UserProfile)
+      
+      // Include completion percentage in the update
+      const finalUpdates = {
+        ...updates,
+        completion_percentage: completion
+      }
+
+      // First, ensure the profile exists
+      if (!profile) {
+        const { data: newProfile, error: createError } = await supabase
+          .from('user_profiles')
+          .insert({ 
+            id: user.id,
+            ...finalUpdates
+          })
+          .select()
+          .single()
+
+        if (createError) throw createError
+
+        setProfile(newProfile)
+        return { data: newProfile, error: null }
+      }
+
+      // Update existing profile
       const { data, error } = await supabase
         .from('user_profiles')
-        .update(updates)
+        .update(finalUpdates)
         .eq('id', user.id)
         .select()
         .single()
@@ -85,45 +143,11 @@ export const useUserProfile = () => {
     }
   }
 
-  // Calculate completion percentage
-  const calculateCompletion = (profileData: UserProfile) => {
-    const fields = [
-      'name',
-      'region', 
-      'business_type',
-      'time_commitment',
-      'capital_level'
-    ]
-    
-    const completed = fields.filter(field => 
-      profileData[field as keyof UserProfile] && 
-      profileData[field as keyof UserProfile] !== ''
-    ).length
-
-    return Math.round((completed / fields.length) * 100)
-  }
-
-  // Update completion percentage
-  const updateCompletion = async () => {
-    if (!profile) return
-
-    const completion = calculateCompletion(profile)
-    if (completion !== profile.completion_percentage) {
-      await updateProfile({ completion_percentage: completion })
-    }
-  }
-
   useEffect(() => {
     if (user?.id) {
       loadProfile()
     }
   }, [user?.id])
-
-  useEffect(() => {
-    if (profile) {
-      updateCompletion()
-    }
-  }, [profile?.name, profile?.region, profile?.business_type, profile?.time_commitment, profile?.capital_level])
 
   return {
     profile,
