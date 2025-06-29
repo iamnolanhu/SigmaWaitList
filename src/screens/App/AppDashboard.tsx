@@ -71,11 +71,12 @@ export const AppDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { name: 'AI Onboarding', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '🤖', ready: isProfileComplete },
-              { name: 'Business Branding', status: 'Coming Soon', icon: '🎨' },
               { name: 'Legal Setup', status: 'Coming Soon', icon: '⚖️' },
+              { name: 'Business Branding', status: 'Coming Soon', icon: '🎨' },
+              { name: 'Website Builder', status: 'Coming Soon', icon: '🌐' },
+              { name: 'Payment Processing', status: 'Coming Soon', icon: '💳' },
+              { name: 'Business Banking', status: 'Coming Soon', icon: '🏦' },
               { name: 'Marketing AI', status: 'Coming Soon', icon: '📈' },
-              { name: 'Revenue Engine', status: 'Coming Soon', icon: '💰' },
-              { name: 'Impact Tracker', status: 'Coming Soon', icon: '🌍' }
             ].map((module, index) => (
               <div
                 key={index}
