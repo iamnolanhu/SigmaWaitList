@@ -286,9 +286,9 @@ export class OptimizedAuthService {
         .from('profiles')
         .select('has_access, customer_id')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
-      if (error) throw error
+      if (error && error.code !== 'PGRST116') throw error
 
       const permissions = {
         hasAccess: data?.has_access || false,

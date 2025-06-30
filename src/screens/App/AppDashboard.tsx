@@ -134,10 +134,19 @@ Format:
         const result = await generateCustom(prompt, 'business-planning')
         if (result) {
           try {
-            const suggestions = JSON.parse(result)
+            // Remove markdown code blocks if present
+            let cleanResult = result
+            if (result.includes('```json')) {
+              cleanResult = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+            } else if (result.includes('```')) {
+              cleanResult = result.replace(/```\n?/g, '').trim()
+            }
+            
+            const suggestions = JSON.parse(cleanResult)
             setAiSuggestions(suggestions)
           } catch (e) {
             console.error('Failed to parse AI suggestions:', e)
+            console.log('Raw result:', result)
           }
         }
       } catch (error) {
