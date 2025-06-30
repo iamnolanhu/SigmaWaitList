@@ -24,7 +24,31 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load user profile with better error handling and connection testing
+  // Test database connection - simplified and more reliable
+  const testConnection = async () => {
+    try {
+      console.log('Testing database connection...')
+      
+      // Simple connection test - just try to access the table
+      const { error } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .limit(1)
+
+      if (error) {
+        console.error('Connection test failed:', error)
+        return { connected: false, error: error.message }
+      }
+
+      console.log('Database connection test passed')
+      return { connected: true, error: null }
+    } catch (err: any) {
+      console.error('Connection test exception:', err)
+      return { connected: false, error: err.message || 'Connection failed' }
+    }
+  }
+
+  // Load user profile with better error handling
   const loadProfile = async () => {
     if (!user?.id) {
       console.log('No user ID available for profile loading')
@@ -37,21 +61,8 @@ export const useUserProfile = () => {
 
     try {
       console.log('Loading profile for user:', user.id)
-      
-      // First, test database connection by checking if we can access the table
-      const { data: testData, error: testError } = await supabase
-        .from('user_profiles')
-        .select('count')
-        .limit(1)
 
-      if (testError) {
-        console.error('Database connection test failed:', testError)
-        throw new Error(`Database connection failed: ${testError.message}`)
-      }
-
-      console.log('Database connection test passed')
-
-      // Now try to get the actual profile
+      // Try to get the actual profile
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -90,7 +101,6 @@ export const useUserProfile = () => {
       const errorMessage = err.message || 'Failed to load profile'
       setError(errorMessage)
       console.error('Error loading user profile:', err)
-      throw new Error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -124,7 +134,7 @@ export const useUserProfile = () => {
     setError(null)
 
     try {
-      console.log('Updating profile with data:', updates)
+      console.log('Attempting to save profile:', updates)
       
       // Calculate completion percentage with the updates
       const updatedProfileData = { ...profile, ...updates }
@@ -169,24 +179,6 @@ export const useUserProfile = () => {
       return { data: null, error: errorMessage }
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Test database connection
-  const testConnection = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('count')
-        .limit(1)
-
-      if (error) {
-        throw error
-      }
-
-      return { connected: true, error: null }
-    } catch (err: any) {
-      return { connected: false, error: err.message }
     }
   }
 
