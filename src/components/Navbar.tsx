@@ -3,6 +3,7 @@ import { Button } from './ui/button'
 import { useApp } from '../contexts/AppContext'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { trackEvent, trackSectionView } from '../lib/analytics'
+import { MusicPlayer } from './MusicPlayer'
 import { 
   User, 
   Settings, 
@@ -65,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       <div className="container mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
         {/* Logo */}
         <div 
-          className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg cursor-pointer hover:scale-105 transition-transform"
+          className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
           onClick={() => {
             if (user) {
               // If user is logged in, logo always goes to app
@@ -106,8 +107,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           )}
         </div>
 
+        {/* Music Player - Centered - Only show in app mode */}
+        {user && appMode.isAppMode && (
+          <div className="hidden md:block mx-auto">
+            <MusicPlayer variant="navbar" />
+          </div>
+        )}
+
         {/* User Section */}
         <div className="flex items-center gap-4">
+          {/* Mobile Music Player - Only show in app mode */}
+          {user && appMode.isAppMode && (
+            <div className="md:hidden">
+              <MusicPlayer variant="navbar" />
+            </div>
+          )}
+          
           {user ? (
             <div className="relative">
               {/* User Info & Menu */}
