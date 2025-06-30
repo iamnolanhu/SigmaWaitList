@@ -21,7 +21,7 @@ interface PaymentModuleProps {
 }
 
 export const PaymentModule: React.FC<PaymentModuleProps> = ({ businessProfile, onComplete }) => {
-  const { user } = useApp()
+  const { } = useApp()
   const [paymentSetup, setPaymentSetup] = useState<PaymentSetup | null>(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'generating' | 'review'>('generating')

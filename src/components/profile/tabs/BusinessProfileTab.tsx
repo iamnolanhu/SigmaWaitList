@@ -3,6 +3,7 @@ import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { Card, CardContent } from '../../ui/card'
 import { useUserProfile } from '../../../hooks/useUserProfile'
+import { toast } from '../../../hooks/useToast'
 import { 
   Briefcase, 
   Clock, 
@@ -33,7 +34,6 @@ export const BusinessProfileTab: React.FC = () => {
   })
   
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   // Business data options
   const businessTypes = [
@@ -158,24 +158,20 @@ export const BusinessProfileTab: React.FC = () => {
 
   const handleSave = async () => {
     setSaving(true)
-    setMessage(null)
 
     try {
       const { error } = await updateProfile(formData)
       
       if (error) {
-        setMessage({ type: 'error', text: error })
+        toast.error('Failed to save business profile', error)
       } else {
-        setMessage({ type: 'success', text: 'Business profile saved successfully!' })
+        toast.success('Business profile saved!', 'Your business information has been updated successfully.')
       }
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Failed to save changes' })
+      toast.error('Failed to save changes', error.message || 'An unexpected error occurred')
     } finally {
       setSaving(false)
     }
-
-    // Clear message after 3 seconds
-    setTimeout(() => setMessage(null), 3000)
   }
 
   if (loading) {
@@ -426,23 +422,7 @@ export const BusinessProfileTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Success/Error Messages */}
-      {message && (
-        <div className={`p-4 rounded-lg border ${
-          message.type === 'success' 
-            ? 'bg-green-500/10 border-green-500/30 text-green-400' 
-            : 'bg-red-500/10 border-red-500/30 text-red-400'
-        }`}>
-          <div className="flex items-center gap-3">
-            {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5" />
-            ) : (
-              <AlertCircle className="w-5 h-5" />
-            )}
-            <p className="font-['Space_Mono'] text-sm">{message.text}</p>
-          </div>
-        </div>
-      )}
+      {/* Success/Error Messages - handled by toast */}
 
       {/* Save Button */}
       <div className="flex justify-end">

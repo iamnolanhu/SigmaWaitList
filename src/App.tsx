@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider, useApp } from './contexts/AppContext'
@@ -7,6 +8,23 @@ import { Login } from './screens/Login'
 
 const AppContent: React.FC = () => {
   const { appMode, loading, user } = useApp()
+=======
+import React, { useEffect } from 'react'
+import { AppProvider, useApp } from './contexts/AppContext'
+import { Desktop } from './screens/Desktop'
+import { AppDashboard } from './screens/App'
+import { ToastContainer } from './components/ui/toast'
+import { useToast, setGlobalToast } from './hooks/useToast'
+import { ErrorBoundary } from './components/ErrorBoundary'
+
+const AppContent: React.FC = () => {
+  const { appMode, loading } = useApp()
+  const toastInstance = useToast()
+  
+  useEffect(() => {
+    setGlobalToast(toastInstance)
+  }, [toastInstance])
+>>>>>>> origin/dev
 
   if (loading) {
     return (
@@ -22,6 +40,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
+<<<<<<< HEAD
     <Router>
       <Routes>
         {/* Login Route */}
@@ -41,13 +60,27 @@ const AppContent: React.FC = () => {
         />
       </Routes>
     </Router>
+=======
+    <>
+      {appMode.isAppMode ? <AppDashboard /> : <Desktop />}
+      <ToastContainer 
+        toasts={toastInstance.toasts.map(toast => ({
+          ...toast,
+          onClose: toastInstance.removeToast
+        }))} 
+        onClose={toastInstance.removeToast} 
+      />
+    </>
+>>>>>>> origin/dev
   )
 }
 
 export const App: React.FC = () => {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   )
 }

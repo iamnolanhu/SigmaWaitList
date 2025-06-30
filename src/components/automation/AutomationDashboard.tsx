@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { useApp } from '../../contexts/AppContext'
@@ -10,6 +10,7 @@ import { MarketingModule } from './MarketingModule'
 import { BankingModule } from './BankingModule'
 import { type BusinessProfile, type LegalDocument, type BrandAsset, type WebsiteConfig, type PaymentSetup, type MarketingCampaign } from '../../lib/businessAutomation'
 import { trackEvent } from '../../lib/analytics'
+import { useModuleActivation } from '../../hooks/useModuleActivation'
 import { 
   Zap, 
   Scale, 
@@ -20,7 +21,11 @@ import {
   Building2,
   CheckCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  Pause,
+  Play,
+  AlertCircle
 } from 'lucide-react'
 
 interface AutomationDashboardProps {
@@ -28,7 +33,7 @@ interface AutomationDashboardProps {
 }
 
 export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ businessProfile }) => {
-  const { user } = useApp()
+  const { } = useApp()
   const [currentModule, setCurrentModule] = useState<string | null>(null)
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set())
   const [moduleData, setModuleData] = useState<{
@@ -39,6 +44,33 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
     marketing?: MarketingCampaign[]
     banking?: any
   }>({})
+  
+  const {
+    modules: moduleActivations,
+    activateModule,
+    updateModuleProgress,
+    getModuleStatus,
+    getModuleProgress,
+    checkDependencies,
+    getCompletedModules
+  } = useModuleActivation()
+
+  // Sync completed modules with activation status
+  useEffect(() => {
+    const completed = getCompletedModules()
+    setCompletedModules(new Set(completed.map(m => {
+      // Map module names to IDs
+      const moduleMap: Record<string, string> = {
+        'Legal Setup': 'legal',
+        'Brand Identity': 'branding',
+        'Website Creation': 'website',
+        'Payment Processing': 'payment',
+        'Business Banking': 'banking',
+        'Marketing Automation': 'marketing'
+      }
+      return moduleMap[m.module_name] || m.module_name
+    }))
+  )}, [moduleActivations])
 
   const modules = [
     {
@@ -47,7 +79,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Business registration, EIN, and legal documents',
       icon: Scale,
       color: '#6ad040',
-      estimated_time: '30 minutes'
+      estimated_time: '30 minutes',
+      dependencies: []
     },
     {
       id: 'branding',
@@ -55,7 +88,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Logo, colors, typography, and brand guidelines',
       icon: Palette,
       color: '#8b5cf6',
-      estimated_time: '20 minutes'
+      estimated_time: '20 minutes',
+      dependencies: []
     },
     {
       id: 'website',
@@ -63,7 +97,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Professional website with SEO optimization',
       icon: Globe,
       color: '#3b82f6',
-      estimated_time: '45 minutes'
+      estimated_time: '45 minutes',
+      dependencies: []
     },
     {
       id: 'payment',
@@ -71,7 +106,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Stripe integration and payment methods',
       icon: CreditCard,
       color: '#10b981',
-      estimated_time: '15 minutes'
+      estimated_time: '15 minutes',
+      dependencies: ['legal']
     },
     {
       id: 'banking',
@@ -79,7 +115,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Bank recommendations and account setup',
       icon: Building2,
       color: '#f59e0b',
-      estimated_time: '25 minutes'
+      estimated_time: '25 minutes',
+      dependencies: ['legal']
     },
     {
       id: 'marketing',
@@ -87,13 +124,21 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       description: 'Social media, email, and content campaigns',
       icon: TrendingUp,
       color: '#ef4444',
-      estimated_time: '35 minutes'
+      estimated_time: '35 minutes',
+      dependencies: ['branding', 'website']
     }
   ]
 
-  const handleModuleComplete = (moduleId: string, data: any) => {
+  const handleModuleComplete = async (moduleId: string, data: any) => {
     setCompletedModules(prev => new Set([...prev, moduleId]))
     setModuleData(prev => ({ ...prev, [moduleId]: data }))
+    
+    // Update module progress to 100%
+    const module = modules.find(m => m.id === moduleId)
+    if (module) {
+      await updateModuleProgress(module.title, 100, { completedData: data })
+    }
+    
     setCurrentModule(null)
     
     trackEvent('automation_module_completed', {
@@ -102,16 +147,42 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
     })
   }
 
-  const startFullAutomation = () => {
+  const startFullAutomation = async () => {
     if (!businessProfile) return
     
-    // Start with legal module
+    // Start with legal module and activate it
+    const firstModule = modules[0]
+    await activateModule(firstModule.title, {
+      business_profile: businessProfile,
+      started_at: new Date().toISOString()
+    })
+    
     setCurrentModule('legal')
     
     trackEvent('full_automation_started', {
       business_name: businessProfile.business_name,
       module_count: modules.length
     })
+  }
+
+  const startModule = async (moduleId: string) => {
+    const module = modules.find(m => m.id === moduleId)
+    if (!module) return
+
+    // Check dependencies
+    const hasDependencies = module.dependencies.every(dep => completedModules.has(dep))
+    if (!hasDependencies) {
+      alert('Please complete required modules first!')
+      return
+    }
+
+    // Activate module
+    await activateModule(module.title, {
+      business_profile: businessProfile,
+      started_at: new Date().toISOString()
+    })
+
+    setCurrentModule(moduleId)
   }
 
   const getNextModule = () => {
@@ -211,18 +282,27 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
           const Icon = module.icon
           const isCompleted = completedModules.has(module.id)
           const isNext = getNextModule() === module.id
+          const status = getModuleStatus(module.title)
+          const progress = getModuleProgress(module.title)
+          const hasDependencies = module.dependencies.every(dep => completedModules.has(dep))
           
           return (
             <Card 
               key={module.id} 
-              className={`bg-black/30 backdrop-blur-md border rounded-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-2 cursor-pointer ${
+              className={`bg-black/30 backdrop-blur-md border rounded-2xl transition-all duration-300 ${
+                !hasDependencies ? 'opacity-60' : 'hover:scale-105 hover:-translate-y-2 cursor-pointer'
+              } ${
                 isCompleted 
                   ? 'border-[#6ad040] shadow-lg shadow-[#6ad040]/20' 
+                  : status === 'active'
+                  ? 'border-blue-500/60 shadow-lg shadow-blue-500/20'
+                  : status === 'paused'
+                  ? 'border-orange-500/60 shadow-lg shadow-orange-500/20'
                   : isNext
                   ? 'border-yellow-500/60 shadow-lg shadow-yellow-500/20'
                   : 'border-[#6ad040]/40 hover:border-[#6ad040] hover:shadow-lg hover:shadow-[#6ad040]/20'
               }`}
-              onClick={() => setCurrentModule(module.id)}
+              onClick={() => hasDependencies && startModule(module.id)}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -230,8 +310,18 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
                     <Icon className="w-6 h-6" style={{ color: module.color }} />
                   </div>
                   
-                  {isCompleted ? (
+                  {!hasDependencies ? (
+                    <Lock className="w-6 h-6 text-[#b7ffab]/40" />
+                  ) : isCompleted ? (
                     <CheckCircle className="w-6 h-6 text-[#6ad040]" />
+                  ) : status === 'active' ? (
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
+                      <Play className="w-4 h-4 text-[#161616]" />
+                    </div>
+                  ) : status === 'paused' ? (
+                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                      <Pause className="w-4 h-4 text-[#161616]" />
+                    </div>
                   ) : isNext ? (
                     <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
                       <ArrowRight className="w-4 h-4 text-[#161616]" />
@@ -249,6 +339,35 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
                   {module.description}
                 </p>
 
+                {!hasDependencies && (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      <p className="font-['Space_Mono'] text-orange-500 text-xs">
+                        Requires: {module.dependencies.map(dep => {
+                          const depModule = modules.find(m => m.id === dep)
+                          return depModule?.title
+                        }).filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {status === 'active' && progress > 0 && (
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-['Space_Mono'] text-[#6ad040] text-xs">Progress</span>
+                      <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">{progress}%</span>
+                    </div>
+                    <div className="h-1.5 bg-black/50 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
                     ~{module.estimated_time}
@@ -257,11 +376,22 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
                   <span className={`px-2 py-1 rounded-full text-xs font-['Space_Mono'] font-bold ${
                     isCompleted 
                       ? 'bg-[#6ad040]/20 text-[#6ad040]' 
+                      : status === 'active'
+                      ? 'bg-blue-500/20 text-blue-500'
+                      : status === 'paused'
+                      ? 'bg-orange-500/20 text-orange-500'
+                      : !hasDependencies
+                      ? 'bg-gray-500/20 text-gray-500'
                       : isNext
                       ? 'bg-yellow-500/20 text-yellow-500'
                       : 'bg-[#b7ffab]/20 text-[#b7ffab]/60'
                   }`}>
-                    {isCompleted ? 'COMPLETE' : isNext ? 'NEXT' : 'PENDING'}
+                    {isCompleted ? 'COMPLETE' : 
+                     status === 'active' ? 'ACTIVE' :
+                     status === 'paused' ? 'PAUSED' :
+                     !hasDependencies ? 'LOCKED' :
+                     isNext ? 'NEXT' : 'PENDING'
+                    }
                   </span>
                 </div>
               </CardContent>

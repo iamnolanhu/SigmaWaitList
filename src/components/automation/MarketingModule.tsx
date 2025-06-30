@@ -23,9 +23,9 @@ interface MarketingModuleProps {
 }
 
 export const MarketingModule: React.FC<MarketingModuleProps> = ({ businessProfile, brandAssets, onComplete }) => {
-  const { user } = useApp()
+  const { } = useApp()
   const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([])
-  const [loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
   const [step, setStep] = useState<'generating' | 'review'>('generating')
 
   useEffect(() => {

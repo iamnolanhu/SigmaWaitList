@@ -30,6 +30,14 @@ export interface CompleteProfile {
   completion_percentage?: number
   created_at?: string
   updated_at?: string
+  // Profile wizard fields
+  wizard_completed?: boolean
+  wizard_step?: number
+  wizard_data?: any
+  industry?: string
+  business_goals?: string[]
+  skill_level?: string
+  preferences?: any
 }
 
 export interface BasicProfile {

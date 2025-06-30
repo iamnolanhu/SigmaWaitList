@@ -173,6 +173,60 @@ export class AuthService {
   }
 
   /**
+   * Send verification email
+   */
+  static async sendVerificationEmail(email: string): Promise<{ error?: string }> {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      })
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {}
+    } catch (error: any) {
+      return { error: error.message }
+    }
+  }
+
+  /**
+   * Check if user's email is verified
+   */
+  static async isEmailVerified(): Promise<boolean> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      return user?.email_confirmed_at !== null
+    } catch (error) {
+      console.error('Error checking email verification:', error)
+      return false
+    }
+  }
+
+  /**
+   * Verify email with OTP token
+   */
+  static async verifyEmail(token: string, email: string): Promise<{ error?: string }> {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        token,
+        email,
+        type: 'email'
+      })
+
+      if (error) {
+        return { error: error.message }
+      }
+
+      return {}
+    } catch (error: any) {
+      return { error: error.message }
+    }
+  }
+
+  /**
    * Listen to auth state changes
    */
   static onAuthStateChange(callback: (event: string, session: Session | null) => void) {

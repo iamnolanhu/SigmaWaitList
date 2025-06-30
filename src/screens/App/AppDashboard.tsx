@@ -1,9 +1,9 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
+import { useAIGeneration } from '../../hooks/useAIGeneration'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileDashboard } from '../../components/profile'
-import { ProfileSetup } from '../../components/profile'
 import { AutomationDashboard } from '../../components/automation'
 import { LegalModule } from '../../components/automation/LegalModule'
 import { BrandingModule } from '../../components/automation/BrandingModule'
@@ -13,7 +13,14 @@ import { PaymentModule } from '../../components/automation/PaymentModule'
 import { WebsiteModule } from '../../components/automation/WebsiteModule'
 import { Navbar } from '../../components/Navbar'
 import { ChatBox } from '../../components/ChatBox'
-import { MusicPlayer } from '../../components/MusicPlayer'
+import { ProfileWizard } from '../../components/onboarding/ProfileWizard'
+import { ProgressTracker } from '../../components/progress/ProgressTracker'
+import { QuickActions } from '../../components/dashboard/QuickActions'
+import { Skeleton, SkeletonText } from '../../components/ui/skeleton'
+import { useKeyboardShortcuts, globalShortcuts } from '../../hooks/useKeyboardShortcuts'
+import { KeyboardShortcutsHelp, ShortcutHint } from '../../components/ui/KeyboardShortcutsHelp'
+import { toast } from '../../hooks/useToast'
+import { ErrorBoundary } from '../../components/ErrorBoundary'
 import { 
   CheckCircle, 
   Zap, 
@@ -21,17 +28,17 @@ import {
   TrendingUp, 
   Clock, 
   Users, 
-  AlertTriangle,
   Cpu,
   Shield,
   Database,
   Settings,
   User,
-  Scale,
-  Palette,
-  Building2,
-  CreditCard,
-  Share2
+  Bot,
+  Sparkles,
+  RefreshCw,
+  Target,
+  Lightbulb,
+  ArrowRight
 } from 'lucide-react'
 
 type TabType = 'dashboard' | 'profile' | 'business-setup' | 'brand-identity' | 'website-builder' | 'payment-setup' | 'business-banking' | 'marketing-ai'
@@ -39,12 +46,122 @@ type TabType = 'dashboard' | 'profile' | 'business-setup' | 'brand-identity' | '
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
-  const [currentView, setCurrentView] = React.useState<TabType>('dashboard')
+  const { generateCustom, loading: aiLoading } = useAIGeneration()
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'automation'>('dashboard')
+  const [showProfileWizard, setShowProfileWizard] = React.useState(false)
+  const [aiSuggestions, setAiSuggestions] = React.useState<{
+    dailyTip: string
+    actionItems: string[]
+    moduleRecommendations: { module: string; reason: string }[]
+  } | null>(null)
+  const [loadingSuggestions, setLoadingSuggestions] = React.useState(false)
 
   // Remove profile completion restriction - users can access app regardless
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
   // Allow access to app even with incomplete profile
-  const shouldShowProfileSetup = false
+
+  // Keyboard shortcuts
+  const shortcuts = React.useMemo(() => [
+    ...globalShortcuts,
+    {
+      key: 'p',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Profile',
+      action: () => setCurrentView('profile')
+    },
+    {
+      key: 'd',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Dashboard',
+      action: () => setCurrentView('dashboard')
+    },
+    {
+      key: 'a',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Automation',
+      action: () => setCurrentView('automation')
+    }
+  ], [])
+
+  const { showHelp, getShortcutDisplay } = useKeyboardShortcuts(shortcuts)
+
+  // Listen for save event
+  React.useEffect(() => {
+    const handleSaveEvent = () => {
+      if (currentView === 'profile') {
+        toast.info('Save profile', 'Use the save button in the profile section')
+      }
+    }
+
+    window.addEventListener('saveCurrentForm', handleSaveEvent)
+    return () => window.removeEventListener('saveCurrentForm', handleSaveEvent)
+  }, [currentView])
+  
+  // Check if wizard should be shown on first load
+  React.useEffect(() => {
+    if (profile && !profile.wizard_completed && (profile.completion_percentage ?? 0) < 50 && currentView === 'dashboard') {
+      setShowProfileWizard(true)
+    }
+  }, [profile?.wizard_completed, profile?.completion_percentage, currentView])
+
+  // Generate AI suggestions on mount and when profile changes
+  React.useEffect(() => {
+    const generateSuggestions = async () => {
+      if (!profile || loadingSuggestions || aiSuggestions) return
+      
+      setLoadingSuggestions(true)
+      try {
+        const prompt = `Based on this user profile, generate personalized suggestions:
+Profile: ${JSON.stringify({
+  name: profile.name,
+  business_type: profile.business_type,
+  region: profile.region,
+  time_commitment: profile.time_commitment,
+  capital_level: profile.capital_level,
+  completion_percentage: profile.completion_percentage
+}, null, 2)}
+
+Generate a JSON response with:
+1. A daily business tip (1-2 sentences)
+2. 3 specific action items they should do today
+3. 2 module recommendations with reasons why
+
+Format:
+{
+  "dailyTip": "Your tip here",
+  "actionItems": ["Action 1", "Action 2", "Action 3"],
+  "moduleRecommendations": [
+    {"module": "Module Name", "reason": "Why this module"},
+    {"module": "Module Name", "reason": "Why this module"}
+  ]
+}`
+
+        const result = await generateCustom(prompt, 'business-planning')
+        if (result) {
+          try {
+            const suggestions = JSON.parse(result)
+            setAiSuggestions(suggestions)
+          } catch (e) {
+            console.error('Failed to parse AI suggestions:', e)
+          }
+        }
+      } catch (error) {
+        console.error('Error generating suggestions:', error)
+      } finally {
+        setLoadingSuggestions(false)
+      }
+    }
+
+    generateSuggestions()
+  }, [profile, generateCustom])
+
+  const refreshSuggestions = async () => {
+    setAiSuggestions(null)
+    setLoadingSuggestions(false)
+  }
 
   // Convert profile to BusinessProfile format for automation
   const businessProfile = profile ? {
@@ -61,62 +178,99 @@ export const AppDashboard: React.FC = () => {
     state_of_incorporation: profile.region || ''
   } : undefined
 
-  // Tab configuration
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: Activity, disabled: false },
-    { id: 'profile', label: 'Profile', icon: User, disabled: false },
-    { id: 'business-setup', label: 'Business Setup', icon: Scale, disabled: !isProfileComplete },
-    { id: 'brand-identity', label: 'Brand Identity', icon: Palette, disabled: !isProfileComplete },
-    { id: 'website-builder', label: 'Website Builder', icon: Database, disabled: !isProfileComplete },
-    { id: 'payment-setup', label: 'Payment Setup', icon: CreditCard, disabled: !isProfileComplete },
-    { id: 'business-banking', label: 'Business Banking', icon: Building2, disabled: !isProfileComplete },
-    { id: 'marketing-ai', label: 'Marketing AI', icon: Share2, disabled: !isProfileComplete },
-  ]
+  return (
+    <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
+      {/* Matrix Background Animation */}
+      <MatrixBackground className="z-[5]" />
+      
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/70 via-[#1a1a1a]/50 to-[#1a1a1a]/70 pointer-events-none z-[6]" />
 
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case 'profile':
-        return (
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-6">
+      {/* Enhanced Navbar */}
+      <Navbar onNavigate={(section) => {
+        if (section === 'profile' || section === 'profile-settings') setCurrentView('profile')
+        if (section === 'dashboard') setCurrentView('dashboard')
+        if (section === 'automation') setCurrentView('automation')
+      }} />
+
+      {/* Main Content */}
+      <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-1">
+            <div className="flex gap-1">
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className="flex items-center gap-2 text-[#6ad040] hover:text-[#79e74c] font-['Space_Mono'] text-sm transition-colors"
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'dashboard'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
               >
-                ← Back to Dashboard
+                <div className="flex items-center justify-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  <span>Dashboard</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'd', cmd: true, ctrl: true })} />
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => setCurrentView('automation')}
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'automation'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  <span>Automation</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'a', cmd: true, ctrl: true })} />
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => setCurrentView('profile')}
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'profile'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Profile</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'p', cmd: true, ctrl: true })} />
+                  )}
+                </div>
               </button>
             </div>
-            <ProfileDashboard />
           </div>
-        )
-      case 'business-setup':
-        return <LegalModule businessProfile={businessProfile} />
-      case 'brand-identity':
-        return <BrandingModule businessProfile={businessProfile} />
-      case 'website-builder':
-        return <WebsiteModule businessProfile={businessProfile} />
-      case 'payment-setup':
-        return <PaymentModule businessProfile={businessProfile} />
-      case 'business-banking':
-        return <BankingModule businessProfile={businessProfile} />
-      case 'marketing-ai':
-        return <MarketingModule businessProfile={businessProfile} />
-      default:
-        return renderDashboard()
-    }
-  }
-
-  const renderDashboard = () => (
-    <div className="max-w-4xl mx-auto">
-      {/* Command Center Header */}
-      <div className="text-center mb-8">
-        <h1 className="font-['Orbitron'] font-black text-[#ffff] text-3xl lg:text-5xl mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
-          SIGMA COMMAND CENTER
-        </h1>
-        <p className="font-['Space_Mono'] text-[#b7ffab] text-base mb-6 opacity-90">
-          Mission Control for AI Business Automation
-        </p>
-      </div>
+        </div>
+        {currentView === 'profile' ? (
+          <ErrorBoundary>
+            <div className="max-w-6xl mx-auto">
+              <ProfileDashboard />
+            </div>
+          </ErrorBoundary>
+        ) : currentView === 'automation' ? (
+          <ErrorBoundary>
+            <AutomationDashboard businessProfile={businessProfile} />
+          </ErrorBoundary>
+        ) : (
+          <div className="max-w-4xl mx-auto">
+            {/* Command Center Header */}
+            <div className="text-center mb-8">
+              <h1 className="font-['Orbitron'] font-black text-[#ffff] text-3xl lg:text-5xl mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50 matrix-glow">
+                SIGMA COMMAND CENTER
+              </h1>
+              <p className="font-['Space_Mono'] text-[#b7ffab] text-base mb-6 opacity-90">
+                Mission Control for AI Business Automation
+              </p>
+            </div>
 
       {/* Status Bar */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -132,24 +286,31 @@ export const AppDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Profile Status */}
-        <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-5 h-5 text-[#6ad040]" />
-            <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">PROFILE</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-black/50 rounded-full h-2 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
-                style={{ width: `${profile?.completion_percentage || 0}%` }}
-              />
-            </div>
-            <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-              {profile?.completion_percentage || 0}%
-            </span>
-          </div>
-        </div>
+              {/* Profile Status */}
+              <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Shield className="w-5 h-5 text-[#6ad040]" />
+                  <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">PROFILE</span>
+                </div>
+                {profileLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-2 w-full" />
+                    <SkeletonText className="h-3 w-12" />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-black/50 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
+                        style={{ width: `${profile?.completion_percentage || 0}%` }}
+                      />
+                    </div>
+                    <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
+                      {profile?.completion_percentage || 0}%
+                    </span>
+                  </div>
+                )}
+              </div>
 
         {/* Active Modules */}
         <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
@@ -163,116 +324,235 @@ export const AppDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Last Activity */}
-        <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-5 h-5 text-[#6ad040]" />
-            <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">ACTIVITY</span>
-          </div>
-          <div className="font-['Space_Mono'] text-[#b7ffab] text-xs">
-            Profile Updated
-          </div>
-        </div>
-      </div>
-
-      {/* Main Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Left Column - Mission Status */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Mission Control Panel */}
-          <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Activity className="w-6 h-6 text-[#6ad040]" />
-              <h2 className="font-['Orbitron'] font-bold text-[#b7ffab] text-xl">
-                MISSION STATUS
-              </h2>
-            </div>
-            
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <button 
-                onClick={() => setCurrentView('profile')}
-                className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
-                  isProfileComplete 
-                    ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
-                    : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
-                }`}
-              >
+              {/* Last Activity */}
+              <div className="bg-black/30 backdrop-blur-md rounded-xl border border-[#6ad040]/40 p-4">
                 <div className="flex items-center gap-3 mb-2">
-                  {isProfileComplete ? (
-                    <CheckCircle className="w-5 h-5 text-[#6ad040]" />
-                  ) : (
-                    <User className="w-5 h-5 text-blue-400" />
-                  )}
-                  <span className="text-blue-400 font-['Space_Grotesk'] font-bold text-sm">
-                    {isProfileComplete ? 'PROFILE COMPLETE' : 'SETUP PROFILE'}
-                  </span>
+                  <Clock className="w-5 h-5 text-[#6ad040]" />
+                  <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">ACTIVITY</span>
                 </div>
-                <p className="text-blue-400 font-['Space_Mono'] text-xs opacity-80">
-                  {isProfileComplete 
-                    ? 'Profile setup complete - click to manage' 
-                    : 'Complete your profile for enhanced features'
-                  }
-                </p>
-              </button>
-
-              <button 
-                onClick={() => setCurrentView('business-setup')}
-                className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
-                  isProfileComplete 
-                    ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
-                    : 'border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20'
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-yellow-500'}`} />
-                  <span className="text-yellow-500 font-['Space_Grotesk'] font-bold text-sm">
-                    START AUTOMATION
-                  </span>
+                <div className="font-['Space_Mono'] text-[#b7ffab] text-xs">
+                  Profile Updated
                 </div>
-                <p className="text-yellow-500 font-['Space_Mono'] text-xs opacity-80">
-                  {isProfileComplete 
-                    ? 'Begin your business automation journey'
-                    : 'Complete profile to unlock AI features'
-                  }
-                </p>
-              </button>
-            </div>
-
-            {/* Progress Overview */}
-            <div className="border-t border-[#6ad040]/20 pt-4">
-              <h3 className="font-['Space_Grotesk'] text-[#b7ffab] font-bold mb-4">AUTOMATION PIPELINE</h3>
-              <div className="space-y-3">
-                {[
-                  { name: 'Profile Setup', completed: isProfileComplete, current: !isProfileComplete },
-                  { name: 'Business Formation', completed: false, current: isProfileComplete },
-                  { name: 'Brand Development', completed: false, current: false },
-                  { name: 'Digital Presence', completed: false, current: false },
-                ].map((step, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      step.completed ? 'bg-[#6ad040]' : 
-                      step.current ? 'bg-yellow-500 animate-pulse' : 
-                      'bg-gray-600'
-                    }`} />
-                    <span className={`font-['Space_Mono'] text-sm ${
-                      step.completed ? 'text-[#6ad040]' : 
-                      step.current ? 'text-yellow-500' : 
-                      'text-[#b7ffab]/60'
-                    }`}>
-                      {step.name}
-                    </span>
-                    {step.current && (
-                      <span className="font-['Space_Mono'] text-xs text-yellow-500 bg-yellow-500/20 px-2 py-1 rounded">
-                        ACTIVE
-                      </span>
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
-          </div>
-        </div>
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <QuickActions 
+                onNavigate={(view) => setCurrentView(view as 'dashboard' | 'profile' | 'automation')}
+                onShowWizard={() => setShowProfileWizard(true)}
+              />
+            </div>
+
+            {/* Progress Tracker */}
+            <div className="mb-8">
+              <ProgressTracker />
+            </div>
+
+            {/* Main Dashboard Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Left Column - Mission Status */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Mission Control Panel */}
+                <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Activity className="w-6 h-6 text-[#6ad040]" />
+                    <h2 className="font-['Orbitron'] font-bold text-[#b7ffab] text-xl">
+                      MISSION STATUS
+                    </h2>
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <button 
+                      onClick={() => setCurrentView('profile')}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
+                        isProfileComplete 
+                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
+                          : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        {isProfileComplete ? (
+                          <CheckCircle className="w-5 h-5 text-[#6ad040]" />
+                        ) : (
+                          <User className="w-5 h-5 text-blue-400" />
+                        )}
+                        <span className="font-['Space_Grotesk'] font-bold text-sm">
+                          {isProfileComplete ? 'PROFILE COMPLETE' : 'SETUP PROFILE'}
+                        </span>
+                        <ShortcutHint shortcut="⌘P" className="ml-auto" />
+                      </div>
+                      <p className="font-['Space_Mono'] text-xs opacity-80">
+                        {isProfileComplete 
+                          ? 'Profile setup complete - click to manage' 
+                          : 'Complete your profile for enhanced features'
+                        }
+                      </p>
+                    </button>
+
+                    <button 
+                      onClick={() => setCurrentView('automation')}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
+                        isProfileComplete 
+                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
+                          : 'border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-yellow-500'}`} />
+                        <span className="font-['Space_Grotesk'] font-bold text-sm">
+                          START AUTOMATION
+                        </span>
+                        <ShortcutHint shortcut="⌘A" className="ml-auto" />
+                      </div>
+                      <p className="font-['Space_Mono'] text-xs opacity-80">
+                        {isProfileComplete 
+                          ? 'Begin your business automation journey'
+                          : 'Complete profile to unlock AI features'
+                        }
+                      </p>
+                    </button>
+                  </div>
+
+                  {/* Progress Overview */}
+                  <div className="border-t border-[#6ad040]/20 pt-4">
+                    <h3 className="font-['Space_Grotesk'] text-[#b7ffab] font-bold mb-4">AUTOMATION PIPELINE</h3>
+                    <div className="space-y-3">
+                      {[
+                        { name: 'Profile Setup', completed: isProfileComplete, current: !isProfileComplete },
+                        { name: 'AI Onboarding', completed: false, current: isProfileComplete },
+                        { name: 'Business Formation', completed: false, current: false },
+                        { name: 'Brand Development', completed: false, current: false },
+                        { name: 'Digital Presence', completed: false, current: false },
+                      ].map((step, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            step.completed ? 'bg-[#6ad040]' : 
+                            step.current ? 'bg-yellow-500 animate-pulse' : 
+                            'bg-gray-600'
+                          }`} />
+                          <span className={`font-['Space_Mono'] text-sm ${
+                            step.completed ? 'text-[#6ad040]' : 
+                            step.current ? 'text-yellow-500' : 
+                            'text-[#b7ffab]/60'
+                          }`}>
+                            {step.name}
+                          </span>
+                          {step.current && (
+                            <span className="font-['Space_Mono'] text-xs text-yellow-500 bg-yellow-500/20 px-2 py-1 rounded">
+                              ACTIVE
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Suggestions Panel */}
+                <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Bot className="w-6 h-6 text-[#6ad040]" />
+                      <h2 className="font-['Orbitron'] font-bold text-[#b7ffab] text-xl">
+                        AI SUGGESTIONS
+                      </h2>
+                    </div>
+                    <button
+                      onClick={refreshSuggestions}
+                      disabled={loadingSuggestions || aiLoading}
+                      className="text-[#6ad040] hover:text-[#79e74c] disabled:text-[#6ad040]/50 transition-colors"
+                      title="Refresh suggestions"
+                    >
+                      <RefreshCw className={`w-5 h-5 ${loadingSuggestions || aiLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+
+                  {loadingSuggestions || aiLoading ? (
+                    <div className="text-center py-8">
+                      <div className="inline-flex items-center gap-3">
+                        <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
+                        <span className="font-['Space_Mono'] text-[#6ad040] text-sm">
+                          Generating personalized insights...
+                        </span>
+                      </div>
+                    </div>
+                  ) : aiSuggestions ? (
+                    <div className="space-y-6">
+                      {/* Daily Tip */}
+                      <div className="bg-[#6ad040]/10 rounded-lg p-4 border border-[#6ad040]/30">
+                        <div className="flex items-start gap-3">
+                          <Lightbulb className="w-5 h-5 text-[#6ad040] mt-0.5" />
+                          <div>
+                            <h3 className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm mb-1">
+                              DAILY INSIGHT
+                            </h3>
+                            <p className="font-['Space_Mono'] text-[#b7ffab] text-sm">
+                              {aiSuggestions.dailyTip}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Items */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Target className="w-4 h-4 text-[#6ad040]" />
+                          <h3 className="font-['Space_Grotesk'] font-bold text-[#b7ffab] text-sm">
+                            TODAY'S ACTION ITEMS
+                          </h3>
+                        </div>
+                        <div className="space-y-2">
+                          {aiSuggestions.actionItems.map((item, index) => (
+                            <div key={index} className="flex items-start gap-3 group">
+                              <span className="text-[#6ad040] font-['Space_Mono'] text-xs mt-0.5">
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+                              <p className="font-['Space_Mono'] text-[#b7ffab] text-sm flex-1">
+                                {item}
+                              </p>
+                              <ArrowRight className="w-4 h-4 text-[#6ad040]/50 group-hover:text-[#6ad040] transition-colors" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Module Recommendations */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-4 h-4 text-[#6ad040]" />
+                          <h3 className="font-['Space_Grotesk'] font-bold text-[#b7ffab] text-sm">
+                            RECOMMENDED MODULES
+                          </h3>
+                        </div>
+                        <div className="space-y-3">
+                          {aiSuggestions.moduleRecommendations.map((rec, index) => (
+                            <div 
+                              key={index}
+                              onClick={() => setCurrentView('automation')}
+                              className="bg-black/20 rounded-lg p-3 border border-[#6ad040]/30 hover:border-[#6ad040] hover:bg-[#6ad040]/10 transition-all cursor-pointer"
+                            >
+                              <h4 className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm mb-1">
+                                {rec.module}
+                              </h4>
+                              <p className="font-['Space_Mono'] text-[#b7ffab]/80 text-xs">
+                                {rec.reason}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-sm">
+                        Complete your profile to receive personalized AI suggestions
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
         {/* Right Column - System Info */}
         <div className="space-y-6">
@@ -407,82 +687,54 @@ export const AppDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Development Status */}
-      <div className="mt-8 text-center">
-        <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 max-w-3xl mx-auto">
-          <h3 className="font-['Orbitron'] font-bold text-[#6ad040] text-xl mb-4">
-            ⚡ SIGMA AUTOMATION STATUS ⚡
-          </h3>
-          <p className="font-['Space_Mono'] text-[#b7ffab] text-sm leading-relaxed opacity-90 mb-4">
-            The full AI Business Partner platform is now operational. Each module provides complete automation 
-            with cutting-edge AI capabilities and the same Matrix aesthetic. Complete your profile to unlock 
-            all automation modules and begin your journey to CEO status.
-          </p>
-          <div className="inline-flex items-center gap-2 bg-[#6ad040]/20 rounded-full px-4 py-2 border border-[#6ad040]/50">
-            <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
-            <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-              FULL AUTOMATION SUITE ACTIVE
-            </span>
-          </div>
+            {/* Development Status */}
+            <div className="mt-8 text-center">
+              <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 max-w-3xl mx-auto">
+                <h3 className="font-['Orbitron'] font-bold text-[#6ad040] text-xl mb-4">
+                  ⚡ SIGMA AUTOMATION STATUS ⚡
+                </h3>
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm leading-relaxed opacity-90 mb-4">
+                  The full AI Business Partner platform is now operational. Each module provides complete automation 
+                  with cutting-edge AI capabilities and the same Matrix aesthetic. Complete your profile to unlock 
+                  all automation modules and begin your journey to CEO status.
+                </p>
+                <div className="inline-flex items-center gap-2 bg-[#6ad040]/20 rounded-full px-4 py-2 border border-[#6ad040]/50">
+                  <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
+                  <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
+                    FULL AUTOMATION SUITE ACTIVE
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Keyboard Shortcuts Hint */}
+            <div className="mt-4 text-center">
+              <p className="font-['Space_Mono'] text-[#6ad040]/60 text-xs">
+                Press <ShortcutHint shortcut="?" /> to view keyboard shortcuts
+              </p>
+            </div>
         </div>
-      </div>
-    </div>
-  )
-
-  return (
-    <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
-      {/* Matrix Background Animation */}
-      <MatrixBackground className="z-[5]" />
-      
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/70 via-[#1a1a1a]/50 to-[#1a1a1a]/70 pointer-events-none z-[6]" />
-
-      {/* Enhanced Navbar */}
-      <Navbar onNavigate={(section) => {
-        if (section === 'profile' || section === 'profile-settings') setCurrentView('profile')
-        if (section === 'dashboard') setCurrentView('dashboard')
-        if (section === 'automation') setCurrentView('business-setup')
-      }} />
-
-      {/* Tab Navigation */}
-      <div className="relative z-10 border-b border-[#6ad040]/20 bg-black/40 backdrop-blur-md mt-16">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-1 py-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => !tab.disabled && setCurrentView(tab.id as TabType)}
-                  disabled={tab.disabled}
-                  className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm font-['Space_Mono'] font-bold transition-all duration-300 whitespace-nowrap ${
-                    currentView === tab.id
-                      ? 'text-[#6ad040] border-b-2 border-[#6ad040] bg-[#6ad040]/10'
-                      : tab.disabled
-                      ? 'text-[#b7ffab]/40 cursor-not-allowed'
-                      : 'text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10'
-                  }`}
-                >
-                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <main className="relative z-10 container mx-auto px-6 py-8 pt-8 pb-40">
-        {renderCurrentView()}
+        )}
       </main>
 
       {/* Sigma AI Chatbox */}
       <ChatBox />
-
-      {/* Music Player */}
-      {/* <MusicPlayer /> */}
+      
+      {/* Profile Wizard Modal */}
+      {showProfileWizard && (
+        <ProfileWizard 
+          onComplete={() => setShowProfileWizard(false)}
+          onSkip={() => setShowProfileWizard(false)}
+        />
+      )}
+      
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp
+        shortcuts={shortcuts}
+        isOpen={showHelp}
+        onClose={() => {}}
+        getShortcutDisplay={getShortcutDisplay}
+      />
     </div>
   )
 }

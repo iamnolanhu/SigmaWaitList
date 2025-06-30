@@ -317,11 +317,11 @@ export const ProfileSetup: React.FC = () => {
   }
 
   // Show error state
-  if (error) {
+  if (connectionStatus === 'error' && connectionError) {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="bg-red-500/10 backdrop-blur-md border border-red-500/30 rounded-lg p-6 text-center">
-          <p className="font-['Space_Mono'] text-red-400 text-sm mb-4">Error loading profile: {error}</p>
+          <p className="font-['Space_Mono'] text-red-400 text-sm mb-4">Error loading profile: {connectionError}</p>
           <Button 
             onClick={() => window.location.reload()}
             className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Space_Grotesk'] font-bold"

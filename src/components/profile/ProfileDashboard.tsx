@@ -3,16 +3,12 @@ import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useApp } from '../../contexts/AppContext'
+import { Skeleton } from '../ui/skeleton'
 import { 
   User, 
   Settings, 
-  Shield, 
   FileText,
   Briefcase,
-  Globe,
-  Lock,
-  Bell,
-  CreditCard,
   AlertTriangle,
   CheckCircle,
   ArrowLeft

@@ -5,15 +5,12 @@ import { Card, CardContent } from '../../ui/card'
 import { useProfileSettings } from '../../../hooks/useProfileSettings'
 import { useApp } from '../../../contexts/AppContext'
 import { 
-  Settings, 
   Lock, 
   Bell, 
-  Shield, 
   Eye,
   EyeOff,
   Trash2,
   Download,
-  Upload,
   Key,
   Smartphone,
   Mail,
@@ -24,7 +21,7 @@ import {
 } from 'lucide-react'
 
 export const AccountSettingsTab: React.FC = () => {
-  const { user, signOut } = useApp()
+  const { user } = useApp()
   const { profile, loading, updateProfile, changePassword } = useProfileSettings()
   
   const [formData, setFormData] = useState({
@@ -86,7 +83,7 @@ export const AccountSettingsTab: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof typeof prev],
+        ...(prev[parent as keyof typeof prev] as any),
         [field]: value
       }
     }))

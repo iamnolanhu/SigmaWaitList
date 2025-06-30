@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -13,7 +13,6 @@ import {
   AlertCircle, 
   Loader2,
   Building,
-  Shield,
   Gavel
 } from 'lucide-react'
 
@@ -32,7 +31,7 @@ export const LegalModule: React.FC<LegalModuleProps> = ({ businessProfile, onCom
     description: ''
   })
   const [documents, setDocuments] = useState<LegalDocument[]>([])
-  const [loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
   const [step, setStep] = useState<'setup' | 'generating' | 'review'>('setup')
 
   const legalStructures = [
@@ -84,19 +83,19 @@ export const LegalModule: React.FC<LegalModuleProps> = ({ businessProfile, onCom
     }
   }
 
-  const downloadDocument = (document: LegalDocument) => {
-    const blob = new Blob([document.content], { type: 'text/plain' })
+  const downloadDocument = (doc: LegalDocument) => {
+    const blob = new Blob([doc.content], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = window.document.createElement('a')
     a.href = url
-    a.download = `${document.document_type.replace(/_/g, '-')}-${profile.business_name?.replace(/\s+/g, '-')}.txt`
-    document.body.appendChild(a)
+    a.download = `${doc.document_type.replace(/_/g, '-')}-${profile.business_name?.replace(/\s+/g, '-')}.txt`
+    window.document.body.appendChild(a)
     a.click()
-    document.body.removeChild(a)
+    window.document.body.removeChild(a)
     URL.revokeObjectURL(url)
 
     trackEvent('legal_document_downloaded', {
-      document_type: document.document_type,
+      document_type: doc.document_type,
       business_name: profile.business_name
     })
   }

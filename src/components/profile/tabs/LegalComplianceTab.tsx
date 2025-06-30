@@ -96,7 +96,8 @@ export const LegalComplianceTab: React.FC = () => {
     try {
       // Update contact preferences separately
       const contactPreferences = {
-        ...profile?.contact_preferences,
+        email: profile?.contact_preferences?.email ?? true,
+        phone: profile?.contact_preferences?.phone ?? false,
         marketing: formData.marketing_consent
       }
 
