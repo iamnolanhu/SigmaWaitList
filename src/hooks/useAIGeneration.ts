@@ -125,8 +125,7 @@ export const useAIGeneration = () => {
         business_type: profile.business_type,
         time_commitment: profile.time_commitment,
         capital_level: profile.capital_level,
-        region: profile.region,
-        sdg_goals: profile.sdg_goals
+        region: profile.region
       } : {}
 
       const prompt = `Generate a comprehensive business plan for the following idea: "${businessIdea}"

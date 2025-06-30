@@ -267,7 +267,6 @@ export class OptimizedProfileService {
       language: data.language || 'en',
       region: data.region || '',
       stealth_mode: data.stealth_mode || false,
-      sdg_goals: data.sdg_goals || [],
       low_tech_access: data.low_tech_access || false,
       business_type: data.business_type || '',
       time_commitment: data.time_commitment || '',

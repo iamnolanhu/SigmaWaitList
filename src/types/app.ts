@@ -6,7 +6,6 @@ export interface User {
   language?: string
   region?: string
   stealth_mode?: boolean
-  sdg_goals?: string[]
   low_tech_access?: boolean
   business_type?: string
   time_commitment?: string
