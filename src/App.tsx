@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AppProvider, useApp } from './contexts/AppContext'
-import { Desktop } from './screens/Desktop'
-import { AppDashboard } from './screens/App'
-import { Login } from './screens/Login'
-
-const AppContent: React.FC = () => {
-  const { appMode, loading, user } = useApp()
-=======
 import React, { useEffect } from 'react'
 import { AppProvider, useApp } from './contexts/AppContext'
 import { Desktop } from './screens/Desktop'
@@ -24,7 +13,6 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     setGlobalToast(toastInstance)
   }, [toastInstance])
->>>>>>> origin/dev
 
   if (loading) {
     return (
@@ -40,27 +28,6 @@ const AppContent: React.FC = () => {
   }
 
   return (
-<<<<<<< HEAD
-    <Router>
-      <Routes>
-        {/* Login Route */}
-        <Route 
-          path="/login" 
-          element={
-            user ? <Navigate to="/" replace /> : <Login />
-          } 
-        />
-        
-        {/* Main App Routes */}
-        <Route 
-          path="/*" 
-          element={
-            appMode.isAppMode ? <AppDashboard /> : <Desktop />
-          } 
-        />
-      </Routes>
-    </Router>
-=======
     <>
       {appMode.isAppMode ? <AppDashboard /> : <Desktop />}
       <ToastContainer 
@@ -71,7 +38,6 @@ const AppContent: React.FC = () => {
         onClose={toastInstance.removeToast} 
       />
     </>
->>>>>>> origin/dev
   )
 }
 
