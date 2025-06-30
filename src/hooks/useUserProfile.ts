@@ -24,10 +24,11 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load user profile
+  // Load user profile with better error handling
   const loadProfile = async () => {
     if (!user?.id) {
       console.log('No user ID available for profile loading')
+      setProfile(null)
       return
     }
 
@@ -37,13 +38,26 @@ export const useUserProfile = () => {
     try {
       console.log('Loading profile for user:', user.id)
       
+      // First, check if the user_profiles table exists and is accessible
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
+        console.error('Database error:', error)
+        
+        // If it's a table not found error, the migration might not have run
+        if (error.code === '42P01') {
+          throw new Error('Database not properly configured. Please check your Supabase setup.')
+        }
+        
+        // If it's a permission error
+        if (error.code === '42501') {
+          throw new Error('Database permission error. Please check your RLS policies.')
+        }
+        
         throw error
       }
 
@@ -60,6 +74,7 @@ export const useUserProfile = () => {
           .single()
 
         if (createError) {
+          console.error('Error creating profile:', createError)
           throw createError
         }
         
@@ -72,6 +87,7 @@ export const useUserProfile = () => {
     } catch (err: any) {
       setError(err.message)
       console.error('Error loading user profile:', err)
+      throw err // Re-throw to allow caller to handle
     } finally {
       setLoading(false)
     }
@@ -95,7 +111,7 @@ export const useUserProfile = () => {
     return Math.round((completed / fields.length) * 100)
   }
 
-  // Update user profile with proper error handling and real-time sync
+  // Update user profile with robust error handling
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user?.id) {
       return { data: null, error: 'User not authenticated' }
@@ -133,7 +149,7 @@ export const useUserProfile = () => {
         .single()
 
       if (error) {
-        console.error('Database error:', error)
+        console.error('Database error during update:', error)
         throw error
       }
 
@@ -142,9 +158,10 @@ export const useUserProfile = () => {
       
       return { data, error: null }
     } catch (err: any) {
-      setError(err.message)
+      const errorMessage = err.message || 'Failed to update profile'
+      setError(errorMessage)
       console.error('Error updating user profile:', err)
-      return { data: null, error: err.message }
+      return { data: null, error: errorMessage }
     } finally {
       setLoading(false)
     }
@@ -169,9 +186,12 @@ export const useUserProfile = () => {
     }
   }
 
+  // Load profile when user changes
   useEffect(() => {
     if (user?.id) {
-      loadProfile()
+      loadProfile().catch(err => {
+        console.error('Failed to load profile on user change:', err)
+      })
     } else {
       setProfile(null)
       setLoading(false)

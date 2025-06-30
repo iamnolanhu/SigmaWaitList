@@ -5,7 +5,7 @@ import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useApp } from '../../contexts/AppContext'
 import { trackEvent } from '../../lib/analytics'
-import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw, Database } from 'lucide-react'
+import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw, Database, AlertTriangle } from 'lucide-react'
 
 export const ProfileSetup: React.FC = () => {
   const { user } = useApp()
@@ -22,6 +22,27 @@ export const ProfileSetup: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [isFormValid, setIsFormValid] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting')
+
+  // Check database connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (user?.id) {
+        try {
+          setConnectionStatus('connecting')
+          // Try to load profile to test connection
+          await loadProfile()
+          setConnectionStatus('connected')
+          console.log('Database connection established')
+        } catch (error) {
+          setConnectionStatus('error')
+          console.error('Database connection failed:', error)
+        }
+      }
+    }
+
+    checkConnection()
+  }, [user?.id, loadProfile])
 
   // Update form data when profile loads
   useEffect(() => {
@@ -57,6 +78,11 @@ export const ProfileSetup: React.FC = () => {
     
     if (!isFormValid) {
       setSaveError('Please fill in all required fields')
+      return
+    }
+
+    if (connectionStatus !== 'connected') {
+      setSaveError('Database connection required. Please check your connection.')
       return
     }
 
@@ -107,9 +133,14 @@ export const ProfileSetup: React.FC = () => {
 
   const handleRefresh = async () => {
     setSaving(true)
+    setConnectionStatus('connecting')
     try {
       await loadProfile()
+      setConnectionStatus('connected')
       console.log('Profile refreshed')
+    } catch (error) {
+      setConnectionStatus('error')
+      console.error('Refresh failed:', error)
     } finally {
       setSaving(false)
     }
@@ -156,7 +187,22 @@ export const ProfileSetup: React.FC = () => {
   ]
 
   const completionPercentage = profile?.completion_percentage || 0
-  const isConnected = !!user && !loading
+  const isConnected = connectionStatus === 'connected'
+
+  const getButtonText = () => {
+    if (saving) return 'Saving Profile...'
+    if (connectionStatus === 'connecting') return 'Connecting...'
+    if (connectionStatus === 'error') return 'Connection Error'
+    if (!isFormValid) return 'Fill Required Fields'
+    return 'Save Profile'
+  }
+
+  const getButtonIcon = () => {
+    if (saving) return <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+    if (connectionStatus === 'connecting') return <Database className="w-5 h-5 mr-2" />
+    if (connectionStatus === 'error') return <AlertTriangle className="w-5 h-5 mr-2" />
+    return <Save className="w-5 h-5 mr-2" />
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -193,6 +239,39 @@ export const ProfileSetup: React.FC = () => {
         </div>
       </div>
 
+      {/* Connection Status */}
+      <div className="text-center">
+        <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 border ${
+          connectionStatus === 'connected' 
+            ? 'bg-green-500/10 border-green-500/30' 
+            : connectionStatus === 'error'
+            ? 'bg-red-500/10 border-red-500/30'
+            : 'bg-black/30 border-[#6ad040]/30'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            connectionStatus === 'connected' 
+              ? 'bg-green-500 animate-pulse' 
+              : connectionStatus === 'error'
+              ? 'bg-red-500'
+              : 'bg-yellow-500 animate-pulse'
+          }`} />
+          <span className={`font-['Space_Mono'] text-xs ${
+            connectionStatus === 'connected' 
+              ? 'text-green-400' 
+              : connectionStatus === 'error'
+              ? 'text-red-400'
+              : 'text-yellow-400'
+          }`}>
+            {connectionStatus === 'connected' 
+              ? 'Connected to Database' 
+              : connectionStatus === 'error'
+              ? 'Database Connection Error'
+              : 'Connecting to Database...'
+            }
+          </span>
+        </div>
+      </div>
+
       {/* Success Message */}
       {saveSuccess && (
         <div className="bg-green-500/10 backdrop-blur-md border border-green-500/30 rounded-2xl p-4">
@@ -214,9 +293,7 @@ export const ProfileSetup: React.FC = () => {
       {saveError && (
         <div className="bg-red-500/10 backdrop-blur-md border border-red-500/30 rounded-2xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">!</span>
-            </div>
+            <AlertTriangle className="w-5 h-5 text-red-400" />
             <div>
               <p className="font-['Space_Mono'] text-red-400 text-sm font-bold">
                 Save failed
@@ -374,44 +451,24 @@ export const ProfileSetup: React.FC = () => {
         {/* Save Button */}
         <Button
           type="submit"
-          disabled={saving || !isConnected || !isFormValid}
+          disabled={saving || connectionStatus !== 'connected' || !isFormValid}
           className="w-full font-['Orbitron'] font-black text-lg px-8 py-4 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {saving ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Saving Profile...
-            </>
-          ) : !isConnected ? (
-            <>
-              <Database className="w-5 h-5 mr-2" />
-              Connecting...
-            </>
-          ) : !isFormValid ? (
-            <>
-              <Save className="w-5 h-5 mr-2" />
-              Fill Required Fields
-            </>
-          ) : (
-            <>
-              <Save className="w-5 h-5 mr-2" />
-              Save Profile
-            </>
-          )}
+          {getButtonIcon()}
+          {getButtonText()}
         </Button>
 
         {/* Form Validation Status */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 bg-black/30 rounded-full px-4 py-2 border border-[#6ad040]/30">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#6ad040] animate-pulse' : 'bg-gray-500'}`} />
-            <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
-              {isConnected ? 'Connected to Database' : 'Connecting...'}
-            </span>
-          </div>
-          
           {!isFormValid && (
             <div className="text-xs font-['Space_Mono'] text-yellow-400">
               Required: Name, Region, Business Type, Time Commitment, Capital Level
+            </div>
+          )}
+          
+          {connectionStatus === 'error' && (
+            <div className="text-xs font-['Space_Mono'] text-red-400">
+              Database connection failed. Click refresh to retry.
             </div>
           )}
         </div>
