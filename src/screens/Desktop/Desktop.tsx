@@ -3,6 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
+import { ChatBox } from "../../components/ChatBox";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
 import { trackVideoInteraction, trackSectionView, initializeAnalytics, trackEvent } from "../../lib/analytics";
 import { useApp } from "../../contexts/AppContext";
@@ -11,7 +12,6 @@ import { Navbar } from "../../components/Navbar";
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { appMode, setAppMode, user } = useApp();
 
   // Initialize analytics on component mount
   useEffect(() => {
@@ -522,6 +522,8 @@ export const Desktop = (): JSX.Element => {
           </section>
         </main>
 
+        {/* Sigma AI Chatbox */}
+        <ChatBox />
       </div>
     </div>
   );

@@ -3,7 +3,10 @@ import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileDashboard } from '../../components/profile'
+import { ProfileSetup } from '../../components/profile'
+import { AutomationDashboard } from '../../components/automation'
 import { Navbar } from '../../components/Navbar'
+import { ChatBox } from '../../components/ChatBox'
 import { 
   CheckCircle, 
   Zap, 
@@ -22,12 +25,27 @@ import {
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
-  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'automation'>('dashboard')
 
   // Remove profile completion restriction - users can access app regardless
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
   // Allow access to app even with incomplete profile
   const shouldShowProfileSetup = false
+
+  // Convert profile to BusinessProfile format for automation
+  const businessProfile = profile ? {
+    id: profile.id,
+    user_id: user?.id || '',
+    business_name: profile.name || '',
+    business_type: profile.business_type || '',
+    industry: profile.business_type || '',
+    description: `${profile.business_type} business` || '',
+    target_market: '',
+    budget_range: profile.capital_level || '',
+    timeline: profile.time_commitment || '',
+    legal_structure: 'LLC' as const,
+    state_of_incorporation: profile.region || ''
+  } : undefined
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
@@ -41,6 +59,7 @@ export const AppDashboard: React.FC = () => {
       <Navbar onNavigate={(section) => {
         if (section === 'profile' || section === 'profile-settings') setCurrentView('profile')
         if (section === 'dashboard') setCurrentView('dashboard')
+        if (section === 'automation') setCurrentView('automation')
       }} />
 
       {/* Main Content */}
@@ -57,6 +76,8 @@ export const AppDashboard: React.FC = () => {
             </div>
             <ProfileDashboard />
           </div>
+        ) : currentView === 'automation' ? (
+          <AutomationDashboard businessProfile={businessProfile} />
         ) : (
           <div className="max-w-4xl mx-auto">
             {/* Command Center Header */}
@@ -168,14 +189,7 @@ export const AppDashboard: React.FC = () => {
                     </button>
 
                     <button 
-                      onClick={() => {
-                        if (isProfileComplete) {
-                          // Start AI onboarding
-                          alert('AI Onboarding - Coming Soon!')
-                        } else {
-                          setCurrentView('profile')
-                        }
-                      }}
+                      onClick={() => setCurrentView('automation')}
                       className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
                         isProfileComplete 
                           ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
@@ -185,7 +199,7 @@ export const AppDashboard: React.FC = () => {
                       <div className="flex items-center gap-3 mb-2">
                         <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-yellow-500'}`} />
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
-                          {isProfileComplete ? 'START AI ONBOARDING' : 'SETUP PROFILE FIRST'}
+                          START AUTOMATION
                         </span>
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
@@ -336,16 +350,16 @@ export const AppDashboard: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { name: 'AI Onboarding', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '🤖', ready: isProfileComplete },
-                  { name: 'Legal Setup', status: 'Coming Soon', icon: '⚖️' },
-                  { name: 'Business Branding', status: 'Coming Soon', icon: '🎨' },
-                  { name: 'Website Builder', status: 'Coming Soon', icon: '🌐' },
-                  { name: 'Payment Processing', status: 'Coming Soon', icon: '💳' },
-                  { name: 'Business Banking', status: 'Coming Soon', icon: '🏦' },
-                  { name: 'Marketing AI', status: 'Coming Soon', icon: '📈' },
+                  { name: 'Business Setup', status: isProfileComplete ? 'Ready' : 'Complete Profile First', icon: '⚖️', ready: isProfileComplete },
+                  { name: 'Brand Identity', status: 'Ready', icon: '🎨', ready: isProfileComplete },
+                  { name: 'Website Builder', status: 'Ready', icon: '🌐', ready: isProfileComplete },
+                  { name: 'Payment Setup', status: 'Ready', icon: '💳', ready: isProfileComplete },
+                  { name: 'Business Banking', status: 'Ready', icon: '🏦', ready: isProfileComplete },
+                  { name: 'Marketing AI', status: 'Ready', icon: '📈', ready: isProfileComplete },
                 ].map((module, index) => (
                   <div
                     key={index}
+                    onClick={() => module.ready && setCurrentView('automation')}
                     className={`bg-black/20 backdrop-blur-md rounded-xl border p-4 transition-all duration-300 text-center ${
                       module.ready 
                         ? 'border-[#6ad040] shadow-lg shadow-[#6ad040]/20 hover:scale-105 cursor-pointer' 
@@ -370,17 +384,17 @@ export const AppDashboard: React.FC = () => {
             <div className="mt-8 text-center">
               <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6 max-w-3xl mx-auto">
                 <h3 className="font-['Orbitron'] font-bold text-[#6ad040] text-xl mb-4">
-                  ⚡ SIGMA DEVELOPMENT STATUS ⚡
+                  ⚡ SIGMA AUTOMATION STATUS ⚡
                 </h3>
                 <p className="font-['Space_Mono'] text-[#b7ffab] text-sm leading-relaxed opacity-90 mb-4">
-                  The full AI Business Partner platform is in active development. Each module will be implemented 
+                  The full AI Business Partner platform is now operational. Each module provides complete automation 
                   with cutting-edge AI capabilities and the same Matrix aesthetic. Complete your profile to unlock 
-                  the AI Onboarding module and begin your automation journey.
+                  all automation modules and begin your journey to CEO status.
                 </p>
                 <div className="inline-flex items-center gap-2 bg-[#6ad040]/20 rounded-full px-4 py-2 border border-[#6ad040]/50">
                   <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
                   <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-                    BUILDING THE FUTURE OF BUSINESS AUTOMATION
+                    FULL AUTOMATION SUITE ACTIVE
                   </span>
                 </div>
               </div>
@@ -388,6 +402,9 @@ export const AppDashboard: React.FC = () => {
         </div>
         )}
       </main>
+
+      {/* Sigma AI Chatbox */}
+      <ChatBox />
     </div>
   )
 }

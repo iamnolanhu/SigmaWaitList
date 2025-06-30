@@ -132,13 +132,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   const signIn = async (email: string, password: string) => {
-    const result = await OptimizedAuthService.signIn(email, password)
-    return { error: result.error }
+    try {
+      const result = await OptimizedAuthService.signIn(email, password)
+      
+      if (result.error) {
+        return { error: result.error }
+      }
+
+      // If signin was successful, update the user state and load profile
+      if (result.user) {
+        setUser(result.user)
+        await loadUserProfile(result.user.id)
+        // Set app mode to dashboard for immediate access
+        setAppMode({ 
+          isAppMode: true, 
+          hasAccess: true 
+        })
+      }
+
+      return { error: undefined }
+    } catch (error: any) {
+      console.error('Sign in error:', error)
+      return { error: error.message || 'An unexpected error occurred' }
+    }
   }
 
   const signUp = async (email: string, password: string) => {
-    const result = await OptimizedAuthService.signUp(email, password)
-    return { error: result.error }
+    try {
+      const result = await OptimizedAuthService.signUp(email, password)
+      
+      if (result.error) {
+        return { error: result.error }
+      }
+
+      // If signup was successful and user was created, update the user state
+      if (result.user) {
+        setUser(result.user)
+        // For signup, we might not have a profile yet, so just set basic app mode
+        setAppMode({ 
+          isAppMode: false, 
+          hasAccess: true 
+        })
+        setLoading(false)
+      }
+
+      return { error: undefined }
+    } catch (error: any) {
+      console.error('Sign up error:', error)
+      return { error: error.message || 'An unexpected error occurred' }
+    }
   }
 
   const signOut = async () => {
