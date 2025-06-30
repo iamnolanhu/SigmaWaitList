@@ -1,221 +1,228 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward } from 'lucide-react'
-
-interface Track {
-  id: string
-  title: string
-  src: string
-}
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react'
 
 interface MusicPlayerProps {
   className?: string
 }
 
 export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '' }) => {
-  const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
-  const [volume, setVolume] = useState(0.3) // Start at 30% volume
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [currentTrack, setCurrentTrack] = useState(0)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  // Placeholder tracks - you can replace these with your actual audio files
-  const tracks: Track[] = [
-    {
-      id: '1',
-      title: 'Sigma Energy',
-      src: '/music/sigma-energy.mp3' // You'll need to add your audio files here
-    },
-    {
-      id: '2', 
-      title: 'Matrix Flow',
-      src: '/music/matrix-flow.mp3'
-    },
-    {
-      id: '3',
-      title: 'Digital Pulse',
-      src: '/music/digital-pulse.mp3'
-    }
+  // YouTube music tracks - you can replace these with your preferred tracks
+  const tracks = [
+    { id: 'MISvCT2xIZ4', title: 'are you a sigma?', artist: 'Honey B' },
+    { id: 'D5H4TnDEJXM', title: '99 tabs open', artist: 'Honey B' },
+    { id: 'iMoqzDPZYE8', title: 'aura', artist: 'Honey B' },
+    { id: 'jvLMvso-MEU', title: 'really really?', artist: 'Honey B' },
+    { id: 'zovIx38xT3A', title: 'mine', artist: 'Honey B' },
+    { id: 'ltbsbxM-dOE', title: 'Infinite Empire', artist: 'Honey B' },
+    { id: 'JwVa39FgKls', title: 'No', artist: 'Honey B' },
+    { id: 'o1_CTv_CSdE', title: 'No Ls', artist: 'Honey B' },
+    { id: 'kKgYvEImA1Y', title: 'Web Only', artist: 'Honey B' },
+    { id: 'xKmfCwjI164', title: 'Lone Web', artist: 'Honey B' },
+    { id: 'DzkkfL4kcsY', title: 'I am', artist: 'Honey B' },
+    { id: 'taA_XC3o3EE', title: 'Lone Wolf Vibes', artist: 'Honey B' },
+    { id: 'Gkb3z7VgW24', title: 'Pro Autonomy (2)', artist: 'Honey B' },
+    { id: '81dxJoQJSNY', title: 'Pro Autonomy', artist: 'YouTube Playlist' },
+    { id: 's8yvg9pDg1Y', title: 'Sigma Status', artist: 'YouTube Playlist' },
+    { id: 'aQyYK3i_qrQ', title: 'Sigma State of Mind', artist: 'YouTube Playlist' },
+    { id: 'QwwsBE1bIg8', title: 'untitled sigma 2', artist: 'YouTube Playlist' },
+    { id: 'JRBDRPueq0Q', title: 'untitled sigma', artist: 'YouTube Playlist' },
+    { id: 'j71NU1qE9yc', title: 'a song', artist: 'YouTube Playlist' }
   ]
 
-  const currentTrack = tracks[currentTrackIndex]
+  const currentVideoId = tracks[currentTrack].id
 
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const updateTime = () => setCurrentTime(audio.currentTime)
-    const updateDuration = () => setDuration(audio.duration)
-    const handleEnded = () => {
-      // Auto-play next track
-      nextTrack()
-    }
-
-    audio.addEventListener('timeupdate', updateTime)
-    audio.addEventListener('loadedmetadata', updateDuration)
-    audio.addEventListener('ended', handleEnded)
-
-    return () => {
-      audio.removeEventListener('timeupdate', updateTime)
-      audio.removeEventListener('loadedmetadata', updateDuration)
-      audio.removeEventListener('ended', handleEnded)
-    }
-  }, [currentTrackIndex])
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume
-    }
-  }, [volume, isMuted])
-
-  const togglePlay = async () => {
-    if (!audioRef.current) return
-
-    try {
-      if (isPlaying) {
-        audioRef.current.pause()
-      } else {
-        await audioRef.current.play()
-      }
-      setIsPlaying(!isPlaying)
-    } catch (error) {
-      console.log('Audio play failed:', error)
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying)
+    // Send message to iframe to play/pause
+    if (iframeRef.current) {
+      const message = isPlaying ? '{"event":"command","func":"pauseVideo","args":""}' : '{"event":"command","func":"playVideo","args":""}'
+      iframeRef.current.contentWindow?.postMessage(message, '*')
     }
   }
 
   const toggleMute = () => {
     setIsMuted(!isMuted)
+    if (iframeRef.current) {
+      const message = isMuted ? '{"event":"command","func":"unMute","args":""}' : '{"event":"command","func":"mute","args":""}'
+      iframeRef.current.contentWindow?.postMessage(message, '*')
+    }
   }
 
   const nextTrack = () => {
-    const nextIndex = (currentTrackIndex + 1) % tracks.length
-    setCurrentTrackIndex(nextIndex)
-    setIsPlaying(false)
+    const newTrack = (currentTrack + 1) % tracks.length
+    setCurrentTrack(newTrack)
+    setIsPlaying(true)
+    
+    // Reload iframe with new video and auto-play
+    if (iframeRef.current) {
+      const newVideoId = tracks[newTrack].id
+      iframeRef.current.src = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+    }
   }
 
   const prevTrack = () => {
-    const prevIndex = currentTrackIndex === 0 ? tracks.length - 1 : currentTrackIndex - 1
-    setCurrentTrackIndex(prevIndex)
-    setIsPlaying(false)
+    const newTrack = (currentTrack - 1 + tracks.length) % tracks.length
+    setCurrentTrack(newTrack)
+    setIsPlaying(true)
+    
+    // Reload iframe with new video and auto-play
+    if (iframeRef.current) {
+      const newVideoId = tracks[newTrack].id
+      iframeRef.current.src = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+    }
   }
 
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00'
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded)
+  }
+
+  // Handle track selection from expanded view
+  const selectTrack = (index: number) => {
+    setCurrentTrack(index)
+    setIsPlaying(true)
+    // Force iframe reload with new video
+    setTimeout(() => {
+      if (iframeRef.current) {
+        const message = '{"event":"command","func":"playVideo","args":""}'
+        iframeRef.current.contentWindow?.postMessage(message, '*')
+      }
+    }, 100)
   }
 
   return (
-    <div className={`flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full border border-[#6ad040]/40 px-4 py-2 ${className}`}>
-      <audio
-        ref={audioRef}
-        src={currentTrack?.src}
-        preload="metadata"
+    <div className={`fixed bottom-0 left-0 right-0 z-40 ${className}`}>
+      {/* YouTube iframe (hidden but functional) */}
+      <iframe
+        ref={iframeRef}
+        src={`https://www.youtube.com/embed/${currentVideoId}?enablejsapi=1&autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`}
+        className="sr-only"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
       />
 
-      {/* Previous Track */}
-      <button
-        onClick={prevTrack}
-        className="w-6 h-6 flex items-center justify-center text-[#b7ffab] hover:text-[#6ad040] transition-colors"
-        title="Previous track"
-      >
-        <SkipBack className="w-4 h-4" />
-      </button>
+      {/* Music Player UI */}
+      <div className={`bg-black/90 backdrop-blur-md border-t border-[#6ad040]/40 transition-all duration-300 ${
+        isExpanded ? 'h-32' : 'h-16'
+      }`}>
+        <div className="container mx-auto px-4 h-full">
+          <div className="flex items-center justify-between h-full">
+            {/* Track Info */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-10 h-10 bg-[#6ad040]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-[#6ad040] text-lg">🎵</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm font-bold truncate">
+                  {tracks[currentTrack].title}
+                </p>
+                <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs truncate">
+                  {tracks[currentTrack].artist}
+                </p>
+              </div>
+            </div>
 
-      {/* Play/Pause */}
-      <button
-        onClick={togglePlay}
-        className="w-8 h-8 flex items-center justify-center bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] rounded-full transition-all duration-300 hover:scale-105"
-        title={isPlaying ? 'Pause' : 'Play'}
-      >
-        {isPlaying ? (
-          <Pause className="w-4 h-4" />
-        ) : (
-          <Play className="w-4 h-4 ml-0.5" />
-        )}
-      </button>
+            {/* Controls */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Previous Track */}
+              <button
+                onClick={prevTrack}
+                className="p-2 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+                title="Previous Track"
+              >
+                <SkipBack className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
 
-      {/* Next Track */}
-      <button
-        onClick={nextTrack}
-        className="w-6 h-6 flex items-center justify-center text-[#b7ffab] hover:text-[#6ad040] transition-colors"
-        title="Next track"
-      >
-        <SkipForward className="w-4 h-4" />
-      </button>
+              {/* Play/Pause */}
+              <button
+                onClick={togglePlay}
+                className="p-2 bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] rounded-full transition-colors"
+                title={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </button>
 
-      {/* Track Info */}
-      <div className="hidden sm:flex flex-col min-w-0 mx-2">
-        <div className="font-['Space_Grotesk'] text-[#b7ffab] text-xs font-bold truncate">
-          {currentTrack?.title || 'No Track'}
-        </div>
-        <div className="font-['Space_Mono'] text-[#6ad040] text-xs">
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </div>
-      </div>
+              {/* Next Track */}
+              <button
+                onClick={nextTrack}
+                className="p-2 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+                title="Next Track"
+              >
+                <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
 
-      {/* Volume Control */}
-      <div className="hidden md:flex items-center gap-1">
-        <button
-          onClick={toggleMute}
-          className="w-6 h-6 flex items-center justify-center text-[#b7ffab] hover:text-[#6ad040] transition-colors"
-          title={isMuted ? 'Unmute' : 'Mute'}
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4" />
-          ) : (
-            <Volume2 className="w-4 h-4" />
-          )}
-        </button>
-        
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={isMuted ? 0 : volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="w-16 h-1 bg-black/50 rounded-full appearance-none cursor-pointer slider"
-          style={{
-            background: `linear-gradient(to right, #6ad040 0%, #6ad040 ${(isMuted ? 0 : volume) * 100}%, rgba(0,0,0,0.5) ${(isMuted ? 0 : volume) * 100}%, rgba(0,0,0,0.5) 100%)`
-          }}
-        />
-      </div>
+              {/* Mute/Unmute */}
+              <button
+                onClick={toggleMute}
+                className="p-2 text-[#b7ffab] hover:text-[#6ad040] transition-colors hidden sm:block"
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </button>
 
-      {/* Progress Bar (mobile hidden) */}
-      {duration > 0 && (
-        <div className="hidden lg:flex items-center gap-2 ml-2">
-          <div className="w-20 h-1 bg-black/50 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-300"
-              style={{ width: `${(currentTime / duration) * 100}%` }}
-            />
+              {/* Expand/Collapse */}
+              <button
+                onClick={toggleExpand}
+                className="p-2 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+                title={isExpanded ? 'Collapse' : 'Expand'}
+              >
+                {isExpanded ? (
+                  <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
 
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #6ad040;
-          cursor: pointer;
-          border: 2px solid #161616;
-        }
-        
-        .slider::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #6ad040;
-          cursor: pointer;
-          border: 2px solid #161616;
-        }
-      `}</style>
+          {/* Expanded View - Track List */}
+          {isExpanded && (
+            <div className="mt-2 border-t border-[#6ad040]/20 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-20 overflow-y-auto">
+                {tracks.map((track, index) => (
+                  <button
+                    key={track.id}
+                    onClick={() => {
+                      setCurrentTrack(index)
+                      setIsPlaying(true)
+                      // Reload iframe with new video and auto-play
+                      if (iframeRef.current) {
+                        const newVideoId = track.id
+                        iframeRef.current.src = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+                      }
+                    }}
+                    className={`text-left p-2 rounded-lg transition-colors ${
+                      currentTrack === index
+                        ? 'bg-[#6ad040]/20 text-[#6ad040] border border-[#6ad040]/40'
+                        : 'text-[#b7ffab] hover:bg-[#6ad040]/10'
+                    }`}
+                  >
+                    <p className="font-['Space_Mono'] text-xs font-bold truncate">
+                      {track.title}
+                    </p>
+                    <p className="font-['Space_Mono'] text-xs opacity-60 truncate">
+                      {track.artist}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ import { PaymentModule } from '../../components/automation/PaymentModule'
 import { WebsiteModule } from '../../components/automation/WebsiteModule'
 import { Navbar } from '../../components/Navbar'
 import { ChatBox } from '../../components/ChatBox'
+import { MusicPlayer } from '../../components/MusicPlayer'
 import { 
   CheckCircle, 
   Zap, 
@@ -473,12 +474,15 @@ export const AppDashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className="relative z-10 container mx-auto px-6 py-8 pt-8">
+      <main className="relative z-10 container mx-auto px-6 py-8 pt-8 pb-40">
         {renderCurrentView()}
       </main>
 
       {/* Sigma AI Chatbox */}
       <ChatBox />
+
+      {/* Music Player */}
+      <MusicPlayer />
     </div>
   )
 }
