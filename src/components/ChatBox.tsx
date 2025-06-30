@@ -200,7 +200,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
 
   if (!isOpen) {
     return (
-      <div className={`fixed bottom-8 right-6 z-50 ${className}`}>
+      <div className={`fixed bottom-24 right-6 z-50 ${className}`}>
         <Button
           onClick={() => setIsOpen(true)}
           className="w-16 h-16 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] shadow-2xl hover:shadow-[#6ad040]/50 transition-all duration-300 hover:scale-110 group"
@@ -215,7 +215,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`fixed bottom-8 right-6 z-50 ${className}`}>
+    <div className={`fixed bottom-24 right-6 z-50 ${className}`}>
       <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 transition-all duration-300 ${
         isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
       }`}>
