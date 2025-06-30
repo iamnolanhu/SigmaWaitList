@@ -24,7 +24,7 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load user profile with better error handling
+  // Load user profile with better error handling and connection testing
   const loadProfile = async () => {
     if (!user?.id) {
       console.log('No user ID available for profile loading')
@@ -38,7 +38,20 @@ export const useUserProfile = () => {
     try {
       console.log('Loading profile for user:', user.id)
       
-      // First, check if the user_profiles table exists and is accessible
+      // First, test database connection by checking if we can access the table
+      const { data: testData, error: testError } = await supabase
+        .from('user_profiles')
+        .select('count')
+        .limit(1)
+
+      if (testError) {
+        console.error('Database connection test failed:', testError)
+        throw new Error(`Database connection failed: ${testError.message}`)
+      }
+
+      console.log('Database connection test passed')
+
+      // Now try to get the actual profile
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -46,19 +59,8 @@ export const useUserProfile = () => {
         .maybeSingle()
 
       if (error) {
-        console.error('Database error:', error)
-        
-        // If it's a table not found error, the migration might not have run
-        if (error.code === '42P01') {
-          throw new Error('Database not properly configured. Please check your Supabase setup.')
-        }
-        
-        // If it's a permission error
-        if (error.code === '42501') {
-          throw new Error('Database permission error. Please check your RLS policies.')
-        }
-        
-        throw error
+        console.error('Profile query error:', error)
+        throw new Error(`Profile query failed: ${error.message}`)
       }
 
       if (!data) {
@@ -75,7 +77,7 @@ export const useUserProfile = () => {
 
         if (createError) {
           console.error('Error creating profile:', createError)
-          throw createError
+          throw new Error(`Failed to create profile: ${createError.message}`)
         }
         
         setProfile(newProfile)
@@ -85,9 +87,10 @@ export const useUserProfile = () => {
         console.log('Loaded existing profile:', data)
       }
     } catch (err: any) {
-      setError(err.message)
+      const errorMessage = err.message || 'Failed to load profile'
+      setError(errorMessage)
       console.error('Error loading user profile:', err)
-      throw err // Re-throw to allow caller to handle
+      throw new Error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -111,7 +114,7 @@ export const useUserProfile = () => {
     return Math.round((completed / fields.length) * 100)
   }
 
-  // Update user profile with robust error handling
+  // Update user profile with robust error handling and proper upsert
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user?.id) {
       return { data: null, error: 'User not authenticated' }
@@ -129,9 +132,9 @@ export const useUserProfile = () => {
       
       // Include completion percentage in the update
       const finalUpdates = {
+        id: user.id, // Always include the ID for upsert
         ...updates,
-        completion_percentage: completion,
-        updated_at: new Date().toISOString()
+        completion_percentage: completion
       }
 
       console.log('Final updates to save:', finalUpdates)
@@ -139,18 +142,20 @@ export const useUserProfile = () => {
       // Use upsert to handle both insert and update cases
       const { data, error } = await supabase
         .from('user_profiles')
-        .upsert({ 
-          id: user.id,
-          ...finalUpdates
-        }, {
-          onConflict: 'id'
+        .upsert(finalUpdates, {
+          onConflict: 'id',
+          ignoreDuplicates: false
         })
         .select()
         .single()
 
       if (error) {
         console.error('Database error during update:', error)
-        throw error
+        throw new Error(`Save failed: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('No data returned from save operation')
       }
 
       setProfile(data)
@@ -164,6 +169,24 @@ export const useUserProfile = () => {
       return { data: null, error: errorMessage }
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Test database connection
+  const testConnection = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('count')
+        .limit(1)
+
+      if (error) {
+        throw error
+      }
+
+      return { connected: true, error: null }
+    } catch (err: any) {
+      return { connected: false, error: err.message }
     }
   }
 
@@ -237,6 +260,7 @@ export const useUserProfile = () => {
     updateProfile,
     loadProfile,
     calculateCompletion,
-    createBusinessProfile
+    createBusinessProfile,
+    testConnection
   }
 }

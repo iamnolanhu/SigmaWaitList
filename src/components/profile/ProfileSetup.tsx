@@ -5,11 +5,11 @@ import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useApp } from '../../contexts/AppContext'
 import { trackEvent } from '../../lib/analytics'
-import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw, Database, AlertTriangle } from 'lucide-react'
+import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw, Database, AlertTriangle, Wifi, WifiOff } from 'lucide-react'
 
 export const ProfileSetup: React.FC = () => {
   const { user } = useApp()
-  const { profile, loading, updateProfile, loadProfile } = useUserProfile()
+  const { profile, loading, updateProfile, loadProfile, testConnection } = useUserProfile()
   const [formData, setFormData] = useState({
     name: '',
     region: '',
@@ -23,6 +23,7 @@ export const ProfileSetup: React.FC = () => {
   const [saveError, setSaveError] = useState('')
   const [isFormValid, setIsFormValid] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting')
+  const [connectionError, setConnectionError] = useState('')
 
   // Check database connection on mount
   useEffect(() => {
@@ -30,19 +31,36 @@ export const ProfileSetup: React.FC = () => {
       if (user?.id) {
         try {
           setConnectionStatus('connecting')
-          // Try to load profile to test connection
-          await loadProfile()
-          setConnectionStatus('connected')
-          console.log('Database connection established')
-        } catch (error) {
+          setConnectionError('')
+          
+          console.log('Testing database connection...')
+          const { connected, error } = await testConnection()
+          
+          if (connected) {
+            setConnectionStatus('connected')
+            console.log('Database connection established')
+            
+            // Try to load profile after successful connection
+            try {
+              await loadProfile()
+            } catch (loadError) {
+              console.log('Profile load failed, but connection is good:', loadError)
+            }
+          } else {
+            setConnectionStatus('error')
+            setConnectionError(error || 'Connection test failed')
+            console.error('Database connection failed:', error)
+          }
+        } catch (error: any) {
           setConnectionStatus('error')
-          console.error('Database connection failed:', error)
+          setConnectionError(error.message || 'Connection test failed')
+          console.error('Database connection test error:', error)
         }
       }
     }
 
     checkConnection()
-  }, [user?.id, loadProfile])
+  }, [user?.id])
 
   // Update form data when profile loads
   useEffect(() => {
@@ -82,7 +100,7 @@ export const ProfileSetup: React.FC = () => {
     }
 
     if (connectionStatus !== 'connected') {
-      setSaveError('Database connection required. Please check your connection.')
+      setSaveError('Database connection required. Please check your connection and try again.')
       return
     }
 
@@ -110,8 +128,8 @@ export const ProfileSetup: React.FC = () => {
           has_region: !!formData.region
         })
         
-        // Hide success message after 3 seconds
-        setTimeout(() => setSaveSuccess(false), 3000)
+        // Hide success message after 5 seconds
+        setTimeout(() => setSaveSuccess(false), 5000)
       }
     } catch (err: any) {
       setSaveError(err.message || 'Failed to save profile')
@@ -134,12 +152,26 @@ export const ProfileSetup: React.FC = () => {
   const handleRefresh = async () => {
     setSaving(true)
     setConnectionStatus('connecting')
+    setConnectionError('')
+    
     try {
-      await loadProfile()
-      setConnectionStatus('connected')
-      console.log('Profile refreshed')
-    } catch (error) {
+      console.log('Refreshing connection and profile...')
+      
+      // Test connection first
+      const { connected, error } = await testConnection()
+      
+      if (connected) {
+        setConnectionStatus('connected')
+        await loadProfile()
+        console.log('Profile refreshed successfully')
+      } else {
+        setConnectionStatus('error')
+        setConnectionError(error || 'Connection test failed')
+        console.error('Refresh connection failed:', error)
+      }
+    } catch (error: any) {
       setConnectionStatus('error')
+      setConnectionError(error.message || 'Refresh failed')
       console.error('Refresh failed:', error)
     } finally {
       setSaving(false)
@@ -204,6 +236,12 @@ export const ProfileSetup: React.FC = () => {
     return <Save className="w-5 h-5 mr-2" />
   }
 
+  const getConnectionIcon = () => {
+    if (connectionStatus === 'connected') return <Wifi className="w-4 h-4" />
+    if (connectionStatus === 'error') return <WifiOff className="w-4 h-4" />
+    return <Database className="w-4 h-4" />
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
@@ -216,6 +254,7 @@ export const ProfileSetup: React.FC = () => {
             onClick={handleRefresh}
             disabled={saving}
             className="p-2 h-auto bg-transparent hover:bg-[#6ad040]/20 text-[#6ad040] border border-[#6ad040]/50"
+            title="Refresh connection"
           >
             <RefreshCw className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`} />
           </Button>
@@ -248,13 +287,7 @@ export const ProfileSetup: React.FC = () => {
             ? 'bg-red-500/10 border-red-500/30'
             : 'bg-black/30 border-[#6ad040]/30'
         }`}>
-          <div className={`w-2 h-2 rounded-full ${
-            connectionStatus === 'connected' 
-              ? 'bg-green-500 animate-pulse' 
-              : connectionStatus === 'error'
-              ? 'bg-red-500'
-              : 'bg-yellow-500 animate-pulse'
-          }`} />
+          {getConnectionIcon()}
           <span className={`font-['Space_Mono'] text-xs ${
             connectionStatus === 'connected' 
               ? 'text-green-400' 
@@ -263,9 +296,9 @@ export const ProfileSetup: React.FC = () => {
               : 'text-yellow-400'
           }`}>
             {connectionStatus === 'connected' 
-              ? 'Connected to Database' 
+              ? 'Database Connected' 
               : connectionStatus === 'error'
-              ? 'Database Connection Error'
+              ? `Connection Error: ${connectionError}`
               : 'Connecting to Database...'
             }
           </span>
@@ -282,7 +315,7 @@ export const ProfileSetup: React.FC = () => {
                 Profile saved successfully!
               </p>
               <p className="font-['Space_Mono'] text-green-300 text-xs">
-                Your automation preferences have been updated and synced to the database.
+                Your automation preferences have been updated and synced to the database. Completion: {completionPercentage}%
               </p>
             </div>
           </div>
@@ -328,6 +361,7 @@ export const ProfileSetup: React.FC = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Your sigma name..."
                   className="bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60"
+                  disabled={!isConnected}
                 />
               </div>
 
@@ -338,7 +372,8 @@ export const ProfileSetup: React.FC = () => {
                 <select
                   value={formData.region}
                   onChange={(e) => handleInputChange('region', e.target.value)}
-                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  disabled={!isConnected}
+                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none disabled:opacity-50"
                 >
                   <option value="">Select your region</option>
                   {regions.map(region => (
@@ -368,7 +403,8 @@ export const ProfileSetup: React.FC = () => {
                 <select
                   value={formData.business_type}
                   onChange={(e) => handleInputChange('business_type', e.target.value)}
-                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  disabled={!isConnected}
+                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none disabled:opacity-50"
                 >
                   <option value="">Select business type</option>
                   {businessTypes.map(type => (
@@ -384,7 +420,8 @@ export const ProfileSetup: React.FC = () => {
                 <select
                   value={formData.time_commitment}
                   onChange={(e) => handleInputChange('time_commitment', e.target.value)}
-                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  disabled={!isConnected}
+                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none disabled:opacity-50"
                 >
                   <option value="">How much time can you dedicate?</option>
                   {timeCommitments.map(time => (
@@ -400,7 +437,8 @@ export const ProfileSetup: React.FC = () => {
                 <select
                   value={formData.capital_level}
                   onChange={(e) => handleInputChange('capital_level', e.target.value)}
-                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  disabled={!isConnected}
+                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none disabled:opacity-50"
                 >
                   <option value="">Available capital?</option>
                   {capitalLevels.map(capital => (
@@ -434,7 +472,8 @@ export const ProfileSetup: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleInputChange('stealth_mode', !formData.stealth_mode)}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
+                disabled={!isConnected}
+                className={`relative w-12 h-6 rounded-full transition-colors disabled:opacity-50 ${
                   formData.stealth_mode ? 'bg-[#6ad040]' : 'bg-black/50'
                 }`}
               >
@@ -458,9 +497,9 @@ export const ProfileSetup: React.FC = () => {
           {getButtonText()}
         </Button>
 
-        {/* Form Validation Status */}
+        {/* Form Status */}
         <div className="text-center space-y-2">
-          {!isFormValid && (
+          {!isFormValid && isConnected && (
             <div className="text-xs font-['Space_Mono'] text-yellow-400">
               Required: Name, Region, Business Type, Time Commitment, Capital Level
             </div>
@@ -468,7 +507,13 @@ export const ProfileSetup: React.FC = () => {
           
           {connectionStatus === 'error' && (
             <div className="text-xs font-['Space_Mono'] text-red-400">
-              Database connection failed. Click refresh to retry.
+              Database connection failed. Click refresh to retry or check your internet connection.
+            </div>
+          )}
+
+          {isConnected && isFormValid && (
+            <div className="text-xs font-['Space_Mono'] text-green-400">
+              Ready to save! All required fields completed.
             </div>
           )}
         </div>
