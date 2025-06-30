@@ -91,7 +91,7 @@ export const useProfileSettings = () => {
   // Delete profile picture
   const deleteProfilePicture = async (): Promise<{ error?: string }> => {
     try {
-      await updateProfile({ profile_picture_url: null })
+      await updateProfile({ profile_picture_url: undefined })
       return {}
     } catch (err: any) {
       return { error: err.message }
@@ -101,6 +101,7 @@ export const useProfileSettings = () => {
   // Change password
   const changePassword = async (newPassword: string): Promise<{ error?: string }> => {
     try {
+      const { supabase } = await import('../lib/supabase')
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       })

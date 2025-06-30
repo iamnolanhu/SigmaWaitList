@@ -91,14 +91,10 @@ export class OptimizedWaitlistService {
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
       const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate())
 
-      // Use single query with conditional counting for better performance
+      // Get all leads data for statistics calculation
       const { data, error } = await supabase
         .from('leads')
-        .select(`
-          id,
-          created_at,
-          count: count()
-        `)
+        .select('id, created_at')
         .order('created_at', { ascending: false })
 
       if (error) throw error

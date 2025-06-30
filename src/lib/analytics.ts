@@ -144,7 +144,7 @@ export const trackEvent = (eventName: string, parameters?: Record<string, any>) 
 }
 
 // Track waitlist signup
-export const trackWaitlistSignup = (email: string) => {
+export const trackWaitlistSignup = () => {
   trackEvent('sign_up', {
     method: 'email',
     event_label: 'waitlist_signup',

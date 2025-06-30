@@ -21,9 +21,9 @@ interface BrandingModuleProps {
 }
 
 export const BrandingModule: React.FC<BrandingModuleProps> = ({ businessProfile, onComplete }) => {
-  const { user } = useApp()
+  const { } = useApp()
   const [assets, setAssets] = useState<BrandAsset[]>([])
-  const [loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
   const [step, setStep] = useState<'generating' | 'review'>('generating')
 
   useEffect(() => {

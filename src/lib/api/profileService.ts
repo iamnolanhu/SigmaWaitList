@@ -22,7 +22,6 @@ export interface CompleteProfile {
   language?: string
   region?: string
   stealth_mode?: boolean
-  sdg_goals?: string[]
   low_tech_access?: boolean
   business_type?: string
   time_commitment?: string
@@ -30,6 +29,14 @@ export interface CompleteProfile {
   completion_percentage?: number
   created_at?: string
   updated_at?: string
+  // Profile wizard fields
+  wizard_completed?: boolean
+  wizard_step?: number
+  wizard_data?: any
+  industry?: string
+  business_goals?: string[]
+  skill_level?: string
+  preferences?: any
 }
 
 export interface BasicProfile {
@@ -93,7 +100,6 @@ export class ProfileService {
         language: userProfile?.language || 'en',
         region: userProfile?.region || '',
         stealth_mode: userProfile?.stealth_mode || false,
-        sdg_goals: userProfile?.sdg_goals || [],
         low_tech_access: userProfile?.low_tech_access || false,
         business_type: userProfile?.business_type || '',
         time_commitment: userProfile?.time_commitment || '',
@@ -137,7 +143,6 @@ export class ProfileService {
           case 'language':
           case 'region':
           case 'stealth_mode':
-          case 'sdg_goals':
           case 'low_tech_access':
           case 'business_type':
           case 'time_commitment':

@@ -213,6 +213,7 @@ export const TeamManagement: React.FC = () => {
               onUpdateMemberRole={updateMemberRole}
               onRemoveMember={removeMember}
               onLeaveTeam={leaveTeam}
+              getRoleIcon={getRoleIcon}
             />
           ) : (
             <Card className="bg-black/30 backdrop-blur-md border border-[#6ad040]/40 rounded-2xl">
@@ -410,6 +411,7 @@ interface TeamDetailsProps {
   onUpdateMemberRole: (userId: string, role: TeamRole) => void
   onRemoveMember: (userId: string) => void
   onLeaveTeam: () => void
+  getRoleIcon: (role: TeamRole) => JSX.Element
 }
 
 const TeamDetails: React.FC<TeamDetailsProps> = ({
@@ -424,7 +426,8 @@ const TeamDetails: React.FC<TeamDetailsProps> = ({
   onInviteMember,
   onUpdateMemberRole,
   onRemoveMember,
-  onLeaveTeam
+  onLeaveTeam,
+  getRoleIcon
 }) => {
   if (loading) {
     return (
@@ -452,15 +455,6 @@ const TeamDetails: React.FC<TeamDetailsProps> = ({
   }
 
   if (!team) return null
-
-  const getRoleIcon = (role: TeamRole) => {
-    switch (role) {
-      case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />
-      case 'admin': return <Shield className="w-4 h-4 text-blue-500" />
-      case 'member': return <User className="w-4 h-4 text-green-500" />
-      case 'viewer': return <Eye className="w-4 h-4 text-gray-500" />
-    }
-  }
 
   return (
     <div className="space-y-6">

@@ -142,7 +142,7 @@ export const WaitlistForm: React.FC = () => {
         ) : null}
         <Button 
           type="submit"
-          disabled={loading || success || !email.trim() || (password && password.length < 6)}
+          disabled={loading || success || !email.trim() || (!!password && password.length < 6)}
           className={`w-full sm:w-auto font-['Orbitron'] font-black text-lg lg:text-xl px-8 lg:px-12 py-3 lg:py-4 rounded-full border-2 transition-all duration-300 active:scale-95 ${
             success 
               ? 'bg-green-600 hover:bg-green-700 text-white border-green-500/50 hover:shadow-2xl hover:shadow-green-500/60'

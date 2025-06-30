@@ -2,6 +2,9 @@ import { supabase } from '../supabase'
 import { cache, cacheKeys, cacheTTL } from '../cache'
 import type { CompleteProfile } from './profileService'
 
+// Re-export CompleteProfile type for easier imports
+export type { CompleteProfile }
+
 /**
  * Optimized Profile Service with aggressive caching
  * Reduces Supabase calls by 80-90% for better scalability
@@ -23,13 +26,10 @@ export class OptimizedProfileService {
     console.log('🔄 Loading profile from database...')
 
     try {
-      // Use a single query with joins to get all data at once
+      // Get user profile data
       const { data: userProfile, error: userProfileError } = await supabase
         .from('user_profiles')
-        .select(`
-          *,
-          profiles!inner(name, email, image, has_access, created_at, updated_at)
-        `)
+        .select('*')
         .eq('id', userId)
         .maybeSingle()
 
@@ -45,10 +45,7 @@ export class OptimizedProfileService {
         const { data: newProfile, error: createError } = await supabase
           .from('user_profiles')
           .insert([{ id: userId }])
-          .select(`
-            *,
-            profiles!inner(name, email, image, has_access, created_at, updated_at)
-          `)
+          .select('*')
           .single()
 
         if (createError) {
@@ -97,14 +94,8 @@ export class OptimizedProfileService {
       // Single transaction for both updates
       const promises = []
 
-      if (Object.keys(basicProfileUpdates).length > 0) {
-        promises.push(
-          supabase
-            .from('profiles')
-            .update(basicProfileUpdates)
-            .eq('id', userId)
-        )
-      }
+      // Note: 'profiles' table doesn't exist, all data is in user_profiles
+      // Remove this block as we don't have a separate profiles table
 
       if (Object.keys(userProfileUpdates).length > 0) {
         promises.push(
@@ -220,10 +211,7 @@ export class OptimizedProfileService {
       try {
         const { data, error } = await supabase
           .from('user_profiles')
-          .select(`
-            *,
-            profiles!inner(name, email, image, has_access, created_at, updated_at)
-          `)
+          .select('*')
           .in('id', uncachedIds)
 
         if (error) throw error
@@ -257,14 +245,12 @@ export class OptimizedProfileService {
    * Map database result to CompleteProfile
    */
   private static mapToCompleteProfile(data: any, userId: string): CompleteProfile {
-    const basicProfile = data.profiles || {}
-    
     return {
       id: userId,
-      name: basicProfile.name || data.name || '',
+      name: data.name || '',
       username: data.username || '',
       bio: data.bio || '',
-      profile_picture_url: data.profile_picture_url || basicProfile.image || '',
+      profile_picture_url: data.profile_picture_url || '',
       profile_visibility: data.profile_visibility || 'public',
       contact_preferences: data.contact_preferences || {
         email: true,
@@ -281,14 +267,13 @@ export class OptimizedProfileService {
       language: data.language || 'en',
       region: data.region || '',
       stealth_mode: data.stealth_mode || false,
-      sdg_goals: data.sdg_goals || [],
       low_tech_access: data.low_tech_access || false,
       business_type: data.business_type || '',
       time_commitment: data.time_commitment || '',
       capital_level: data.capital_level || '',
       completion_percentage: data.completion_percentage || 0,
-      created_at: data.created_at || basicProfile.created_at,
-      updated_at: data.updated_at || basicProfile.updated_at
+      created_at: data.created_at,
+      updated_at: data.updated_at
     }
   }
 }

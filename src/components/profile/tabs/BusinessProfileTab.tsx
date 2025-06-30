@@ -3,11 +3,11 @@ import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { Card, CardContent } from '../../ui/card'
 import { useUserProfile } from '../../../hooks/useUserProfile'
+import { toast } from '../../../hooks/useToast'
 import { 
   Briefcase, 
   Clock, 
   DollarSign, 
-  Target,
   Globe,
   Loader2,
   Save,
@@ -24,7 +24,6 @@ export const BusinessProfileTab: React.FC = () => {
     time_commitment: '',
     capital_level: '',
     stealth_mode: false,
-    sdg_goals: [] as string[],
     low_tech_access: false,
     business_stage: '',
     target_market: '',
@@ -33,7 +32,6 @@ export const BusinessProfileTab: React.FC = () => {
   })
   
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   // Business data options
   const businessTypes = [
@@ -105,26 +103,6 @@ export const BusinessProfileTab: React.FC = () => {
     'Exit/acquisition goal'
   ]
 
-  const sdgGoals = [
-    'No Poverty',
-    'Zero Hunger', 
-    'Good Health and Well-being',
-    'Quality Education',
-    'Gender Equality',
-    'Clean Water and Sanitation',
-    'Affordable and Clean Energy',
-    'Decent Work and Economic Growth',
-    'Industry, Innovation and Infrastructure',
-    'Reduced Inequality',
-    'Sustainable Cities and Communities',
-    'Responsible Consumption and Production',
-    'Climate Action',
-    'Life Below Water',
-    'Life on Land',
-    'Peace and Justice',
-    'Partnerships to Achieve the Goal'
-  ]
-
   // Update form when profile loads
   useEffect(() => {
     if (profile) {
@@ -133,7 +111,6 @@ export const BusinessProfileTab: React.FC = () => {
         time_commitment: profile.time_commitment || '',
         capital_level: profile.capital_level || '',
         stealth_mode: profile.stealth_mode || false,
-        sdg_goals: profile.sdg_goals || [],
         low_tech_access: profile.low_tech_access || false,
         business_stage: (profile as any).business_stage || '',
         target_market: (profile as any).target_market || '',
@@ -147,35 +124,22 @@ export const BusinessProfileTab: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSDGToggle = (goal: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sdg_goals: prev.sdg_goals.includes(goal)
-        ? prev.sdg_goals.filter(g => g !== goal)
-        : [...prev.sdg_goals, goal]
-    }))
-  }
-
   const handleSave = async () => {
     setSaving(true)
-    setMessage(null)
 
     try {
       const { error } = await updateProfile(formData)
       
       if (error) {
-        setMessage({ type: 'error', text: error })
+        toast.error('Failed to save business profile', error)
       } else {
-        setMessage({ type: 'success', text: 'Business profile saved successfully!' })
+        toast.success('Business profile saved!', 'Your business information has been updated successfully.')
       }
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Failed to save changes' })
+      toast.error('Failed to save changes', error.message || 'An unexpected error occurred')
     } finally {
       setSaving(false)
     }
-
-    // Clear message after 3 seconds
-    setTimeout(() => setMessage(null), 3000)
   }
 
   if (loading) {
@@ -332,38 +296,6 @@ export const BusinessProfileTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* UN SDG Goals */}
-      <Card className="bg-black/30 backdrop-blur-md border border-[#6ad040]/40 rounded-2xl">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Target className="w-5 h-5 text-[#6ad040]" />
-            <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-lg">
-              UN Sustainable Development Goals
-            </h3>
-          </div>
-          
-          <p className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm mb-4">
-            Select which UN SDGs align with your business mission (optional):
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {sdgGoals.map((goal) => (
-              <button
-                key={goal}
-                onClick={() => handleSDGToggle(goal)}
-                className={`p-3 rounded-lg border-2 text-left transition-all duration-300 ${
-                  formData.sdg_goals.includes(goal)
-                    ? 'border-[#6ad040] bg-[#6ad040]/10 text-[#6ad040]'
-                    : 'border-[#6ad040]/30 hover:border-[#6ad040]/50 text-[#b7ffab]'
-                }`}
-              >
-                <span className="font-['Space_Mono'] text-xs">{goal}</span>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Privacy & Accessibility */}
       <Card className="bg-black/30 backdrop-blur-md border border-[#6ad040]/40 rounded-2xl">
         <CardContent className="p-6">
@@ -426,23 +358,7 @@ export const BusinessProfileTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Success/Error Messages */}
-      {message && (
-        <div className={`p-4 rounded-lg border ${
-          message.type === 'success' 
-            ? 'bg-green-500/10 border-green-500/30 text-green-400' 
-            : 'bg-red-500/10 border-red-500/30 text-red-400'
-        }`}>
-          <div className="flex items-center gap-3">
-            {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5" />
-            ) : (
-              <AlertCircle className="w-5 h-5" />
-            )}
-            <p className="font-['Space_Mono'] text-sm">{message.text}</p>
-          </div>
-        </div>
-      )}
+      {/* Success/Error Messages - handled by toast */}
 
       {/* Save Button */}
       <div className="flex justify-end">

@@ -9,7 +9,6 @@ import {
   Settings, 
   Shield, 
   Bell, 
-  Camera, 
   Eye, 
   EyeOff, 
   Check, 
@@ -142,7 +141,7 @@ export const ProfileSettings: React.FC = () => {
   const handleNestedChange = (parent: string, field: string, value: any) => {
     const updates = {
       [parent]: {
-        ...formData[parent as keyof typeof formData],
+        ...(formData[parent as keyof typeof formData] as any),
         [field]: value
       }
     }

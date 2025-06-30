@@ -55,6 +55,10 @@ export const useWaitlist = () => {
 
       if (insertError) {
         console.error('Supabase insert error:', insertError)
+        // Handle unique constraint violation
+        if (insertError.code === '23505') {
+          throw new Error('This email is already on the waitlist')
+        }
         throw new Error('Failed to join waitlist. Please try again.')
       }
 
