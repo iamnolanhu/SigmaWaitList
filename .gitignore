@@ -25,3 +25,4 @@ dist-ssr
 .env
 null
 public/music/archive/
+supabase/.temp

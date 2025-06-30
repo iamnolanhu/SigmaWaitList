@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 w-full bg-black/60 backdrop-blur-md border-b border-[#6ad040]/20 shadow-lg shadow-[#6ad040]/10 z-50">
-      <div className="container mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 lg:px-8 py-3 flex items-center justify-between relative">
         {/* Logo */}
         <div 
           className="w-20 h-6 sm:w-28 sm:h-8 bg-[url(/SigmaLogo.svg)] bg-contain bg-no-repeat bg-center filter drop-shadow-lg cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
@@ -81,35 +81,33 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           }}
         />
         
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8">
-          {!appMode.isAppMode && (
-            <nav className="flex items-center gap-6">
-              <button
-                onClick={() => handleNavigation('feature')}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => handleNavigation('tech')}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-              >
-                Tech
-              </button>
-              <button
-                onClick={() => handleNavigation('team')}
-                className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
-              >
-                Team
-              </button>
-            </nav>
-          )}
-        </div>
+        {/* Desktop Navigation - Absolutely centered */}
+        {!appMode.isAppMode && (
+          <nav className="hidden lg:flex items-center gap-6 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <button
+              onClick={() => handleNavigation('feature')}
+              className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+            >
+              Features
+            </button>
+            <button
+              onClick={() => handleNavigation('tech')}
+              className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+            >
+              Tech
+            </button>
+            <button
+              onClick={() => handleNavigation('team')}
+              className="text-[#b7ffab] hover:text-[#6ad040] transition-all duration-300 font-['Space_Mono'] text-sm hover:drop-shadow-lg hover:drop-shadow-[#6ad040]/50"
+            >
+              Team
+            </button>
+          </nav>
+        )}
 
-        {/* Music Player - Centered - Only show in app mode */}
+        {/* Music Player - Absolutely centered - Only show in app mode */}
         {user && appMode.isAppMode && (
-          <div className="hidden md:block mx-auto">
+          <div className="hidden md:block absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <MusicPlayer variant="navbar" />
           </div>
         )}

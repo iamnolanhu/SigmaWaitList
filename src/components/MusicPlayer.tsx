@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react'
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize2, Minimize2, Shuffle } from 'lucide-react'
 
 interface MusicPlayerProps {
   className?: string
@@ -11,7 +11,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
   const [isMuted, setIsMuted] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [currentTrack, setCurrentTrack] = useState(0)
+  const [isShuffled, setIsShuffled] = useState(true) // Default to shuffle on
+  const [playedTracks, setPlayedTracks] = useState<number[]>([])
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const hasAutoPlayed = useRef(false)
 
   // YouTube music tracks - you can replace these with your preferred tracks
   const tracks = [
@@ -38,11 +41,65 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
 
   const currentVideoId = tracks[currentTrack].id
 
+  // Initialize and autoplay on mount
+  useEffect(() => {
+    if (!hasAutoPlayed.current) {
+      hasAutoPlayed.current = true
+      
+      // Select random track
+      const randomTrack = Math.floor(Math.random() * tracks.length)
+      setCurrentTrack(randomTrack)
+      setPlayedTracks([randomTrack])
+      
+      // Start autoplay after a short delay
+      const timer = setTimeout(() => {
+        if (iframeRef.current) {
+          setIsPlaying(true)
+          const videoId = tracks[randomTrack].id
+          iframeRef.current.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+        }
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [])
+  
+  // Cleanup on unmount - stop the player
+  useEffect(() => {
+    return () => {
+      if (iframeRef.current) {
+        // Stop the video by clearing the src
+        iframeRef.current.src = ''
+      }
+    }
+  }, [])
+
+  // Function to get next shuffled track
+  const getNextShuffledTrack = () => {
+    const unplayedTracks = tracks
+      .map((_, index) => index)
+      .filter(index => !playedTracks.includes(index) || playedTracks.length >= tracks.length)
+    
+    if (unplayedTracks.length === 0) {
+      // All tracks played, reset and continue shuffling
+      setPlayedTracks([currentTrack])
+      const availableTracks = tracks.map((_, index) => index).filter(index => index !== currentTrack)
+      return availableTracks[Math.floor(Math.random() * availableTracks.length)]
+    }
+    
+    return unplayedTracks[Math.floor(Math.random() * unplayedTracks.length)]
+  }
+
   // Function to switch tracks and ensure auto-play
   const switchTrack = (newTrackIndex: number) => {
     const newTrack = newTrackIndex
     setCurrentTrack(newTrack)
     setIsPlaying(true)
+    
+    // Update played tracks for shuffle
+    if (isShuffled) {
+      setPlayedTracks(prev => [...prev, newTrack])
+    }
     
     // Reload iframe with new video and auto-play
     if (iframeRef.current) {
@@ -69,13 +126,21 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
   }
 
   const nextTrack = () => {
-    const newTrack = (currentTrack + 1) % tracks.length
+    const newTrack = isShuffled ? getNextShuffledTrack() : (currentTrack + 1) % tracks.length
     switchTrack(newTrack)
   }
 
   const prevTrack = () => {
-    const newTrack = (currentTrack - 1 + tracks.length) % tracks.length
+    const newTrack = isShuffled ? getNextShuffledTrack() : (currentTrack - 1 + tracks.length) % tracks.length
     switchTrack(newTrack)
+  }
+
+  const toggleShuffle = () => {
+    setIsShuffled(!isShuffled)
+    if (!isShuffled) {
+      // Reset played tracks when enabling shuffle
+      setPlayedTracks([currentTrack])
+    }
   }
 
   const toggleExpand = () => {
@@ -94,7 +159,6 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
         {/* YouTube iframe (hidden but functional) */}
         <iframe
           ref={iframeRef}
-          src={`https://www.youtube.com/embed/${currentVideoId}?enablejsapi=1&autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`}
           className="sr-only"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -119,6 +183,19 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
 
           {/* Controls */}
           <div className="flex items-center gap-1">
+            {/* Shuffle Toggle - Moved to left */}
+            <button
+              onClick={toggleShuffle}
+              className={`p-1 transition-colors ${
+                isShuffled 
+                  ? 'text-[#6ad040] hover:text-[#79e74c]' 
+                  : 'text-[#b7ffab]/40 hover:text-[#b7ffab]'
+              }`}
+              title={isShuffled ? 'Shuffle On' : 'Shuffle Off'}
+            >
+              <Shuffle className="w-3 h-3" />
+            </button>
+
             {/* Previous Track */}
             <button
               onClick={prevTrack}
@@ -168,12 +245,22 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
           {isExpanded && (
             <div className="absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 py-3 z-50">
               <div className="px-3 pb-2 border-b border-[#6ad040]/20 mb-2">
-                <p className="font-['Space_Mono'] text-[#b7ffab] text-sm font-bold">
-                  {tracks[currentTrack].title}
-                </p>
-                <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs">
-                  {tracks[currentTrack].artist}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-['Space_Mono'] text-[#b7ffab] text-sm font-bold">
+                      {tracks[currentTrack].title}
+                    </p>
+                    <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs">
+                      {tracks[currentTrack].artist}
+                    </p>
+                  </div>
+                  {isShuffled && (
+                    <div className="flex items-center gap-1 text-[#6ad040] text-xs">
+                      <Shuffle className="w-3 h-3" />
+                      <span className="font-['Space_Mono']">ON</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto px-3">
                 {tracks.map((track, index) => (
@@ -208,7 +295,6 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
       {/* YouTube iframe (hidden but functional) */}
       <iframe
         ref={iframeRef}
-        src={`https://www.youtube.com/embed/${currentVideoId}?enablejsapi=1&autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`}
         className="sr-only"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
