@@ -4,9 +4,9 @@ import { Input } from '../../ui/input'
 import { Card, CardContent } from '../../ui/card'
 import { useUserProfile } from '../../../hooks/useUserProfile'
 import { useApp } from '../../../contexts/AppContext'
+import { toast } from '../../../hooks/useToast'
 import { 
   User, 
-  Globe, 
   Camera, 
   Upload, 
   Trash2,
@@ -77,24 +77,20 @@ export const PersonalProfileTab: React.FC = () => {
 
   const handleSave = async () => {
     setSaving(true)
-    setMessage(null)
 
     try {
       const { error } = await updateProfile(formData)
       
       if (error) {
-        setMessage({ type: 'error', text: error })
+        toast.error('Failed to save profile', error)
       } else {
-        setMessage({ type: 'success', text: 'Personal information saved successfully!' })
+        toast.success('Profile saved successfully!', 'Your personal information has been updated.')
       }
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Failed to save changes' })
+      toast.error('Failed to save changes', error.message || 'An unexpected error occurred')
     } finally {
       setSaving(false)
     }
-
-    // Clear message after 3 seconds
-    setTimeout(() => setMessage(null), 3000)
   }
 
   if (loading) {

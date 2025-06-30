@@ -1,12 +1,20 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
+import { useAIGeneration } from '../../hooks/useAIGeneration'
 import { MatrixBackground } from '../../components/MatrixBackground'
 import { ProfileDashboard } from '../../components/profile'
-import { ProfileSetup } from '../../components/profile'
 import { AutomationDashboard } from '../../components/automation'
 import { Navbar } from '../../components/Navbar'
 import { ChatBox } from '../../components/ChatBox'
+import { ProfileWizard } from '../../components/onboarding/ProfileWizard'
+import { ProgressTracker } from '../../components/progress/ProgressTracker'
+import { QuickActions } from '../../components/dashboard/QuickActions'
+import { Skeleton, SkeletonText } from '../../components/ui/skeleton'
+import { useKeyboardShortcuts, globalShortcuts } from '../../hooks/useKeyboardShortcuts'
+import { KeyboardShortcutsHelp, ShortcutHint } from '../../components/ui/KeyboardShortcutsHelp'
+import { toast } from '../../hooks/useToast'
+import { ErrorBoundary } from '../../components/ErrorBoundary'
 import { 
   CheckCircle, 
   Zap, 
@@ -14,23 +22,138 @@ import {
   TrendingUp, 
   Clock, 
   Users, 
-  AlertTriangle,
   Cpu,
   Shield,
   Database,
   Settings,
-  User
+  User,
+  Bot,
+  Sparkles,
+  RefreshCw,
+  Target,
+  Lightbulb,
+  ArrowRight
 } from 'lucide-react'
 
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
+  const { generateCustom, loading: aiLoading } = useAIGeneration()
   const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'automation'>('dashboard')
+  const [showProfileWizard, setShowProfileWizard] = React.useState(false)
+  const [aiSuggestions, setAiSuggestions] = React.useState<{
+    dailyTip: string
+    actionItems: string[]
+    moduleRecommendations: { module: string; reason: string }[]
+  } | null>(null)
+  const [loadingSuggestions, setLoadingSuggestions] = React.useState(false)
 
   // Remove profile completion restriction - users can access app regardless
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
   // Allow access to app even with incomplete profile
-  const shouldShowProfileSetup = false
+
+  // Keyboard shortcuts
+  const shortcuts = React.useMemo(() => [
+    ...globalShortcuts,
+    {
+      key: 'p',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Profile',
+      action: () => setCurrentView('profile')
+    },
+    {
+      key: 'd',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Dashboard',
+      action: () => setCurrentView('dashboard')
+    },
+    {
+      key: 'a',
+      cmd: true,
+      ctrl: true,
+      description: 'Go to Automation',
+      action: () => setCurrentView('automation')
+    }
+  ], [])
+
+  const { showHelp, getShortcutDisplay } = useKeyboardShortcuts(shortcuts)
+
+  // Listen for save event
+  React.useEffect(() => {
+    const handleSaveEvent = () => {
+      if (currentView === 'profile') {
+        toast.info('Save profile', 'Use the save button in the profile section')
+      }
+    }
+
+    window.addEventListener('saveCurrentForm', handleSaveEvent)
+    return () => window.removeEventListener('saveCurrentForm', handleSaveEvent)
+  }, [currentView])
+  
+  // Check if wizard should be shown on first load
+  React.useEffect(() => {
+    if (profile && !profile.wizard_completed && (profile.completion_percentage ?? 0) < 50 && currentView === 'dashboard') {
+      setShowProfileWizard(true)
+    }
+  }, [profile?.wizard_completed, profile?.completion_percentage, currentView])
+
+  // Generate AI suggestions on mount and when profile changes
+  React.useEffect(() => {
+    const generateSuggestions = async () => {
+      if (!profile || loadingSuggestions || aiSuggestions) return
+      
+      setLoadingSuggestions(true)
+      try {
+        const prompt = `Based on this user profile, generate personalized suggestions:
+Profile: ${JSON.stringify({
+  name: profile.name,
+  business_type: profile.business_type,
+  region: profile.region,
+  time_commitment: profile.time_commitment,
+  capital_level: profile.capital_level,
+  completion_percentage: profile.completion_percentage
+}, null, 2)}
+
+Generate a JSON response with:
+1. A daily business tip (1-2 sentences)
+2. 3 specific action items they should do today
+3. 2 module recommendations with reasons why
+
+Format:
+{
+  "dailyTip": "Your tip here",
+  "actionItems": ["Action 1", "Action 2", "Action 3"],
+  "moduleRecommendations": [
+    {"module": "Module Name", "reason": "Why this module"},
+    {"module": "Module Name", "reason": "Why this module"}
+  ]
+}`
+
+        const result = await generateCustom(prompt, 'business-planning')
+        if (result) {
+          try {
+            const suggestions = JSON.parse(result)
+            setAiSuggestions(suggestions)
+          } catch (e) {
+            console.error('Failed to parse AI suggestions:', e)
+          }
+        }
+      } catch (error) {
+        console.error('Error generating suggestions:', error)
+      } finally {
+        setLoadingSuggestions(false)
+      }
+    }
+
+    generateSuggestions()
+  }, [profile, generateCustom])
+
+  const refreshSuggestions = async () => {
+    setAiSuggestions(null)
+    setLoadingSuggestions(false)
+  }
 
   // Convert profile to BusinessProfile format for automation
   const businessProfile = profile ? {
@@ -64,20 +187,71 @@ export const AppDashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
-        {currentView === 'profile' ? (
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-6">
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-1">
+            <div className="flex gap-1">
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className="flex items-center gap-2 text-[#6ad040] hover:text-[#79e74c] font-['Space_Mono'] text-sm transition-colors"
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'dashboard'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
               >
-                ← Back to Dashboard
+                <div className="flex items-center justify-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  <span>Dashboard</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'd', cmd: true, ctrl: true })} />
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => setCurrentView('automation')}
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'automation'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  <span>Automation</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'a', cmd: true, ctrl: true })} />
+                  )}
+                </div>
+              </button>
+              <button
+                onClick={() => setCurrentView('profile')}
+                className={`flex-1 px-6 py-3 font-['Space_Grotesk'] font-bold text-sm uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  currentView === 'profile'
+                    ? 'bg-[#6ad040] text-[#161616] shadow-lg shadow-[#6ad040]/50'
+                    : 'text-[#b7ffab]/60 hover:text-[#b7ffab] hover:bg-[#6ad040]/10'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Profile</span>
+                  {getShortcutDisplay && (
+                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'p', cmd: true, ctrl: true })} />
+                  )}
+                </div>
               </button>
             </div>
-            <ProfileDashboard />
           </div>
+        </div>
+        {currentView === 'profile' ? (
+          <ErrorBoundary>
+            <div className="max-w-6xl mx-auto">
+              <ProfileDashboard />
+            </div>
+          </ErrorBoundary>
         ) : currentView === 'automation' ? (
-          <AutomationDashboard businessProfile={businessProfile} />
+          <ErrorBoundary>
+            <AutomationDashboard businessProfile={businessProfile} />
+          </ErrorBoundary>
         ) : (
           <div className="max-w-4xl mx-auto">
             {/* Command Center Header */}
@@ -110,17 +284,24 @@ export const AppDashboard: React.FC = () => {
                   <Shield className="w-5 h-5 text-[#6ad040]" />
                   <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">PROFILE</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-black/50 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
-                      style={{ width: `${profile?.completion_percentage || 0}%` }}
-                    />
+                {profileLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-2 w-full" />
+                    <SkeletonText className="h-3 w-12" />
                   </div>
-                  <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-                    {profile?.completion_percentage || 0}%
-                  </span>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-black/50 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
+                        style={{ width: `${profile?.completion_percentage || 0}%` }}
+                      />
+                    </div>
+                    <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
+                      {profile?.completion_percentage || 0}%
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Active Modules */}
@@ -145,6 +326,19 @@ export const AppDashboard: React.FC = () => {
                   Profile Updated
                 </div>
               </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <QuickActions 
+                onNavigate={(view) => setCurrentView(view as 'dashboard' | 'profile' | 'automation')}
+                onShowWizard={() => setShowProfileWizard(true)}
+              />
+            </div>
+
+            {/* Progress Tracker */}
+            <div className="mb-8">
+              <ProgressTracker />
             </div>
 
             {/* Main Dashboard Grid */}
@@ -179,6 +373,7 @@ export const AppDashboard: React.FC = () => {
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
                           {isProfileComplete ? 'PROFILE COMPLETE' : 'SETUP PROFILE'}
                         </span>
+                        <ShortcutHint shortcut="⌘P" className="ml-auto" />
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
                         {isProfileComplete 
@@ -201,6 +396,7 @@ export const AppDashboard: React.FC = () => {
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
                           START AUTOMATION
                         </span>
+                        <ShortcutHint shortcut="⌘A" className="ml-auto" />
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
                         {isProfileComplete 
@@ -244,6 +440,109 @@ export const AppDashboard: React.FC = () => {
                       ))}
                     </div>
                   </div>
+                </div>
+
+                {/* AI Suggestions Panel */}
+                <div className="bg-black/30 backdrop-blur-md rounded-2xl border border-[#6ad040]/40 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Bot className="w-6 h-6 text-[#6ad040]" />
+                      <h2 className="font-['Orbitron'] font-bold text-[#b7ffab] text-xl">
+                        AI SUGGESTIONS
+                      </h2>
+                    </div>
+                    <button
+                      onClick={refreshSuggestions}
+                      disabled={loadingSuggestions || aiLoading}
+                      className="text-[#6ad040] hover:text-[#79e74c] disabled:text-[#6ad040]/50 transition-colors"
+                      title="Refresh suggestions"
+                    >
+                      <RefreshCw className={`w-5 h-5 ${loadingSuggestions || aiLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+
+                  {loadingSuggestions || aiLoading ? (
+                    <div className="text-center py-8">
+                      <div className="inline-flex items-center gap-3">
+                        <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
+                        <span className="font-['Space_Mono'] text-[#6ad040] text-sm">
+                          Generating personalized insights...
+                        </span>
+                      </div>
+                    </div>
+                  ) : aiSuggestions ? (
+                    <div className="space-y-6">
+                      {/* Daily Tip */}
+                      <div className="bg-[#6ad040]/10 rounded-lg p-4 border border-[#6ad040]/30">
+                        <div className="flex items-start gap-3">
+                          <Lightbulb className="w-5 h-5 text-[#6ad040] mt-0.5" />
+                          <div>
+                            <h3 className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm mb-1">
+                              DAILY INSIGHT
+                            </h3>
+                            <p className="font-['Space_Mono'] text-[#b7ffab] text-sm">
+                              {aiSuggestions.dailyTip}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Items */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Target className="w-4 h-4 text-[#6ad040]" />
+                          <h3 className="font-['Space_Grotesk'] font-bold text-[#b7ffab] text-sm">
+                            TODAY'S ACTION ITEMS
+                          </h3>
+                        </div>
+                        <div className="space-y-2">
+                          {aiSuggestions.actionItems.map((item, index) => (
+                            <div key={index} className="flex items-start gap-3 group">
+                              <span className="text-[#6ad040] font-['Space_Mono'] text-xs mt-0.5">
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+                              <p className="font-['Space_Mono'] text-[#b7ffab] text-sm flex-1">
+                                {item}
+                              </p>
+                              <ArrowRight className="w-4 h-4 text-[#6ad040]/50 group-hover:text-[#6ad040] transition-colors" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Module Recommendations */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-4 h-4 text-[#6ad040]" />
+                          <h3 className="font-['Space_Grotesk'] font-bold text-[#b7ffab] text-sm">
+                            RECOMMENDED MODULES
+                          </h3>
+                        </div>
+                        <div className="space-y-3">
+                          {aiSuggestions.moduleRecommendations.map((rec, index) => (
+                            <div 
+                              key={index}
+                              onClick={() => setCurrentView('automation')}
+                              className="bg-black/20 rounded-lg p-3 border border-[#6ad040]/30 hover:border-[#6ad040] hover:bg-[#6ad040]/10 transition-all cursor-pointer"
+                            >
+                              <h4 className="font-['Space_Grotesk'] font-bold text-[#6ad040] text-sm mb-1">
+                                {rec.module}
+                              </h4>
+                              <p className="font-['Space_Mono'] text-[#b7ffab]/80 text-xs">
+                                {rec.reason}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-sm">
+                        Complete your profile to receive personalized AI suggestions
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -399,12 +698,35 @@ export const AppDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Keyboard Shortcuts Hint */}
+            <div className="mt-4 text-center">
+              <p className="font-['Space_Mono'] text-[#6ad040]/60 text-xs">
+                Press <ShortcutHint shortcut="?" /> to view keyboard shortcuts
+              </p>
+            </div>
         </div>
         )}
       </main>
 
       {/* Sigma AI Chatbox */}
       <ChatBox />
+      
+      {/* Profile Wizard Modal */}
+      {showProfileWizard && (
+        <ProfileWizard 
+          onComplete={() => setShowProfileWizard(false)}
+          onSkip={() => setShowProfileWizard(false)}
+        />
+      )}
+      
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp
+        shortcuts={shortcuts}
+        isOpen={showHelp}
+        onClose={() => {}}
+        getShortcutDisplay={getShortcutDisplay}
+      />
     </div>
   )
 }

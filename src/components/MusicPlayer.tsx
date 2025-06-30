@@ -196,7 +196,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '' }) => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .slider::-webkit-slider-thumb {
           appearance: none;
           width: 12px;

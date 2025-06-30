@@ -1,10 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AppProvider, useApp } from './contexts/AppContext'
 import { Desktop } from './screens/Desktop'
 import { AppDashboard } from './screens/App'
+import { ToastContainer } from './components/ui/toast'
+import { useToast, setGlobalToast } from './hooks/useToast'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 const AppContent: React.FC = () => {
   const { appMode, loading } = useApp()
+  const toastInstance = useToast()
+  
+  useEffect(() => {
+    setGlobalToast(toastInstance)
+  }, [toastInstance])
 
   if (loading) {
     return (
@@ -19,13 +27,26 @@ const AppContent: React.FC = () => {
     )
   }
 
-  return appMode.isAppMode ? <AppDashboard /> : <Desktop />
+  return (
+    <>
+      {appMode.isAppMode ? <AppDashboard /> : <Desktop />}
+      <ToastContainer 
+        toasts={toastInstance.toasts.map(toast => ({
+          ...toast,
+          onClose: toastInstance.removeToast
+        }))} 
+        onClose={toastInstance.removeToast} 
+      />
+    </>
+  )
 }
 
 export const App: React.FC = () => {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   )
 }

@@ -21,9 +21,9 @@ interface BankingModuleProps {
 }
 
 export const BankingModule: React.FC<BankingModuleProps> = ({ businessProfile, onComplete }) => {
-  const { user } = useApp()
+  const { } = useApp()
   const [bankingSetup, setBankingSetup] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
   const [step, setStep] = useState<'generating' | 'review'>('generating')
 
   useEffect(() => {

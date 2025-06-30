@@ -22,7 +22,7 @@ interface WebsiteModuleProps {
 }
 
 export const WebsiteModule: React.FC<WebsiteModuleProps> = ({ businessProfile, brandAssets, onComplete }) => {
-  const { user } = useApp()
+  const _app = useApp()
   const [websiteConfig, setWebsiteConfig] = useState<WebsiteConfig | null>(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'generating' | 'review'>('generating')

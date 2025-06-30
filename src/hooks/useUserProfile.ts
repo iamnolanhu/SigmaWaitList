@@ -18,6 +18,7 @@ export const useUserProfile = () => {
       console.log('Testing database connection...')
       
       // Simple connection test - just try to access the table
+      const { supabase } = await import('../lib/supabase')
       const { error } = await supabase
         .from('user_profiles')
         .select('id')

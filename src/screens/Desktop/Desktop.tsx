@@ -1,18 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "../../components/ui/button";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "../../components/ui/card";
 import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
 import { ChatBox } from "../../components/ChatBox";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
-import { trackVideoInteraction, trackSectionView, initializeAnalytics, trackEvent } from "../../lib/analytics";
+import { trackVideoInteraction, initializeAnalytics } from "../../lib/analytics";
 import { useApp } from "../../contexts/AppContext";
 import { Navbar } from "../../components/Navbar";
 
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { appMode, setAppMode, user } = useApp();
+  const { appMode, setAppMode } = useApp();
 
   // Initialize analytics on component mount
   useEffect(() => {
