@@ -482,7 +482,7 @@ export const AppDashboard: React.FC = () => {
       <ChatBox />
 
       {/* Music Player */}
-      <MusicPlayer />
+      {/* <MusicPlayer /> */}
     </div>
   )
 }
