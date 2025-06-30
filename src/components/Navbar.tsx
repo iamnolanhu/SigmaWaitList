@@ -10,8 +10,6 @@ import {
   Settings, 
   LogOut, 
   ChevronDown, 
-  Menu, 
-  X,
   Home,
   Zap,
   CheckCircle
@@ -26,7 +24,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const { user, appMode, setAppMode, signOut } = useApp()
   const { profile } = useUserProfile()
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   const handleBackToWaitlist = () => {
     setAppMode({ isAppMode: false, hasAccess: true })
@@ -47,7 +44,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const handleSignOut = async () => {
     await signOut()
     setShowUserMenu(false)
-    setShowMobileMenu(false)
   }
 
   const handleNavigation = (section: string) => {
@@ -57,7 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' })
     }
     trackSectionView(section)
-    setShowMobileMenu(false)
   }
 
   const getUserDisplayName = () => {
@@ -114,22 +109,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           )}
         </div>
 
-        {/* Music Player - Centered */}
-        {user && (
-          <div className="hidden md:block mx-auto">
+        {/* Music Player - Single instance for both desktop and mobile */}
+        {user && appMode.isAppMode && (
+          <div className="mx-auto">
             <MusicPlayer variant="navbar" />
           </div>
         )}
 
         {/* User Section */}
         <div className="flex items-center gap-4">
-          {/* Mobile Music Player - Show when user is logged in */}
-          {user && (
-            <div className="md:hidden">
-              <MusicPlayer variant="navbar" />
-            </div>
-          )}
-          
           {user ? (
             <div className="relative">
               {/* User Info & Menu */}
@@ -256,100 +244,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
               </Button>
             </div>
           )}
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center text-[#b7ffab] hover:text-[#6ad040] transition-colors"
-          >
-            {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {showMobileMenu && (
-        <div className="lg:hidden bg-black/95 backdrop-blur-md border-t border-[#6ad040]/20">
-          <div className="container mx-auto px-4 py-4 space-y-3">
-            {!appMode.isAppMode && (
-              <>
-                <button
-                  onClick={() => handleNavigation('feature')}
-                  className="block w-full text-left px-4 py-2 text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm"
-                >
-                  Features
-                </button>
-                <button
-                  onClick={() => handleNavigation('tech')}
-                  className="block w-full text-left px-4 py-2 text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm"
-                >
-                  Tech Stack
-                </button>
-                <button
-                  onClick={() => handleNavigation('team')}
-                  className="block w-full text-left px-4 py-2 text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm"
-                >
-                  Team
-                </button>
-                <hr className="border-[#6ad040]/20" />
-              </>
-            )}
-
-            {user ? (
-              <>
-                {appMode.isAppMode ? (
-                  <button
-                    onClick={handleBackToWaitlist}
-                    className="flex items-center gap-3 w-full px-4 py-2 text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm"
-                  >
-                    <Home className="w-4 h-4" />
-                    Back to Waitlist
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleEnterApp}
-                    className="flex items-center gap-3 w-full px-4 py-2 text-[#6ad040] hover:text-[#79e74c] hover:bg-[#6ad040]/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm font-bold"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Enter App
-                  </button>
-                )}
-                
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200 font-['Space_Mono'] text-sm"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleGoToApp}
-                  className="w-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm px-4 py-3 rounded-full transition-all duration-300 active:scale-95"
-                >
-                  Go To App
-                </button>
-                <button
-                  onClick={() => handleNavigation('waitlist')}
-                  className="w-full border border-[#6ad040]/40 text-[#b7ffab] hover:text-[#6ad040] hover:border-[#6ad040] font-['Orbitron'] font-black text-sm px-4 py-3 rounded-full transition-all duration-300 active:scale-95"
-                >
-                  Join Waitlist
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Click Outside Handler */}
-      {(showUserMenu || showMobileMenu) && (
+      {showUserMenu && (
         <div 
           className="fixed inset-0 z-40" 
           onClick={() => {
             setShowUserMenu(false)
-            setShowMobileMenu(false)
           }}
         />
       )}

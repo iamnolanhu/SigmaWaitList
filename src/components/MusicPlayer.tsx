@@ -28,15 +28,29 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
     { id: 'DzkkfL4kcsY', title: 'I am', artist: 'Honey B' },
     { id: 'taA_XC3o3EE', title: 'Lone Wolf Vibes', artist: 'Honey B' },
     { id: 'Gkb3z7VgW24', title: 'Pro Autonomy (2)', artist: 'Honey B' },
-    { id: '81dxJoQJSNY', title: 'Pro Autonomy', artist: 'YouTube Playlist' },
-    { id: 's8yvg9pDg1Y', title: 'Sigma Status', artist: 'YouTube Playlist' },
-    { id: 'aQyYK3i_qrQ', title: 'Sigma State of Mind', artist: 'YouTube Playlist' },
-    { id: 'QwwsBE1bIg8', title: 'untitled sigma 2', artist: 'YouTube Playlist' },
-    { id: 'JRBDRPueq0Q', title: 'untitled sigma', artist: 'YouTube Playlist' },
-    { id: 'j71NU1qE9yc', title: 'a song', artist: 'YouTube Playlist' }
+    { id: '81dxJoQJSNY', title: 'Pro Autonomy', artist: 'Honey B' },
+    { id: 's8yvg9pDg1Y', title: 'Sigma Status', artist: 'Honey B' },
+    { id: 'aQyYK3i_qrQ', title: 'Sigma State of Mind', artist: 'Honey B' },
+    { id: 'QwwsBE1bIg8', title: 'untitled sigma 2', artist: 'Honey B' },
+    { id: 'JRBDRPueq0Q', title: 'untitled sigma', artist: 'Honey B' },
+    { id: 'j71NU1qE9yc', title: 'a song', artist: 'Honey B' }
   ]
 
   const currentVideoId = tracks[currentTrack].id
+
+  // Auto-play on component mount
+  useEffect(() => {
+    // Start playing after a short delay to ensure iframe is ready
+    const timer = setTimeout(() => {
+      setIsPlaying(true)
+      if (iframeRef.current) {
+        const message = '{"event":"command","func":"playVideo","args":""}'
+        iframeRef.current.contentWindow?.postMessage(message, '*')
+      }
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   // Function to switch tracks and ensure auto-play
   const switchTrack = (newTrackIndex: number) => {
@@ -47,7 +61,24 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
     // Reload iframe with new video and auto-play
     if (iframeRef.current) {
       const newVideoId = tracks[newTrack].id
-      iframeRef.current.src = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+      const newSrc = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
+      
+      // Change the src to load new video
+      iframeRef.current.src = newSrc
+      
+      // Add a fallback to ensure play command is sent after iframe loads
+      const checkAndPlay = () => {
+        if (iframeRef.current) {
+          // Send play command as backup
+          const message = '{"event":"command","func":"playVideo","args":""}'
+          iframeRef.current.contentWindow?.postMessage(message, '*')
+        }
+      }
+      
+      // Try to play after a short delay to ensure iframe is ready
+      setTimeout(checkAndPlay, 500)
+      setTimeout(checkAndPlay, 1000)
+      setTimeout(checkAndPlay, 2000)
     }
   }
 
@@ -87,6 +118,19 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
     switchTrack(index)
   }
 
+  // Handle iframe load events to ensure auto-play
+  const handleIframeLoad = () => {
+    if (isPlaying && iframeRef.current) {
+      // Send play command when iframe loads
+      setTimeout(() => {
+        if (iframeRef.current) {
+          const message = '{"event":"command","func":"playVideo","args":""}'
+          iframeRef.current.contentWindow?.postMessage(message, '*')
+        }
+      }, 100)
+    }
+  }
+
   // Navbar variant - compact version
   if (variant === 'navbar') {
     return (
@@ -98,10 +142,11 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
           className="sr-only"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
+          onLoad={handleIframeLoad}
         />
 
-        {/* Compact Music Player */}
-        <div className="flex items-center gap-2">
+        {/* Compact Music Player - Hidden on mobile, shown on desktop */}
+        <div className="hidden md:flex items-center gap-2">
           {/* Track Info */}
           <div className="hidden sm:flex items-center gap-2 min-w-0 w-48">
             <div className="w-6 h-6 bg-[#6ad040]/20 rounded flex items-center justify-center flex-shrink-0">
@@ -148,6 +193,19 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
               title="Next Track"
             >
               <SkipForward className="w-3 h-3" />
+            </button>
+
+            {/* Mute/Unmute */}
+            <button
+              onClick={toggleMute}
+              className="p-1 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-3 h-3" />
+              ) : (
+                <Volume2 className="w-3 h-3" />
+              )}
             </button>
 
             {/* Expand/Collapse */}
@@ -198,6 +256,53 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
             </div>
           )}
         </div>
+
+        {/* Mobile Music Player - Shown on mobile, hidden on desktop */}
+        <div className="md:hidden flex items-center gap-1">
+          {/* Previous Track */}
+          <button
+            onClick={prevTrack}
+            className="p-1 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+            title="Previous Track"
+          >
+            <SkipBack className="w-3 h-3" />
+          </button>
+
+          {/* Play/Pause */}
+          <button
+            onClick={togglePlay}
+            className="p-1 bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] rounded transition-colors"
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <Pause className="w-3 h-3" />
+            ) : (
+              <Play className="w-3 h-3" />
+            )}
+          </button>
+
+          {/* Next Track */}
+          <button
+            onClick={nextTrack}
+            className="p-1 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+            title="Next Track"
+          >
+            <SkipForward className="w-3 h-3" />
+          </button>
+
+          {/* Mute/Unmute */}
+          <button
+            onClick={toggleMute}
+            className="p-1 text-[#b7ffab] hover:text-[#6ad040] transition-colors"
+            title={isMuted ? 'Unmute' : 'Mute'}
+          >
+            {isMuted ? (
+              <VolumeX className="w-3 h-3" />
+            ) : (
+              <Volume2 className="w-3 h-3" />
+            )}
+          </button>
+        </div>
       </div>
     )
   }
@@ -212,6 +317,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
         className="sr-only"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
+        onLoad={handleIframeLoad}
       />
 
       {/* Music Player UI */}
