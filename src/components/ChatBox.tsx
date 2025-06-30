@@ -33,7 +33,7 @@ interface ChatBoxProps {
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   const { user, setAppMode, appMode } = useApp()
-  const { profile, updateProfile, createBusinessProfile } = useUserProfile()
+  const { profile, createBusinessProfile } = useUserProfile()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -98,7 +98,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
 
       // Add profile context to the conversation if available
       if (profile && profile.completion_percentage && profile.completion_percentage > 0) {
-        const profileContext = `User Profile Context: Name: ${profile.name || 'Not set'}, Business Type: ${profile.business_type || 'Not set'}, Region: ${profile.region || 'Not set'}, Completion: ${profile.completion_percentage}%`
+        const businessProfile = createBusinessProfile()
+        const profileContext = `User Profile Context: Name: ${profile.name || 'Not set'}, Business Type: ${profile.business_type || 'Not set'}, Region: ${profile.region || 'Not set'}, Time Commitment: ${profile.time_commitment || 'Not set'}, Capital Level: ${profile.capital_level || 'Not set'}, Completion: ${profile.completion_percentage}%. Business Profile: ${JSON.stringify(businessProfile)}`
+        
         contextualMessages.unshift({
           id: 'context',
           role: 'system',

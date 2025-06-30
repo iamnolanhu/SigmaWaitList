@@ -5,7 +5,7 @@ import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useApp } from '../../contexts/AppContext'
 import { trackEvent } from '../../lib/analytics'
-import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw } from 'lucide-react'
+import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw, Database } from 'lucide-react'
 
 export const ProfileSetup: React.FC = () => {
   const { user } = useApp()
@@ -21,29 +21,51 @@ export const ProfileSetup: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [isFormValid, setIsFormValid] = useState(false)
 
   // Update form data when profile loads
   useEffect(() => {
     if (profile) {
-      setFormData({
+      const newFormData = {
         name: profile.name || '',
         region: profile.region || '',
         business_type: profile.business_type || '',
         time_commitment: profile.time_commitment || '',
         capital_level: profile.capital_level || '',
         stealth_mode: profile.stealth_mode || false
-      })
+      }
+      setFormData(newFormData)
+      console.log('Profile loaded, updating form:', newFormData)
     }
   }, [profile])
 
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = !!(
+      formData.name.trim() &&
+      formData.region &&
+      formData.business_type &&
+      formData.time_commitment &&
+      formData.capital_level
+    )
+    setIsFormValid(isValid)
+    console.log('Form validation:', { isValid, formData })
+  }, [formData])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isFormValid) {
+      setSaveError('Please fill in all required fields')
+      return
+    }
+
     setSaving(true)
     setSaveSuccess(false)
     setSaveError('')
 
     try {
-      console.log('Saving profile data:', formData)
+      console.log('Attempting to save profile:', formData)
       
       const { data, error } = await updateProfile(formData)
       
@@ -64,9 +86,6 @@ export const ProfileSetup: React.FC = () => {
         
         // Hide success message after 3 seconds
         setTimeout(() => setSaveSuccess(false), 3000)
-        
-        // Reload profile to ensure consistency
-        setTimeout(() => loadProfile(), 500)
       }
     } catch (err: any) {
       setSaveError(err.message || 'Failed to save profile')
@@ -77,7 +96,11 @@ export const ProfileSetup: React.FC = () => {
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value }
+      console.log('Form data updated:', { field, value, newData })
+      return newData
+    })
     // Clear any previous errors when user starts typing
     if (saveError) setSaveError('')
   }
@@ -86,6 +109,7 @@ export const ProfileSetup: React.FC = () => {
     setSaving(true)
     try {
       await loadProfile()
+      console.log('Profile refreshed')
     } finally {
       setSaving(false)
     }
@@ -132,6 +156,7 @@ export const ProfileSetup: React.FC = () => {
   ]
 
   const completionPercentage = profile?.completion_percentage || 0
+  const isConnected = !!user && !loading
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -226,7 +251,6 @@ export const ProfileSetup: React.FC = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Your sigma name..."
                   className="bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60"
-                  required
                 />
               </div>
 
@@ -238,7 +262,6 @@ export const ProfileSetup: React.FC = () => {
                   value={formData.region}
                   onChange={(e) => handleInputChange('region', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
-                  required
                 >
                   <option value="">Select your region</option>
                   {regions.map(region => (
@@ -269,7 +292,6 @@ export const ProfileSetup: React.FC = () => {
                   value={formData.business_type}
                   onChange={(e) => handleInputChange('business_type', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
-                  required
                 >
                   <option value="">Select business type</option>
                   {businessTypes.map(type => (
@@ -286,7 +308,6 @@ export const ProfileSetup: React.FC = () => {
                   value={formData.time_commitment}
                   onChange={(e) => handleInputChange('time_commitment', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
-                  required
                 >
                   <option value="">How much time can you dedicate?</option>
                   {timeCommitments.map(time => (
@@ -303,7 +324,6 @@ export const ProfileSetup: React.FC = () => {
                   value={formData.capital_level}
                   onChange={(e) => handleInputChange('capital_level', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
-                  required
                 >
                   <option value="">Available capital?</option>
                   {capitalLevels.map(capital => (
@@ -354,13 +374,23 @@ export const ProfileSetup: React.FC = () => {
         {/* Save Button */}
         <Button
           type="submit"
-          disabled={saving || loading || !formData.name || !formData.region || !formData.business_type || !formData.time_commitment || !formData.capital_level}
+          disabled={saving || !isConnected || !isFormValid}
           className="w-full font-['Orbitron'] font-black text-lg px-8 py-4 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {saving ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               Saving Profile...
+            </>
+          ) : !isConnected ? (
+            <>
+              <Database className="w-5 h-5 mr-2" />
+              Connecting...
+            </>
+          ) : !isFormValid ? (
+            <>
+              <Save className="w-5 h-5 mr-2" />
+              Fill Required Fields
             </>
           ) : (
             <>
@@ -370,14 +400,20 @@ export const ProfileSetup: React.FC = () => {
           )}
         </Button>
 
-        {/* Database Status */}
-        <div className="text-center">
+        {/* Form Validation Status */}
+        <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 bg-black/30 rounded-full px-4 py-2 border border-[#6ad040]/30">
-            <div className={`w-2 h-2 rounded-full ${profile ? 'bg-[#6ad040] animate-pulse' : 'bg-gray-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#6ad040] animate-pulse' : 'bg-gray-500'}`} />
             <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
-              {profile ? 'Connected to Database' : 'Connecting...'}
+              {isConnected ? 'Connected to Database' : 'Connecting...'}
             </span>
           </div>
+          
+          {!isFormValid && (
+            <div className="text-xs font-['Space_Mono'] text-yellow-400">
+              Required: Name, Region, Business Type, Time Commitment, Capital Level
+            </div>
+          )}
         </div>
       </form>
     </div>

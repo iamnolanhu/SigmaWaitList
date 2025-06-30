@@ -26,41 +26,48 @@ export const useUserProfile = () => {
 
   // Load user profile
   const loadProfile = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log('No user ID available for profile loading')
+      return
+    }
 
     setLoading(true)
     setError(null)
 
     try {
+      console.log('Loading profile for user:', user.id)
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist yet - create it
-          const { data: newProfile, error: createError } = await supabase
-            .from('user_profiles')
-            .insert({ 
-              id: user.id,
-              completion_percentage: 0
-            })
-            .select()
-            .single()
+      if (error && error.code !== 'PGRST116') {
+        throw error
+      }
 
-          if (createError) {
-            throw createError
-          }
-          
-          setProfile(newProfile)
-          console.log('Created new user profile')
-        } else {
-          throw error
+      if (!data) {
+        // Profile doesn't exist yet - create it
+        console.log('Profile not found, creating new profile')
+        const { data: newProfile, error: createError } = await supabase
+          .from('user_profiles')
+          .insert({ 
+            id: user.id,
+            completion_percentage: 0
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          throw createError
         }
+        
+        setProfile(newProfile)
+        console.log('Created new user profile:', newProfile)
       } else {
         setProfile(data)
+        console.log('Loaded existing profile:', data)
       }
     } catch (err: any) {
       setError(err.message)
@@ -98,6 +105,8 @@ export const useUserProfile = () => {
     setError(null)
 
     try {
+      console.log('Updating profile with data:', updates)
+      
       // Calculate completion percentage with the updates
       const updatedProfileData = { ...profile, ...updates }
       const completion = calculateCompletion(updatedProfileData as UserProfile)
@@ -109,41 +118,27 @@ export const useUserProfile = () => {
         updated_at: new Date().toISOString()
       }
 
-      // First, ensure the profile exists
-      if (!profile) {
-        const { data: newProfile, error: createError } = await supabase
-          .from('user_profiles')
-          .insert({ 
-            id: user.id,
-            ...finalUpdates
-          })
-          .select()
-          .single()
+      console.log('Final updates to save:', finalUpdates)
 
-        if (createError) throw createError
-
-        setProfile(newProfile)
-        console.log('Profile created successfully:', newProfile)
-        return { data: newProfile, error: null }
-      }
-
-      // Update existing profile with upsert to handle race conditions
+      // Use upsert to handle both insert and update cases
       const { data, error } = await supabase
         .from('user_profiles')
         .upsert({ 
           id: user.id,
           ...finalUpdates
+        }, {
+          onConflict: 'id'
         })
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Database error:', error)
+        throw error
+      }
 
       setProfile(data)
       console.log('Profile updated successfully:', data)
-      
-      // Force a small delay to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 100))
       
       return { data, error: null }
     } catch (err: any) {
@@ -177,6 +172,9 @@ export const useUserProfile = () => {
   useEffect(() => {
     if (user?.id) {
       loadProfile()
+    } else {
+      setProfile(null)
+      setLoading(false)
     }
   }, [user?.id])
 
@@ -184,6 +182,7 @@ export const useUserProfile = () => {
   useEffect(() => {
     if (!user?.id) return
 
+    console.log('Setting up real-time subscription for user:', user.id)
     const subscription = supabase
       .channel('user_profile_changes')
       .on(
@@ -206,6 +205,7 @@ export const useUserProfile = () => {
       .subscribe()
 
     return () => {
+      console.log('Unsubscribing from real-time updates')
       subscription.unsubscribe()
     }
   }, [user?.id])
