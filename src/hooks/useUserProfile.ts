@@ -12,6 +12,30 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Test database connection - simplified and more reliable
+  const testConnection = async () => {
+    try {
+      console.log('Testing database connection...')
+      
+      // Simple connection test - just try to access the table
+      const { error } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .limit(1)
+
+      if (error) {
+        console.error('Connection test failed:', error)
+        return { connected: false, error: error.message }
+      }
+
+      console.log('Database connection test passed')
+      return { connected: true, error: null }
+    } catch (err: any) {
+      console.error('Connection test exception:', err)
+      return { connected: false, error: err.message || 'Connection failed' }
+    }
+  }
+
   // Load user profile using optimized service
   const loadProfile = async () => {
     if (!user?.id) {
@@ -88,6 +112,25 @@ export const useUserProfile = () => {
     }
   }
 
+  // Create business profile from user profile
+  const createBusinessProfile = () => {
+    if (!profile || !user?.id) return null
+
+    return {
+      id: profile.id,
+      user_id: user.id,
+      business_name: profile.name || '',
+      business_type: profile.business_type || '',
+      industry: profile.business_type || '',
+      description: `${profile.business_type} business` || '',
+      target_market: '',
+      budget_range: profile.capital_level || '',
+      timeline: profile.time_commitment || '',
+      legal_structure: 'LLC' as const,
+      state_of_incorporation: profile.region || ''
+    }
+  }
+
   useEffect(() => {
     if (user?.id) {
       loadProfile()
@@ -106,6 +149,8 @@ export const useUserProfile = () => {
     error,
     updateProfile,
     loadProfile,
-    calculateCompletion
+    calculateCompletion,
+    createBusinessProfile,
+    testConnection
   }
 }
