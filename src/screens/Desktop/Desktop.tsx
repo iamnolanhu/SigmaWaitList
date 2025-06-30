@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "../../components/ui/card";
 import { MatrixBackground } from "../../components/MatrixBackground";
 import { WaitlistForm } from "../../components/WaitlistForm";
-import { ChatBox } from "../../components/ChatBox";
+import { ChatBoxSafe } from "../../components/ChatBoxSafe";
 import { Volume2, VolumeX, Github, Linkedin } from "lucide-react";
 import { trackVideoInteraction, initializeAnalytics } from "../../lib/analytics";
 import { useApp } from "../../contexts/AppContext";
@@ -522,8 +522,8 @@ export const Desktop = (): JSX.Element => {
           </section>
         </main>
 
-        {/* Sigma AI Chatbox */}
-        <ChatBox />
+        {/* Sigma AI Chatbox - Only show when user is logged in and in app mode */}
+        {appMode.isAppMode && <ChatBoxSafe />}
       </div>
     </div>
   );

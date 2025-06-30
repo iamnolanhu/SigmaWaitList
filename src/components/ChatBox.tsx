@@ -6,6 +6,8 @@ import { mistralAI, type MistralMessage, type BusinessIntent } from '../lib/mist
 import { useApp } from '../contexts/AppContext'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { trackEvent } from '../lib/analytics'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { 
   Send, 
   Bot, 
@@ -18,7 +20,8 @@ import {
   Sparkles,
   Settings,
   FileText,
-  Database
+  Database,
+  MessageSquare
 } from 'lucide-react'
 
 interface ChatMessage extends MistralMessage {
@@ -35,12 +38,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   const { user, setAppMode, appMode } = useApp()
   const { profile, createBusinessProfile } = useUserProfile()
   const [isOpen, setIsOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       role: 'assistant',
-      content: "👋 Hey there, future CEO! I'm Sigma AI, your business automation partner. What's your vision? I can help you start a business, handle legal paperwork, create branding, build websites, set up payments, or automate marketing. Let's turn your ideas into reality! 💪",
+      content: "👋 Hey there, future CEO! I'm the BasedSigma AI Agent, your business automation partner. What's your vision? I can help you start a business, handle legal paperwork, create branding, build websites, set up payments, or automate marketing. Let's turn your ideas into reality! 💪",
       timestamp: new Date()
     }
   ])
@@ -58,10 +61,24 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   }, [messages])
 
   useEffect(() => {
-    if (isOpen && !isMinimized && inputRef.current) {
+    if (isOpen && inputRef.current) {
       inputRef.current.focus()
     }
-  }, [isOpen, isMinimized])
+  }, [isOpen])
+
+  // Handle escape key to exit fullscreen
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMaximized) {
+        toggleMaximize()
+      }
+    }
+    
+    if (isMaximized) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMaximized])
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return
@@ -183,6 +200,10 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
     }
   }
 
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized)
+  }
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
@@ -198,15 +219,20 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
 
   const profileStatus = getProfileCompletionStatus()
 
+  // Don't render ChatBox if user is not logged in
+  if (!user) {
+    return null
+  }
+
   if (!isOpen) {
     return (
-      <div className={`fixed bottom-24 right-6 z-50 ${className}`}>
+      <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
         <Button
           onClick={() => setIsOpen(true)}
           className="w-16 h-16 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] shadow-2xl hover:shadow-[#6ad040]/50 transition-all duration-300 hover:scale-110 group"
         >
           <div className="relative">
-            <Bot className="w-8 h-8" />
+            <img src="/sigmaguy-black.svg" alt="BasedSigma AI" className="w-10 h-10" />
             <Sparkles className="w-4 h-4 absolute -top-1 -right-1 text-[#161616] animate-pulse" />
           </div>
         </Button>
@@ -215,20 +241,30 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`fixed bottom-24 right-6 z-50 ${className}`}>
-      <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 transition-all duration-300 ${
-        isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
-      }`}>
+    <div 
+      className={`fixed z-50 transition-all duration-500 ease-in-out ${className}`}
+      style={{
+        right: isMaximized ? '0' : '24px',
+        bottom: isMaximized ? '0' : '24px',
+        left: isMaximized ? '0' : 'auto',
+        top: isMaximized ? '0' : 'auto',
+        width: isMaximized ? '100vw' : '384px',
+        height: isMaximized ? '100vh' : '600px'
+      }}
+    >
+        <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 w-full h-full transition-all duration-500 ${
+          isMaximized ? 'rounded-none' : 'rounded-2xl'
+        }`}>
         <CardContent className="p-0 h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-[#6ad040]/20">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#6ad040] rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-[#161616]" />
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-10 h-10" />
               </div>
               <div>
                 <h3 className="font-['Orbitron'] font-bold text-[#b7ffab] text-sm">
-                  SIGMA AI
+                  BASEDSIGMA AI AGENT
                 </h3>
                 <p className="font-['Space_Mono'] text-[#6ad040] text-xs">
                   Business Automation Assistant
@@ -240,10 +276,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMinimized(!isMinimized)}
+                onClick={toggleMaximize}
                 className="w-8 h-8 p-0 text-[#b7ffab] hover:text-[#6ad040] hover:bg-[#6ad040]/10"
+                title={isMaximized ? "Exit fullscreen" : "Maximize for full engagement"}
               >
-                {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
               <Button
                 variant="ghost"
@@ -255,9 +292,6 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
               </Button>
             </div>
           </div>
-
-          {!isMinimized && (
-            <>
               {/* User Status Bar */}
               {user && (
                 <div className="px-4 py-2 bg-black/40 border-b border-[#6ad040]/20">
@@ -306,33 +340,62 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
               )}
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className={`flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 min-h-0 ${
+                isMaximized ? 'max-w-4xl mx-auto w-full' : ''
+              }`}>
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.role === 'assistant' && (
-                      <div className="w-8 h-8 bg-[#6ad040] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bot className="w-4 h-4 text-[#161616]" />
+                      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                        <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-8 h-8" />
                       </div>
                     )}
                     
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'order-1' : ''}`}>
+                    <div className={`max-w-[80%] min-w-0 ${message.role === 'user' ? 'order-1' : ''}`}>
                       <div
-                        className={`p-3 rounded-2xl ${
+                        className={`p-3 rounded-2xl overflow-hidden ${
                           message.role === 'user'
                             ? 'bg-[#6ad040] text-[#161616] rounded-br-md'
                             : 'bg-black/40 border border-[#6ad040]/30 text-[#b7ffab] rounded-bl-md'
                         }`}
                       >
-                        <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-                          message.role === 'user' 
-                            ? 'font-["Space_Mono"]' 
-                            : 'font-["Space_Mono"]'
-                        }`}>
-                          {message.content}
-                        </p>
+                        {message.role === 'user' ? (
+                          <p className="text-sm leading-relaxed break-words font-['Space_Mono']">
+                            {message.content}
+                          </p>
+                        ) : (
+                          <div className="text-sm leading-relaxed break-words font-['Space_Mono'] prose prose-sm prose-invert max-w-none">
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                                li: ({ children }) => <li className="text-[#b7ffab]">{children}</li>,
+                                strong: ({ children }) => <strong className="font-bold text-[#6ad040]">{children}</strong>,
+                                em: ({ children }) => <em className="italic">{children}</em>,
+                                code: ({ inline, children }) => 
+                                  inline ? (
+                                    <code className="bg-black/50 px-1 py-0.5 rounded text-[#6ad040] text-xs">{children}</code>
+                                  ) : (
+                                    <code className="block bg-black/50 p-2 rounded text-[#6ad040] text-xs overflow-x-auto">{children}</code>
+                                  ),
+                                pre: ({ children }) => <pre className="bg-black/50 p-3 rounded mb-2 overflow-x-auto">{children}</pre>,
+                                blockquote: ({ children }) => <blockquote className="border-l-2 border-[#6ad040] pl-3 my-2">{children}</blockquote>,
+                                h1: ({ children }) => <h1 className="text-lg font-bold text-[#6ad040] mb-2">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-base font-bold text-[#6ad040] mb-2">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-sm font-bold text-[#6ad040] mb-2">{children}</h3>,
+                                a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#6ad040] underline hover:text-[#79e74c]">{children}</a>,
+                                hr: () => <hr className="border-[#6ad040]/30 my-3" />,
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                        )}
                       </div>
                       
                       <div className={`flex items-center gap-2 mt-1 ${
@@ -362,14 +425,14 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                 
                 {isLoading && (
                   <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 bg-[#6ad040] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <Bot className="w-4 h-4 text-[#161616]" />
+                    <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                      <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-8 h-8" />
                     </div>
                     <div className="bg-black/40 border border-[#6ad040]/30 p-3 rounded-2xl rounded-bl-md">
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 text-[#6ad040] animate-spin" />
                         <span className="font-['Space_Mono'] text-[#b7ffab] text-sm">
-                          Sigma is thinking...
+                          BasedSigma is thinking...
                         </span>
                       </div>
                     </div>
@@ -415,7 +478,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Ask Sigma anything about your business..."
+                    placeholder="Ask BasedSigma anything about your business..."
                     disabled={isLoading}
                     className="flex-1 bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60 focus:border-[#6ad040] focus:ring-[#6ad040]/30"
                   />
@@ -438,10 +501,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                   </p>
                 )}
               </div>
-            </>
-          )}
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
   )
 }
