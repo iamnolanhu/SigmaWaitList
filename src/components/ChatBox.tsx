@@ -252,12 +252,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
         height: isMaximized ? '100vh' : '600px'
       }}
     >
-        <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 w-full h-full transition-all duration-500 ${
-          isMaximized ? 'rounded-none' : 'rounded-2xl'
-        }`}>
+      <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 w-full h-full transition-all duration-500 ${
+        isMaximized ? 'rounded-none' : 'rounded-2xl'
+      }`}>
         <CardContent className="p-0 h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-[#6ad040]/20">
+          <div className="flex items-center justify-between p-4 border-b border-[#6ad040]/20 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-10 h-10" />
@@ -292,103 +292,112 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
               </Button>
             </div>
           </div>
-              {/* User Status Bar */}
-              {user && (
-                <div className="px-4 py-2 bg-black/40 border-b border-[#6ad040]/20">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
-                      <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
-                        {profile?.name || 'Sigma User'}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Database className="w-3 h-3 text-[#6ad040]" />
-                        <span className="font-['Space_Mono'] text-[#6ad040] text-xs">
-                          DB
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        <Settings className="w-3 h-3 text-[#6ad040]" />
-                        <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
-                          {profileStatus.percentage}%
-                        </span>
-                      </div>
-                      {profileStatus.ready && (
-                        <Button
-                          onClick={() => setAppMode({ isAppMode: true, hasAccess: true })}
-                          className="text-xs px-2 py-1 h-auto bg-[#6ad040] hover:bg-[#79e74c] text-[#161616]"
-                        >
-                          <Zap className="w-3 h-3 mr-1" />
-                          Automate
-                        </Button>
-                      )}
-                    </div>
+
+          {/* User Status Bar */}
+          {user && (
+            <div className="px-4 py-2 bg-black/40 border-b border-[#6ad040]/20 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
+                  <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
+                    {profile?.name || 'Sigma User'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Database className="w-3 h-3 text-[#6ad040]" />
+                    <span className="font-['Space_Mono'] text-[#6ad040] text-xs">
+                      DB
+                    </span>
                   </div>
-                  {!profileStatus.ready && (
-                    <div className="mt-1">
-                      <div className="h-1 bg-black/50 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
-                          style={{ width: `${profileStatus.percentage}%` }}
-                        />
-                      </div>
-                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Settings className="w-3 h-3 text-[#6ad040]" />
+                    <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
+                      {profileStatus.percentage}%
+                    </span>
+                  </div>
+                  {profileStatus.ready && (
+                    <Button
+                      onClick={() => setAppMode({ isAppMode: true, hasAccess: true })}
+                      className="text-xs px-2 py-1 h-auto bg-[#6ad040] hover:bg-[#79e74c] text-[#161616]"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      Automate
+                    </Button>
                   )}
                 </div>
+              </div>
+              {!profileStatus.ready && (
+                <div className="mt-1">
+                  <div className="h-1 bg-black/50 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
+                      style={{ width: `${profileStatus.percentage}%` }}
+                    />
+                  </div>
+                </div>
               )}
+            </div>
+          )}
 
-              {/* Messages */}
-              <div className={`flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 min-h-0 ${
-                isMaximized ? 'max-w-4xl mx-auto w-full' : ''
-              }`}>
+          {/* Messages Container - Fixed height with proper overflow */}
+          <div className="flex-1 min-h-0 relative">
+            <div className={`h-full overflow-y-auto overflow-x-hidden px-4 py-4 ${
+              isMaximized ? 'max-w-4xl mx-auto' : ''
+            }`}>
+              <div className="space-y-4">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                   >
-                    {message.role === 'assistant' && (
-                      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                    {/* Avatar */}
+                    <div className="w-8 h-8 flex-shrink-0 mt-1">
+                      {message.role === 'assistant' ? (
                         <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-8 h-8" />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-8 h-8 bg-[#b7ffab] rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-[#161616]" />
+                        </div>
+                      )}
+                    </div>
                     
-                    <div className={`max-w-[80%] min-w-0 ${message.role === 'user' ? 'order-1' : ''}`}>
+                    {/* Message Bubble */}
+                    <div className="flex-1 min-w-0 max-w-[calc(100%-3rem)]">
                       <div
-                        className={`p-3 rounded-2xl overflow-hidden ${
+                        className={`px-4 py-3 rounded-2xl ${
                           message.role === 'user'
-                            ? 'bg-[#6ad040] text-[#161616] rounded-br-md'
-                            : 'bg-black/40 border border-[#6ad040]/30 text-[#b7ffab] rounded-bl-md'
+                            ? 'bg-[#6ad040] text-[#161616] rounded-tr-md ml-auto max-w-[85%]'
+                            : 'bg-black/40 border border-[#6ad040]/30 text-[#b7ffab] rounded-tl-md max-w-[95%]'
                         }`}
                       >
                         {message.role === 'user' ? (
-                          <p className="text-sm leading-relaxed break-words font-['Space_Mono']">
+                          <p className="text-sm leading-relaxed font-['Space_Mono'] break-words">
                             {message.content}
                           </p>
                         ) : (
-                          <div className="text-sm leading-relaxed break-words font-['Space_Mono'] prose prose-sm prose-invert max-w-none">
+                          <div className="text-sm leading-relaxed font-['Space_Mono'] break-words prose prose-sm prose-invert max-w-none [&>*]:break-words">
                             <ReactMarkdown 
                               remarkPlugins={[remarkGfm]}
                               components={{
-                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                                ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                                li: ({ children }) => <li className="text-[#b7ffab]">{children}</li>,
+                                p: ({ children }) => <p className="mb-2 last:mb-0 break-words">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1 break-words">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1 break-words">{children}</ol>,
+                                li: ({ children }) => <li className="text-[#b7ffab] break-words">{children}</li>,
                                 strong: ({ children }) => <strong className="font-bold text-[#6ad040]">{children}</strong>,
                                 em: ({ children }) => <em className="italic">{children}</em>,
                                 code: ({ inline, children }) => 
                                   inline ? (
-                                    <code className="bg-black/50 px-1 py-0.5 rounded text-[#6ad040] text-xs">{children}</code>
+                                    <code className="bg-black/50 px-1 py-0.5 rounded text-[#6ad040] text-xs break-all">{children}</code>
                                   ) : (
-                                    <code className="block bg-black/50 p-2 rounded text-[#6ad040] text-xs overflow-x-auto">{children}</code>
+                                    <code className="block bg-black/50 p-2 rounded text-[#6ad040] text-xs overflow-x-auto break-all">{children}</code>
                                   ),
                                 pre: ({ children }) => <pre className="bg-black/50 p-3 rounded mb-2 overflow-x-auto">{children}</pre>,
                                 blockquote: ({ children }) => <blockquote className="border-l-2 border-[#6ad040] pl-3 my-2">{children}</blockquote>,
-                                h1: ({ children }) => <h1 className="text-lg font-bold text-[#6ad040] mb-2">{children}</h1>,
-                                h2: ({ children }) => <h2 className="text-base font-bold text-[#6ad040] mb-2">{children}</h2>,
-                                h3: ({ children }) => <h3 className="text-sm font-bold text-[#6ad040] mb-2">{children}</h3>,
-                                a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#6ad040] underline hover:text-[#79e74c]">{children}</a>,
+                                h1: ({ children }) => <h1 className="text-lg font-bold text-[#6ad040] mb-2 break-words">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-base font-bold text-[#6ad040] mb-2 break-words">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-sm font-bold text-[#6ad040] mb-2 break-words">{children}</h3>,
+                                a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#6ad040] underline hover:text-[#79e74c] break-all">{children}</a>,
                                 hr: () => <hr className="border-[#6ad040]/30 my-3" />,
                               }}
                             >
@@ -398,6 +407,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                         )}
                       </div>
                       
+                      {/* Message metadata */}
                       <div className={`flex items-center gap-2 mt-1 ${
                         message.role === 'user' ? 'justify-end' : 'justify-start'
                       }`}>
@@ -414,21 +424,16 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                         )}
                       </div>
                     </div>
-
-                    {message.role === 'user' && (
-                      <div className="w-8 h-8 bg-[#b7ffab] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <User className="w-4 h-4 text-[#161616]" />
-                      </div>
-                    )}
                   </div>
                 ))}
                 
+                {/* Loading indicator */}
                 {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 flex-shrink-0 mt-1">
                       <img src="/sigmaguy.svg" alt="BasedSigma AI" className="w-8 h-8" />
                     </div>
-                    <div className="bg-black/40 border border-[#6ad040]/30 p-3 rounded-2xl rounded-bl-md">
+                    <div className="bg-black/40 border border-[#6ad040]/30 px-4 py-3 rounded-2xl rounded-tl-md">
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 text-[#6ad040] animate-spin" />
                         <span className="font-['Space_Mono'] text-[#b7ffab] text-sm">
@@ -438,71 +443,74 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                     </div>
                   </div>
                 )}
-                
-                <div ref={messagesEndRef} />
               </div>
+              
+              {/* Scroll anchor */}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
 
-              {/* Quick Actions */}
-              {user && !profileStatus.ready && (
-                <div className="px-4 py-2 border-t border-[#6ad040]/20">
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => {
-                        setInputValue("Help me complete my profile")
-                        handleSendMessage()
-                      }}
-                      className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
-                    >
-                      <Settings className="w-3 h-3 mr-1" />
-                      Complete Profile
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setInputValue("What can you automate for my business?")
-                        handleSendMessage()
-                      }}
-                      className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
-                    >
-                      <FileText className="w-3 h-3 mr-1" />
-                      Show Features
-                    </Button>
-                  </div>
-                </div>
-              )}
+          {/* Quick Actions */}
+          {user && !profileStatus.ready && (
+            <div className="px-4 py-2 border-t border-[#6ad040]/20 flex-shrink-0">
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setInputValue("Help me complete my profile")
+                    handleSendMessage()
+                  }}
+                  className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
+                >
+                  <Settings className="w-3 h-3 mr-1" />
+                  Complete Profile
+                </Button>
+                <Button
+                  onClick={() => {
+                    setInputValue("What can you automate for my business?")
+                    handleSendMessage()
+                  }}
+                  className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
+                >
+                  <FileText className="w-3 h-3 mr-1" />
+                  Show Features
+                </Button>
+              </div>
+            </div>
+          )}
 
-              {/* Input */}
-              <div className="p-4 border-t border-[#6ad040]/20">
-                <div className="flex gap-2">
-                  <Input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask BasedSigma anything about your business..."
-                    disabled={isLoading}
-                    className="flex-1 bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60 focus:border-[#6ad040] focus:ring-[#6ad040]/30"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isLoading}
-                    className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] px-3 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-                
-                {!user && (
-                  <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs mt-2 text-center">
-                    Sign up to unlock full automation features
-                  </p>
+          {/* Input Area */}
+          <div className="p-4 border-t border-[#6ad040]/20 flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask BasedSigma anything about your business..."
+                disabled={isLoading}
+                className="flex-1 bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60 focus:border-[#6ad040] focus:ring-[#6ad040]/30"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] px-3 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
                 )}
-              </div>
+              </Button>
+            </div>
+            
+            {!user && (
+              <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs mt-2 text-center">
+                Sign up to unlock full automation features
+              </p>
+            )}
+          </div>
         </CardContent>
-        </Card>
-      </div>
+      </Card>
+    </div>
   )
 }

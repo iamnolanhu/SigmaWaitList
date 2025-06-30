@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react'
 import { AppProvider, useApp } from './contexts/AppContext'
+import { FormProvider } from './contexts/FormContext'
+import { MusicPlayerProvider } from './contexts/MusicPlayerContext'
 import { Desktop } from './screens/Desktop'
 import { AppDashboard } from './screens/App'
+import { OnboardingGuard } from './components/onboarding'
 import { ToastContainer } from './components/ui/toast'
 import { useToast, setGlobalToast } from './hooks/useToast'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -28,16 +31,19 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <>
-      {appMode.isAppMode ? <AppDashboard /> : <Desktop />}
-      <ToastContainer 
-        toasts={toastInstance.toasts.map(toast => ({
-          ...toast,
-          onClose: toastInstance.removeToast
-        }))} 
-        onClose={toastInstance.removeToast} 
-      />
-    </>
+    // ONBOARDING DISABLED - Comment out OnboardingGuard to skip onboarding
+    // <OnboardingGuard>
+      <>
+        {appMode.isAppMode ? <AppDashboard /> : <Desktop />}
+        <ToastContainer 
+          toasts={toastInstance.toasts.map(toast => ({
+            ...toast,
+            onClose: toastInstance.removeToast
+          }))} 
+          onClose={toastInstance.removeToast} 
+        />
+      </>
+    // </OnboardingGuard>
   )
 }
 
@@ -45,7 +51,11 @@ export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AppProvider>
-        <AppContent />
+        <FormProvider>
+          <MusicPlayerProvider>
+            <AppContent />
+          </MusicPlayerProvider>
+        </FormProvider>
       </AppProvider>
     </ErrorBoundary>
   )

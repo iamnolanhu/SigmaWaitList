@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { cache, cacheKeys, cacheTTL } from '../cache'
 import type { CompleteProfile } from './profileService'
+import { UserContextService } from './userContextService'
 
 // Re-export CompleteProfile type for easier imports
 export type { CompleteProfile }
@@ -42,6 +43,23 @@ export class OptimizedProfileService {
       if (!userProfile) {
         // Create minimal profile if none exists
         console.log('Creating new user profile...')
+        
+        // Verify user is authenticated and userId matches auth.uid()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError || !user) {
+          console.error('User not authenticated:', authError)
+          return null
+        }
+        
+        if (user.id !== userId) {
+          console.error('User ID mismatch:', { 
+            auth_uid: user.id, 
+            requested_userId: userId 
+          })
+          return null
+        }
+        
         const { data: newProfile, error: createError } = await supabase
           .from('user_profiles')
           .insert([{ id: userId }])
@@ -49,7 +67,15 @@ export class OptimizedProfileService {
           .single()
 
         if (createError) {
-          console.error('Error creating profile:', createError)
+          console.error('Error creating profile:', {
+            error: createError,
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint,
+            userId: userId,
+            authenticated_user: user.id
+          })
           return null
         }
 
@@ -98,17 +124,56 @@ export class OptimizedProfileService {
       // Remove this block as we don't have a separate profiles table
 
       if (Object.keys(userProfileUpdates).length > 0) {
-        promises.push(
-          supabase
-            .from('user_profiles')
-            .upsert({ id: userId, ...userProfileUpdates })
-        )
+        // Verify user is authenticated and userId matches auth.uid()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError || !user) {
+          console.error('User not authenticated for profile update:', authError)
+          throw new Error('User not authenticated')
+        }
+        
+        if (user.id !== userId) {
+          console.error('User ID mismatch for profile update:', { 
+            auth_uid: user.id, 
+            requested_userId: userId 
+          })
+          throw new Error('User ID mismatch')
+        }
+
+        console.log('Updating user profile:', { userId, updates: userProfileUpdates })
+        
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update(userProfileUpdates)
+          .eq('id', userId)
+
+        if (updateError) {
+          console.error('Error updating user profile:', {
+            error: updateError,
+            code: updateError.code,
+            message: updateError.message,
+            details: updateError.details,
+            hint: updateError.hint,
+            userId: userId,
+            updates: userProfileUpdates,
+            authenticated_user: user.id
+          })
+          throw updateError
+        }
       }
 
-      await Promise.all(promises)
+      // Get the updated profile
+      const updatedProfile = await this.getCompleteProfile(userId)
+      
+      // Update user context asynchronously (don't block the profile update)
+      if (updatedProfile) {
+        UserContextService.updateUserContext(userId, updatedProfile).catch(error => {
+          console.error('Failed to update user context:', error)
+        })
+      }
 
-      // Return updated profile (will be fetched fresh and cached)
-      return await this.getCompleteProfile(userId)
+      // Return updated profile
+      return updatedProfile
     } catch (error) {
       console.error('Error updating profile:', error)
       return null

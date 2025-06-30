@@ -42,8 +42,8 @@ class MistralAI {
     }
   }
 
-  private getSystemPrompt(): string {
-    return `You are Sigma AI, a business automation assistant with a confident, efficient "sigma" personality. You help entrepreneurs start and scale their businesses through AI automation.
+  private getSystemPrompt(formContext?: any): string {
+    const basePrompt = `You are Sigma AI, a business automation assistant with a confident, efficient "sigma" personality. You help entrepreneurs start and scale their businesses through AI automation.
 
 Your capabilities include:
 - Legal paperwork and business registration (LLC, Corporation, EIN, licenses)
@@ -63,18 +63,45 @@ Always maintain the "sigma" energy - be confident, efficient, and focused on res
 If the user's request relates to business automation, identify the specific module they need and guide them toward it. Be specific about what Sigma can deliver in each area.
 
 For profile-related questions, guide users to complete their profile setup for personalized automation.`
+
+    // Add form context if available
+    if (formContext && formContext.formId) {
+      return basePrompt + `
+
+IMPORTANT: The user is currently filling out the ${formContext.formId} form. Stay focused on helping them complete this form.
+
+Available form fields:
+${formContext.fields.map((f: any) => `- ${f.name} (${f.type}): ${f.label || f.name}`).join('\n')}
+
+Current values:
+${JSON.stringify(formContext.currentValues, null, 2)}
+
+When the user asks for help with the form or provides information that matches form fields, include a special JSON block in your response with the format:
+\`\`\`json
+{
+  "formData": {
+    "field_name": "value",
+    "another_field": "value"
+  }
+}
+\`\`\`
+
+Focus on helping the user complete the current form. If they ask unrelated questions, gently redirect them to finish the form first.`
+    }
+
+    return basePrompt
   }
 
-  async chat(messages: MistralMessage[]): Promise<string> {
+  async chat(messages: MistralMessage[], formContext?: any): Promise<string> {
     if (!this.apiKey || this.apiKey === 'your-mistral-api-key') {
-      return this.getEnhancedMockResponse(messages[messages.length - 1]?.content || '')
+      return this.getEnhancedMockResponse(messages[messages.length - 1]?.content || '', formContext)
     }
 
     try {
       const requestBody = {
         model: 'mistral-small-latest',
         messages: [
-          { role: 'system', content: this.getSystemPrompt() },
+          { role: 'system', content: this.getSystemPrompt(formContext) },
           ...messages.map(msg => ({
             role: msg.role,
             content: msg.content
@@ -130,8 +157,13 @@ For profile-related questions, guide users to complete their profile setup for p
     }
   }
 
-  private getEnhancedMockResponse(userMessage: string): string {
+  private getEnhancedMockResponse(userMessage: string, formContext?: any): string {
     const message = userMessage.toLowerCase()
+    
+    // If we have form context, focus on helping with the form
+    if (formContext && formContext.formId) {
+      return this.getFormFocusedResponse(userMessage, formContext)
+    }
     
     // Profile and setup related
     if (message.includes('profile') || message.includes('setup') || message.includes('complete')) {
@@ -180,6 +212,55 @@ For profile-related questions, guide users to complete their profile setup for p
     
     // Default response
     return "💪 I'm Sigma AI, your business automation partner! I can handle:\n\n• **Legal Setup** - LLC/Corp formation, EIN, licenses\n• **Branding** - Logos, colors, brand guidelines\n• **Website** - Professional sites that convert\n• **Payments** - Stripe integration, merchant services\n• **Banking** - Business accounts, recommendations\n• **Marketing** - Social media, email, content\n\nWhat's your business vision? Let's turn it into reality while you sleep! 🚀\n\n*Tip: Complete your profile first to unlock personalized automation.*"
+  }
+
+  private getFormFocusedResponse(userMessage: string, formContext: any): string {
+    const message = userMessage.toLowerCase()
+    const formId = formContext.formId
+    
+    // Extract form filling suggestions based on the message
+    let formData: any = {}
+    let responseText = ""
+    
+    // Legal form specific responses
+    if (formId.includes('legal') || formId.includes('business')) {
+      if (message.includes('llc') || message.includes('limited liability')) {
+        formData = {
+          legal_structure: 'LLC',
+          ...(!formContext.currentValues.state && { state: 'Delaware' })
+        }
+        responseText = "✅ LLC is a great choice! It provides personal liability protection while keeping things simple. Delaware is the most popular state for LLCs due to business-friendly laws and tax benefits."
+      } else if (message.includes('corporation') || message.includes('corp')) {
+        formData = {
+          legal_structure: 'Corporation',
+          ...(!formContext.currentValues.state && { state: 'Delaware' })
+        }
+        responseText = "🏢 Corporation structure selected! This is ideal if you plan to raise investment or go public. Delaware is the gold standard for corporations."
+      } else if (message.includes('best state') || message.includes('where to incorporate')) {
+        responseText = "📍 Top states for incorporation:\n\n• **Delaware** - Best for corporations and LLCs, business-friendly laws\n• **Wyoming** - No state income tax, strong privacy protection\n• **Nevada** - No state income tax, minimal reporting requirements\n• **Your Home State** - Simplest if doing business locally\n\nWhich state works best for your business?"
+      }
+    }
+    
+    // Business profile form
+    if (formId.includes('profile') || formId.includes('business')) {
+      if (message.includes('name')) {
+        responseText = "💡 For a strong business name:\n• Make it memorable and easy to spell\n• Check domain availability\n• Avoid trends that might age poorly\n• Consider your target audience\n\nWhat industry are you in? I can suggest some creative names!"
+      } else if (message.includes('description')) {
+        responseText = "📝 I'll help craft a compelling business description. Tell me:\n• What problem do you solve?\n• Who is your target customer?\n• What makes you unique?\n\nI'll turn this into professional copy!"
+      }
+    }
+    
+    // Add form data to response if we have any
+    if (Object.keys(formData).length > 0) {
+      responseText += `\n\n\`\`\`json\n{\n  "formData": ${JSON.stringify(formData, null, 2)}\n}\n\`\`\``
+    }
+    
+    // Default form help
+    if (!responseText) {
+      responseText = `💪 I see you're working on the ${formId} form. I'm here to help you fill it out quickly!\n\nTell me what you need help with, or share your business details and I'll suggest the best options for each field.`
+    }
+    
+    return responseText
   }
 
   analyzeIntent(message: string): BusinessIntent {

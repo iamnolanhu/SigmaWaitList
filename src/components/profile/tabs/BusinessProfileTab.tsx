@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { Card, CardContent } from '../../ui/card'
+import { AutoFillField } from '../../ui/auto-fill-field'
 import { useUserProfile } from '../../../hooks/useUserProfile'
+import { useFormRegistration } from '../../../contexts/FormContext'
 import { toast } from '../../../hooks/useToast'
 import { 
   Briefcase, 
@@ -13,7 +15,8 @@ import {
   Save,
   CheckCircle,
   AlertCircle,
-  Shield
+  Shield,
+  Sparkles
 } from 'lucide-react'
 
 export const BusinessProfileTab: React.FC = () => {
@@ -32,6 +35,29 @@ export const BusinessProfileTab: React.FC = () => {
   })
   
   const [saving, setSaving] = useState(false)
+  
+  // Register form with context - Use stable field definitions (no formData dependency)
+  const formFields = useMemo(() => [
+    { name: 'business_type', value: '', type: 'select', label: 'Business Type' },
+    { name: 'time_commitment', value: '', type: 'select', label: 'Time Commitment' },
+    { name: 'capital_level', value: '', type: 'select', label: 'Capital Level' },
+    { name: 'business_stage', value: '', type: 'select', label: 'Business Stage' },
+    { name: 'target_market', value: '', type: 'text', label: 'Target Market' },
+    { name: 'revenue_goal', value: '', type: 'text', label: 'Revenue Goal' },
+    { name: 'business_model', value: '', type: 'text', label: 'Business Model' }
+  ], [])
+  
+  const { formData: contextFormData, updateFormField, isFieldAutoFilled } = useFormRegistration('business-profile', formFields)
+  
+  // Sync form data from context
+  useEffect(() => {
+    if (contextFormData && Object.keys(contextFormData).length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        ...contextFormData
+      }))
+    }
+  }, [contextFormData])
 
   // Business data options
   const businessTypes = [
@@ -122,6 +148,8 @@ export const BusinessProfileTab: React.FC = () => {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Also update form context
+    updateFormField(field, value)
   }
 
   const handleSave = async () => {
@@ -168,16 +196,18 @@ export const BusinessProfileTab: React.FC = () => {
               <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
                 Business Type *
               </label>
-              <select
-                value={formData.business_type}
-                onChange={(e) => handleInputChange('business_type', e.target.value)}
-                className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
-              >
-                <option value="">Select business type</option>
-                {businessTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
+              <AutoFillField isAutoFilled={isFieldAutoFilled('business_type')}>
+                <select
+                  value={formData.business_type}
+                  onChange={(e) => handleInputChange('business_type', e.target.value)}
+                  className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                >
+                  <option value="">Select business type</option>
+                  {businessTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </AutoFillField>
             </div>
 
             {/* Business Stage */}

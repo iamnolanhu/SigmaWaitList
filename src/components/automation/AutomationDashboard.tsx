@@ -11,6 +11,7 @@ import { BankingModule } from './BankingModule'
 import { type BusinessProfile, type LegalDocument, type BrandAsset, type WebsiteConfig, type PaymentSetup, type MarketingCampaign } from '../../lib/businessAutomation'
 import { trackEvent } from '../../lib/analytics'
 import { useModuleActivation } from '../../hooks/useModuleActivation'
+import { getModuleById, getModulesByCategory, ModuleCategory } from '../../lib/modules/moduleDefinitions'
 import { 
   Zap, 
   Scale, 
@@ -25,7 +26,10 @@ import {
   Lock,
   Pause,
   Play,
-  AlertCircle
+  AlertCircle,
+  User,
+  Building,
+  Calculator
 } from 'lucide-react'
 
 interface AutomationDashboardProps {
@@ -58,86 +62,78 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
   // Sync completed modules with activation status
   useEffect(() => {
     const completed = getCompletedModules()
-    setCompletedModules(new Set(completed.map(m => {
-      // Map module names to IDs
-      const moduleMap: Record<string, string> = {
-        'Legal Setup': 'legal',
-        'Brand Identity': 'branding',
-        'Website Creation': 'website',
-        'Payment Processing': 'payment',
-        'Business Banking': 'banking',
-        'Marketing Automation': 'marketing'
-      }
-      return moduleMap[m.module_name] || m.module_name
-    }))
-  )}, [moduleActivations])
+    setCompletedModules(new Set(completed.map(m => m.module_id)))
+  }, [moduleActivations])
 
-  const modules = [
-    {
-      id: 'legal',
-      title: 'Legal Setup',
-      description: 'Business registration, EIN, and legal documents',
-      icon: Scale,
-      color: '#6ad040',
-      estimated_time: '30 minutes',
-      dependencies: []
-    },
-    {
-      id: 'branding',
-      title: 'Brand Identity',
-      description: 'Logo, colors, typography, and brand guidelines',
-      icon: Palette,
-      color: '#8b5cf6',
-      estimated_time: '20 minutes',
-      dependencies: []
-    },
-    {
-      id: 'website',
-      title: 'Website Creation',
-      description: 'Professional website with SEO optimization',
-      icon: Globe,
-      color: '#3b82f6',
-      estimated_time: '45 minutes',
-      dependencies: []
-    },
-    {
-      id: 'payment',
-      title: 'Payment Processing',
-      description: 'Stripe integration and payment methods',
-      icon: CreditCard,
-      color: '#10b981',
-      estimated_time: '15 minutes',
-      dependencies: ['legal']
-    },
-    {
-      id: 'banking',
-      title: 'Business Banking',
-      description: 'Bank recommendations and account setup',
-      icon: Building2,
-      color: '#f59e0b',
-      estimated_time: '25 minutes',
-      dependencies: ['legal']
-    },
-    {
-      id: 'marketing',
-      title: 'Marketing Automation',
-      description: 'Social media, email, and content campaigns',
-      icon: TrendingUp,
-      color: '#ef4444',
-      estimated_time: '35 minutes',
-      dependencies: ['branding', 'website']
+  // Define icon mapping for lucide icons
+  const iconMap: Record<string, React.ElementType> = {
+    'Scale': Scale,
+    'Palette': Palette,
+    'Globe': Globe,
+    'CreditCard': CreditCard,
+    'Building': Building2,
+    'TrendingUp': TrendingUp,
+    'FileText': AlertCircle,
+    'Shield': Lock,
+    'FileImage': AlertCircle,
+    'Calculator': Calculator,
+    'Mail': AlertCircle,
+    'Share2': AlertCircle,
+    'DollarSign': AlertCircle,
+    'Users': AlertCircle,
+    'BarChart': AlertCircle,
+    'Cpu': AlertCircle,
+    'Sparkles': AlertCircle,
+    'User': User,
+    'Target': AlertCircle
+  }
+
+  // Map old module IDs to new module IDs for display
+  const moduleIdMap: Record<string, string> = {
+    'legal': 'MOD_201',      // Legal Structure Setup
+    'branding': 'MOD_301',   // Brand Identity
+    'website': 'MOD_501',    // Website Builder
+    'payment': 'MOD_402',    // Payment Processing
+    'banking': 'MOD_401',    // Business Banking
+    'marketing': 'MOD_503'   // Email Marketing
+  }
+
+  // Get modules we want to display
+  const displayModuleIds = Object.values(moduleIdMap)
+  const modules = displayModuleIds.map(moduleId => {
+    const moduleDef = getModuleById(moduleId)
+    if (!moduleDef) return null
+    
+    return {
+      id: moduleId,
+      title: moduleDef.displayName,
+      description: moduleDef.description,
+      icon: iconMap[moduleDef.icon] || AlertCircle,
+      color: moduleId === 'MOD_201' ? '#6ad040' :
+             moduleId === 'MOD_301' ? '#8b5cf6' :
+             moduleId === 'MOD_501' ? '#3b82f6' :
+             moduleId === 'MOD_402' ? '#10b981' :
+             moduleId === 'MOD_401' ? '#f59e0b' :
+             moduleId === 'MOD_503' ? '#ef4444' : '#6ad040',
+      estimated_time: moduleDef.estimatedTime || '30 minutes',
+      dependencies: moduleDef.dependencies || []
     }
-  ]
+  }).filter(Boolean) as Array<{
+    id: string
+    title: string
+    description: string
+    icon: React.ElementType
+    color: string
+    estimated_time: string
+    dependencies: string[]
+  }>
 
   const handleModuleComplete = async (moduleId: string, data: any) => {
     setCompletedModules(prev => new Set([...prev, moduleId]))
     setModuleData(prev => ({ ...prev, [moduleId]: data }))
     
     // Update module progress to 100%
-    const module = modules.find(m => m.id === moduleId)
-    if (module) {
-      await updateModuleProgress(module.title, 100, { completedData: data })
-    }
+    await updateModuleProgress(moduleId, 100, { completedData: data })
     
     setCurrentModule(null)
     
@@ -152,12 +148,12 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
     
     // Start with legal module and activate it
     const firstModule = modules[0]
-    await activateModule(firstModule.title, {
+    await activateModule(firstModule.id, {
       business_profile: businessProfile,
       started_at: new Date().toISOString()
     })
     
-    setCurrentModule('legal')
+    setCurrentModule(firstModule.id)
     
     trackEvent('full_automation_started', {
       business_name: businessProfile.business_name,
@@ -177,7 +173,7 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
     }
 
     // Activate module
-    await activateModule(module.title, {
+    await activateModule(moduleId, {
       business_profile: businessProfile,
       started_at: new Date().toISOString()
     })
@@ -203,18 +199,19 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
       onComplete: (data: any) => handleModuleComplete(currentModule, data)
     }
 
+    // Map module IDs to their corresponding components
     switch (currentModule) {
-      case 'legal':
+      case 'MOD_201': // Legal Structure Setup
         return <LegalModule {...moduleProps} />
-      case 'branding':
+      case 'MOD_301': // Brand Identity
         return <BrandingModule {...moduleProps} />
-      case 'website':
-        return <WebsiteModule {...moduleProps} brandAssets={moduleData.branding} />
-      case 'payment':
+      case 'MOD_501': // Website Builder
+        return <WebsiteModule {...moduleProps} brandAssets={moduleData['MOD_301']} />
+      case 'MOD_402': // Payment Processing
         return <PaymentModule {...moduleProps} />
-      case 'marketing':
-        return <MarketingModule {...moduleProps} brandAssets={moduleData.branding} />
-      case 'banking':
+      case 'MOD_503': // Email Marketing
+        return <MarketingModule {...moduleProps} brandAssets={moduleData['MOD_301']} />
+      case 'MOD_401': // Business Banking
         return <BankingModule {...moduleProps} />
       default:
         return null
@@ -282,8 +279,8 @@ export const AutomationDashboard: React.FC<AutomationDashboardProps> = ({ busine
           const Icon = module.icon
           const isCompleted = completedModules.has(module.id)
           const isNext = getNextModule() === module.id
-          const status = getModuleStatus(module.title)
-          const progress = getModuleProgress(module.title)
+          const status = getModuleStatus(module.id)
+          const progress = getModuleProgress(module.id)
           const hasDependencies = module.dependencies.every(dep => completedModules.has(dep))
           
           return (

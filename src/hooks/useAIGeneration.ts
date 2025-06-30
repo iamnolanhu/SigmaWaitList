@@ -95,7 +95,19 @@ export const useAIGeneration = () => {
         throw new Error('Empty response from AI service')
       } catch (err) {
         lastError = err as Error
-        console.error(`Attempt ${attempt + 1} failed:`, err)
+        console.error(`Attempt ${attempt + 1} failed:`, {
+          error: err,
+          error_message: (err as Error).message,
+          error_name: (err as Error).name,
+          is_network_error: (err as Error).message.includes('Failed to fetch'),
+          is_api_key_error: (err as Error).message.includes('API key')
+        })
+        
+        // For network errors, try fewer retries
+        if ((err as Error).message.includes('Failed to fetch') && attempt >= 1) {
+          console.log('Network error detected, stopping retries early')
+          break
+        }
         
         if (attempt < maxRetries - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))

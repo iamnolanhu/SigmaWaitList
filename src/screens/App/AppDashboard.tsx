@@ -159,6 +159,22 @@ Format:
         }
       } catch (error) {
         console.error('Error generating suggestions:', error)
+        
+        // Provide fallback suggestions when AI fails
+        const fallbackSuggestions = {
+          dailyTip: "Focus on one small step today that moves your business forward. Progress beats perfection.",
+          actionItems: [
+            "Review your business goals and prioritize your top 3 tasks for today",
+            "Reach out to one potential customer or network contact",
+            "Spend 30 minutes learning about your target market or industry trends"
+          ],
+          moduleRecommendations: [
+            { module: "Business Profile Setup", reason: "Complete your foundational business information" },
+            { module: "Legal Structure", reason: "Establish the legal framework for your business" }
+          ]
+        }
+        
+        setAiSuggestions(fallbackSuggestions)
       } finally {
         setLoadingSuggestions(false)
       }
