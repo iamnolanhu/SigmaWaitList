@@ -1,10 +1,12 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider, useApp } from './contexts/AppContext'
 import { Desktop } from './screens/Desktop'
 import { AppDashboard } from './screens/App'
+import { Login } from './screens/Login'
 
 const AppContent: React.FC = () => {
-  const { appMode, loading } = useApp()
+  const { appMode, loading, user } = useApp()
 
   if (loading) {
     return (
@@ -19,7 +21,27 @@ const AppContent: React.FC = () => {
     )
   }
 
-  return appMode.isAppMode ? <AppDashboard /> : <Desktop />
+  return (
+    <Router>
+      <Routes>
+        {/* Login Route */}
+        <Route 
+          path="/login" 
+          element={
+            user ? <Navigate to="/" replace /> : <Login />
+          } 
+        />
+        
+        {/* Main App Routes */}
+        <Route 
+          path="/*" 
+          element={
+            appMode.isAppMode ? <AppDashboard /> : <Desktop />
+          } 
+        />
+      </Routes>
+    </Router>
+  )
 }
 
 export const App: React.FC = () => {

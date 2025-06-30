@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 import { useApp } from '../contexts/AppContext'
 import { useUserProfile } from '../hooks/useUserProfile'
@@ -20,6 +21,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
+  const navigate = useNavigate()
   const { user, appMode, setAppMode, signOut } = useApp()
   const { profile } = useUserProfile()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -34,6 +36,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     setAppMode({ isAppMode: true, hasAccess: true })
     trackEvent('enter_app_click', { location: 'navbar' })
     setShowUserMenu(false)
+  }
+
+  const handleGoToApp = () => {
+    navigate('/login')
+    trackEvent('go_to_app_click', { location: 'navbar' })
   }
 
   const handleSignOut = async () => {
@@ -217,9 +224,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             </div>
           ) : (
             <div className="flex items-center gap-3">
+              {/* Go To App Button */}
+              <Button 
+                onClick={handleGoToApp}
+                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
+              >
+                Go To App
+              </Button>
+              
               <Button 
                 onClick={() => handleNavigation('waitlist')}
-                className="bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_6px_rgba(106,208,64,0.5)] border border-[#6ad040]/30 active:scale-95"
+                variant="outline"
+                className="border-[#6ad040]/40 text-[#b7ffab] hover:text-[#6ad040] hover:border-[#6ad040] font-['Orbitron'] font-black text-sm lg:text-base px-4 py-2 lg:px-6 lg:py-2 rounded-full transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Join Waitlist
               </Button>
@@ -293,12 +309,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => handleNavigation('waitlist')}
-                className="w-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm px-4 py-3 rounded-full transition-all duration-300 active:scale-95"
-              >
-                Join Waitlist
-              </button>
+              <>
+                <button
+                  onClick={handleGoToApp}
+                  className="w-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] font-['Orbitron'] font-black text-sm px-4 py-3 rounded-full transition-all duration-300 active:scale-95"
+                >
+                  Go To App
+                </button>
+                <button
+                  onClick={() => handleNavigation('waitlist')}
+                  className="w-full border border-[#6ad040]/40 text-[#b7ffab] hover:text-[#6ad040] hover:border-[#6ad040] font-['Orbitron'] font-black text-sm px-4 py-3 rounded-full transition-all duration-300 active:scale-95"
+                >
+                  Join Waitlist
+                </button>
+              </>
             )}
           </div>
         </div>

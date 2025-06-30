@@ -12,7 +12,6 @@ import { Navbar } from "../../components/Navbar";
 export const Desktop = (): JSX.Element => {
   const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { appMode, setAppMode, user } = useApp();
 
   // Initialize analytics on component mount
   useEffect(() => {
