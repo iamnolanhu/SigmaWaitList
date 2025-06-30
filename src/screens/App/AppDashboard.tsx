@@ -30,6 +30,7 @@ export const AppDashboard: React.FC = () => {
 
   // Convert profile to BusinessProfile format for automation
   const businessProfile = profile ? {
+    id: profile.id,
     user_id: user?.id || '',
     business_name: profile.name || '',
     business_type: profile.business_type || '',
@@ -127,8 +128,12 @@ export const AppDashboard: React.FC = () => {
                   <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">MODULES</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">1/7</span>
-                  <span className="font-['Space_Mono'] text-[#6ad040] text-xs">ACTIVE</span>
+                  <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
+                    {isProfileComplete ? '7/7' : '1/7'}
+                  </span>
+                  <span className="font-['Space_Mono'] text-[#6ad040] text-xs">
+                    {isProfileComplete ? 'READY' : 'SETUP'}
+                  </span>
                 </div>
               </div>
 
@@ -139,7 +144,7 @@ export const AppDashboard: React.FC = () => {
                   <span className="font-['Space_Grotesk'] text-[#b7ffab] text-sm font-bold">ACTIVITY</span>
                 </div>
                 <div className="font-['Space_Mono'] text-[#b7ffab] text-xs">
-                  Profile Updated
+                  {profile?.updated_at ? 'Profile Updated' : 'Just Started'}
                 </div>
               </div>
             </div>
@@ -296,10 +301,10 @@ export const AppDashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div className="text-center">
                       <div className="text-2xl font-['Orbitron'] font-black text-[#6ad040] mb-1">
-                        0
+                        {isProfileComplete ? '1' : '0'}
                       </div>
                       <div className="font-['Space_Mono'] text-[#b7ffab]/70 text-xs">
-                        BUSINESSES AUTOMATED
+                        BUSINESSES READY
                       </div>
                     </div>
                     

@@ -143,9 +143,55 @@ export const useUserProfile = () => {
     }
   }
 
+  // Create business profile from user profile
+  const createBusinessProfile = () => {
+    if (!profile || !user?.id) return null
+
+    return {
+      user_id: user.id,
+      business_name: profile.name || '',
+      business_type: profile.business_type || '',
+      industry: profile.business_type || '',
+      description: `${profile.business_type} business` || '',
+      target_market: '',
+      budget_range: profile.capital_level || '',
+      timeline: profile.time_commitment || '',
+      legal_structure: 'LLC' as const,
+      state_of_incorporation: profile.region || ''
+    }
+  }
+
   useEffect(() => {
     if (user?.id) {
       loadProfile()
+    }
+  }, [user?.id])
+
+  // Listen for real-time updates
+  useEffect(() => {
+    if (!user?.id) return
+
+    const subscription = supabase
+      .channel('user_profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated:', payload)
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            setProfile(payload.new as UserProfile)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
     }
   }, [user?.id])
 
@@ -155,6 +201,7 @@ export const useUserProfile = () => {
     error,
     updateProfile,
     loadProfile,
-    calculateCompletion
+    calculateCompletion,
+    createBusinessProfile
   }
 }

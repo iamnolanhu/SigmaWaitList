@@ -4,6 +4,7 @@ import { Input } from './ui/input'
 import { Card, CardContent } from './ui/card'
 import { mistralAI, type MistralMessage, type BusinessIntent } from '../lib/mistral'
 import { useApp } from '../contexts/AppContext'
+import { useUserProfile } from '../hooks/useUserProfile'
 import { trackEvent } from '../lib/analytics'
 import { 
   Send, 
@@ -14,7 +15,9 @@ import {
   X,
   Zap,
   Loader2,
-  Sparkles
+  Sparkles,
+  Settings,
+  FileText
 } from 'lucide-react'
 
 interface ChatMessage extends MistralMessage {
@@ -28,7 +31,8 @@ interface ChatBoxProps {
 }
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
-  const { user, setAppMode } = useApp()
+  const { user, setAppMode, appMode } = useApp()
+  const { profile, updateProfile } = useUserProfile()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -76,7 +80,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
     trackEvent('chat_interaction', {
       message_type: 'user_message',
       message_length: inputValue.length,
-      user_authenticated: !!user
+      user_authenticated: !!user,
+      has_profile: !!profile
     })
 
     try {
@@ -127,6 +132,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
 
   const handleIntentAction = (intent: BusinessIntent) => {
     switch (intent.action) {
+      case 'complete_profile_setup':
+        if (user && !appMode.isAppMode) {
+          setAppMode({ isAppMode: true, hasAccess: true })
+          trackEvent('chat_action_triggered', { action: 'enter_app_profile' })
+        }
+        break
       case 'start_onboarding_process':
         if (user) {
           setAppMode({ isAppMode: true, hasAccess: true })
@@ -158,6 +169,17 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
+  const getProfileCompletionStatus = () => {
+    if (!profile) return { percentage: 0, message: 'Profile not created' }
+    
+    const completion = profile.completion_percentage || 0
+    if (completion < 50) return { percentage: completion, message: 'Profile incomplete' }
+    if (completion < 80) return { percentage: completion, message: 'Almost ready' }
+    return { percentage: completion, message: 'Profile complete' }
+  }
+
+  const profileStatus = getProfileCompletionStatus()
+
   if (!isOpen) {
     return (
       <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
@@ -177,7 +199,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   return (
     <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
       <Card className={`bg-black/90 backdrop-blur-md border border-[#6ad040]/40 shadow-2xl shadow-[#6ad040]/20 transition-all duration-300 ${
-        isMinimized ? 'w-80 h-16' : 'w-96 h-[500px]'
+        isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
       }`}>
         <CardContent className="p-0 h-full flex flex-col">
           {/* Header */}
@@ -218,6 +240,47 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
 
           {!isMinimized && (
             <>
+              {/* User Status Bar */}
+              {user && (
+                <div className="px-4 py-2 bg-black/40 border-b border-[#6ad040]/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-[#6ad040] rounded-full animate-pulse" />
+                      <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
+                        {profile?.name || 'Sigma User'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Settings className="w-3 h-3 text-[#6ad040]" />
+                        <span className="font-['Space_Mono'] text-[#6ad040] text-xs font-bold">
+                          {profileStatus.percentage}%
+                        </span>
+                      </div>
+                      {profileStatus.percentage >= 80 && (
+                        <Button
+                          onClick={() => setAppMode({ isAppMode: true, hasAccess: true })}
+                          className="text-xs px-2 py-1 h-auto bg-[#6ad040] hover:bg-[#79e74c] text-[#161616]"
+                        >
+                          <Zap className="w-3 h-3 mr-1" />
+                          Automate
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {profileStatus.percentage < 80 && (
+                    <div className="mt-1">
+                      <div className="h-1 bg-black/50 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#6ad040] to-[#79e74c] transition-all duration-500"
+                          style={{ width: `${profileStatus.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
@@ -291,6 +354,34 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                 
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Quick Actions */}
+              {user && profileStatus.percentage < 80 && (
+                <div className="px-4 py-2 border-t border-[#6ad040]/20">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setInputValue("Help me complete my profile")
+                        handleSendMessage()
+                      }}
+                      className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
+                    >
+                      <Settings className="w-3 h-3 mr-1" />
+                      Complete Profile
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setInputValue("What can you automate for my business?")
+                        handleSendMessage()
+                      }}
+                      className="text-xs px-3 py-1 h-auto bg-[#6ad040]/20 hover:bg-[#6ad040]/30 text-[#6ad040] border border-[#6ad040]/50"
+                    >
+                      <FileText className="w-3 h-3 mr-1" />
+                      Show Features
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Input */}
               <div className="p-4 border-t border-[#6ad040]/20">
