@@ -153,11 +153,11 @@ export const LegalComplianceTab: React.FC = () => {
             ) : (
               <AlertTriangle className="w-6 h-6 text-yellow-500" />
             )}
-            <h3 className="font-['Orbitron'] font-bold text-lg">
+            <h3 className="text-yellow-500 font-['Orbitron'] font-bold text-lg">
               {isLegallyCompliant() ? 'Legal Compliance: Complete' : 'Legal Compliance: Incomplete'}
             </h3>
           </div>
-          <p className="font-['Space_Mono'] text-sm opacity-90">
+          <p className="text-yellow-500 font-['Space_Mono'] text-sm opacity-90">
             {isLegallyCompliant() 
               ? 'Your legal information is complete and compliant with our terms of service.'
               : 'Please complete the required legal information below to ensure compliance.'
