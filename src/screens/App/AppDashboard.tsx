@@ -12,7 +12,7 @@ import { MarketingModule } from '../../components/automation/MarketingModule'
 import { PaymentModule } from '../../components/automation/PaymentModule'
 import { WebsiteModule } from '../../components/automation/WebsiteModule'
 import { Navbar } from '../../components/Navbar'
-import { ChatBox } from '../../components/ChatBox'
+import { ChatBoxSafe } from '../../components/ChatBoxSafe'
 import { ProfileWizard } from '../../components/onboarding/ProfileWizard'
 import { ProgressTracker } from '../../components/progress/ProgressTracker'
 import { QuickActions } from '../../components/dashboard/QuickActions'
@@ -727,7 +727,7 @@ Format:
       </main>
 
       {/* Sigma AI Chatbox */}
-      <ChatBox />
+      <ChatBoxSafe />
       
       {/* Profile Wizard Modal */}
       {showProfileWizard && (

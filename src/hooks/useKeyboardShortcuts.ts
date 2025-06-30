@@ -18,6 +18,14 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled: boo
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!enabled) return
 
+    // Ignore keyboard shortcuts when typing in input fields
+    const target = event.target as HTMLElement
+    const isInputField = target.tagName === 'INPUT' || 
+                        target.tagName === 'TEXTAREA' || 
+                        target.contentEditable === 'true'
+    
+    if (isInputField) return
+
     // Check for help shortcut (?)
     if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault()
