@@ -2,7 +2,7 @@ import React from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { MatrixBackground } from '../../components/MatrixBackground'
-import { ProfileSetup, ProfileSettings } from '../../components/profile'
+import { ProfileDashboard } from '../../components/profile'
 import { Navbar } from '../../components/Navbar'
 import { 
   CheckCircle, 
@@ -14,17 +14,20 @@ import {
   AlertTriangle,
   Cpu,
   Shield,
-  Database
+  Database,
+  Settings,
+  User
 } from 'lucide-react'
 
 export const AppDashboard: React.FC = () => {
   const { user } = useApp()
   const { profile, loading: profileLoading } = useUserProfile()
-  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile' | 'profile-settings'>('dashboard')
+  const [currentView, setCurrentView] = React.useState<'dashboard' | 'profile'>('dashboard')
 
-  // If profile is incomplete, show profile setup
+  // Remove profile completion restriction - users can access app regardless
   const isProfileComplete = profile && (profile.completion_percentage || 0) >= 80
-  const shouldShowProfileSetup = !profileLoading && !isProfileComplete && currentView === 'dashboard'
+  // Allow access to app even with incomplete profile
+  const shouldShowProfileSetup = false
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] relative overflow-hidden">
@@ -36,28 +39,23 @@ export const AppDashboard: React.FC = () => {
 
       {/* Enhanced Navbar */}
       <Navbar onNavigate={(section) => {
-        if (section === 'profile') setCurrentView('profile')
-        if (section === 'profile-settings') setCurrentView('profile-settings')
+        if (section === 'profile' || section === 'profile-settings') setCurrentView('profile')
+        if (section === 'dashboard') setCurrentView('dashboard')
       }} />
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-6 py-8 pt-20">
-        {currentView === 'profile-settings' ? (
-          <ProfileSettings />
-        ) : currentView === 'profile' ? (
-          <ProfileSetup />
-        ) : shouldShowProfileSetup ? (
-          <div className="max-w-2xl mx-auto">
-            {/* Profile Setup Prompt */}
-            <div className="text-center mb-8">
-              <h1 className="font-['Orbitron'] font-black text-[#ffff] text-3xl lg:text-4xl mb-4 drop-shadow-2xl drop-shadow-[#6ad040]/50">
-                WELCOME TO SIGMA
-              </h1>
-              <p className="font-['Space_Mono'] text-[#b7ffab] text-lg mb-6 opacity-90">
-                Let's set up your profile to personalize your business automation experience
-              </p>
+        {currentView === 'profile' ? (
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-6">
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className="flex items-center gap-2 text-[#6ad040] hover:text-[#79e74c] font-['Space_Mono'] text-sm transition-colors"
+              >
+                ← Back to Dashboard
+              </button>
             </div>
-            <ProfileSetup />
+            <ProfileDashboard />
           </div>
         ) : (
           <div className="max-w-4xl mx-auto">
@@ -144,46 +142,57 @@ export const AppDashboard: React.FC = () => {
                   {/* Quick Actions */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <button 
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                      onClick={() => setCurrentView('profile')}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
                         isProfileComplete 
-                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20 hover:scale-105' 
-                          : 'border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20'
+                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
+                          : 'border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20'
                       }`}
                     >
                       <div className="flex items-center gap-3 mb-2">
                         {isProfileComplete ? (
                           <CheckCircle className="w-5 h-5 text-[#6ad040]" />
                         ) : (
-                          <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                          <User className="w-5 h-5 text-blue-400" />
                         )}
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
-                          {isProfileComplete ? 'PROFILE COMPLETE' : 'COMPLETE PROFILE'}
+                          {isProfileComplete ? 'PROFILE COMPLETE' : 'SETUP PROFILE'}
                         </span>
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
                         {isProfileComplete 
-                          ? 'Ready to begin AI onboarding' 
-                          : 'Required to unlock AI features'
+                          ? 'Profile setup complete - click to manage' 
+                          : 'Complete your profile for enhanced features'
                         }
                       </p>
                     </button>
 
                     <button 
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                      onClick={() => {
+                        if (isProfileComplete) {
+                          // Start AI onboarding
+                          alert('AI Onboarding - Coming Soon!')
+                        } else {
+                          setCurrentView('profile')
+                        }
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 ${
                         isProfileComplete 
-                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20 hover:scale-105' 
-                          : 'border-gray-500/50 bg-gray-500/10 cursor-not-allowed'
+                          ? 'border-[#6ad040] bg-[#6ad040]/10 hover:bg-[#6ad040]/20' 
+                          : 'border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20'
                       }`}
-                      disabled={!isProfileComplete}
                     >
                       <div className="flex items-center gap-3 mb-2">
-                        <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-gray-500'}`} />
+                        <Zap className={`w-5 h-5 ${isProfileComplete ? 'text-[#6ad040]' : 'text-yellow-500'}`} />
                         <span className="font-['Space_Grotesk'] font-bold text-sm">
-                          START AI ONBOARDING
+                          {isProfileComplete ? 'START AI ONBOARDING' : 'SETUP PROFILE FIRST'}
                         </span>
                       </div>
                       <p className="font-['Space_Mono'] text-xs opacity-80">
-                        Begin your business automation journey
+                        {isProfileComplete 
+                          ? 'Begin your business automation journey'
+                          : 'Complete profile to unlock AI features'
+                        }
                       </p>
                     </button>
                   </div>
@@ -236,11 +245,20 @@ export const AppDashboard: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">Codename:</span>
-                      <span className="font-['Space_Mono'] text-[#6ad040] text-sm font-bold">
-                        {profile?.name || 'SIGMA_USER'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-['Space_Mono'] text-[#6ad040] text-sm font-bold">
+                          {profile?.name || 'SIGMA_USER'}
+                        </span>
+                        <button
+                          onClick={() => setCurrentView('profile')}
+                          className="text-[#6ad040] hover:text-[#79e74c] transition-colors"
+                          title="Profile Dashboard"
+                        >
+                          <Settings className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">Region:</span>

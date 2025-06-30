@@ -1,81 +1,56 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { OptimizedProfileService } from '../lib/api/optimizedProfileService'
 import { useApp } from '../contexts/AppContext'
+import type { CompleteProfile } from '../lib/api/profileService'
 
-export interface UserProfile {
-  id: string
-  name?: string
-  language?: string
-  region?: string
-  stealth_mode?: boolean
-  sdg_goals?: string[]
-  low_tech_access?: boolean
-  business_type?: string
-  time_commitment?: string
-  capital_level?: string
-  completion_percentage?: number
-  created_at?: string
-  updated_at?: string
-}
+// Use CompleteProfile from optimized service
+export type UserProfile = CompleteProfile
 
 export const useUserProfile = () => {
   const { user } = useApp()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profile, setProfile] = useState<CompleteProfile | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load user profile
+  // Load user profile using optimized service
   const loadProfile = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      setLoading(false)
+      setProfile(null)
+      return
+    }
 
     setLoading(true)
     setError(null)
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist yet - will be created by database trigger
-          setProfile(null)
-          console.log('User profile not found - will be created automatically')
-        } else {
-          throw error
-        }
-      } else {
-        setProfile(data)
-      }
+      const profileData = await OptimizedProfileService.getCompleteProfile(user.id)
+      setProfile(profileData)
     } catch (err: any) {
       setError(err.message)
       console.error('Error loading user profile:', err)
+      setProfile(null)
     } finally {
       setLoading(false)
     }
   }
 
-  // Update user profile
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.id || !profile) return
+  // Update user profile using optimized service
+  const updateProfile = async (updates: Partial<CompleteProfile>) => {
+    if (!user?.id) return { data: null, error: 'No user found' }
 
     setLoading(true)
     setError(null)
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      setProfile(data)
-      return { data, error: null }
+      const updatedProfile = await OptimizedProfileService.updateProfile(user.id, updates)
+      
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+        return { data: updatedProfile, error: null }
+      } else {
+        throw new Error('Failed to update profile')
+      }
     } catch (err: any) {
       setError(err.message)
       console.error('Error updating user profile:', err)
@@ -86,7 +61,7 @@ export const useUserProfile = () => {
   }
 
   // Calculate completion percentage
-  const calculateCompletion = (profileData: UserProfile) => {
+  const calculateCompletion = (profileData: CompleteProfile) => {
     const fields = [
       'name',
       'region', 
@@ -96,8 +71,8 @@ export const useUserProfile = () => {
     ]
     
     const completed = fields.filter(field => 
-      profileData[field as keyof UserProfile] && 
-      profileData[field as keyof UserProfile] !== ''
+      profileData[field as keyof CompleteProfile] && 
+      profileData[field as keyof CompleteProfile] !== ''
     ).length
 
     return Math.round((completed / fields.length) * 100)

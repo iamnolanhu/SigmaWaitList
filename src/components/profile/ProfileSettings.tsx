@@ -99,6 +99,15 @@ export const ProfileSettings: React.FC = () => {
     }
   }, [profile])
 
+  // Cleanup auto-save timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+    }
+  }, [])
+
   // Auto-save functionality
   const handleAutoSave = (updates: Partial<typeof formData>) => {
     setAutoSaveStatus('saving')
@@ -108,12 +117,17 @@ export const ProfileSettings: React.FC = () => {
     }
 
     autoSaveTimeoutRef.current = setTimeout(async () => {
-      await autoSave(updates)
-      setAutoSaveStatus('saved')
-      
-      setTimeout(() => {
+      try {
+        await autoSave(updates)
+        setAutoSaveStatus('saved')
+        
+        setTimeout(() => {
+          setAutoSaveStatus('idle')
+        }, 2000)
+      } catch (error) {
+        console.error('Auto-save failed:', error)
         setAutoSaveStatus('idle')
-      }, 2000)
+      }
     }, 1000)
   }
 
@@ -440,9 +454,14 @@ export const ProfileSettings: React.FC = () => {
                     </label>
                     <textarea
                       value={formData.bio}
-                      onChange={(e) => handleInputChange('bio', e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 500) {
+                          handleInputChange('bio', e.target.value)
+                        }
+                      }}
                       placeholder="Tell us about yourself..."
                       rows={4}
+                      maxLength={500}
                       className="w-full px-3 py-2 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] placeholder:text-[#b7ffab]/60 focus:border-[#6ad040] focus:outline-none resize-none"
                     />
                     <p className="font-['Space_Mono'] text-[#b7ffab]/60 text-xs mt-1">
@@ -491,9 +510,14 @@ export const ProfileSettings: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    {formData.username.length >= 3 && usernameAvailable === false && (
-                      <p className="font-['Space_Mono'] text-red-400 text-xs mt-1">
-                        Username is already taken
+                    {formData.username.length >= 3 && (
+                      <p className={`font-['Space_Mono'] text-xs mt-1 ${
+                        usernameAvailable === false ? 'text-red-400' : 
+                        usernameAvailable === true ? 'text-green-400' : 'text-yellow-400'
+                      }`}>
+                        {usernameAvailable === false ? 'Username is already taken' :
+                         usernameAvailable === true ? 'Username is available' :
+                         'Checking availability...'}
                       </p>
                     )}
                   </div>
