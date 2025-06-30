@@ -87,6 +87,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!mounted) return
         
         try {
+          console.log('Auth state change:', event, session?.user?.id)
           setUser(session?.user ?? null)
           if (session?.user) {
             await loadUserProfile(session.user.id)
@@ -111,6 +112,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const loadUserProfile = async (userId: string) => {
     try {
+      console.log('Loading user profile for:', userId)
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -126,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return
       }
 
+      console.log('User profile loaded:', data)
       setUserProfile(data)
       setAppMode({ 
         isAppMode: false, // Start with waitlist view
@@ -140,6 +143,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!user?.id) return
 
+    console.log('Setting up real-time subscription for user:', user.id)
     const subscription = supabase
       .channel('user_profile_changes')
       .on(
@@ -151,8 +155,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Profile updated:', payload)
+          console.log('Profile updated via real-time:', payload)
           if (payload.eventType === 'UPDATE' && payload.new) {
+            setUserProfile(payload.new)
+          } else if (payload.eventType === 'INSERT' && payload.new) {
             setUserProfile(payload.new)
           }
         }
@@ -160,6 +166,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .subscribe()
 
     return () => {
+      console.log('Unsubscribing from real-time updates')
       subscription.unsubscribe()
     }
   }, [user?.id])
@@ -176,16 +183,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   const signIn = async (email: string, password: string) => {
+    console.log('Signing in user:', email)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return { error }
   }
 
   const signUp = async (email: string, password: string) => {
+    console.log('Signing up user:', email)
     const { error } = await supabase.auth.signUp({ email, password })
     return { error }
   }
 
   const signOut = async () => {
+    console.log('Signing out user')
     await supabase.auth.signOut()
     setAppMode({ isAppMode: false, hasAccess: false })
   }

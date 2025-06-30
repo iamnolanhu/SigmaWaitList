@@ -3,10 +3,13 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Card, CardContent } from '../ui/card'
 import { useUserProfile } from '../../hooks/useUserProfile'
-import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2 } from 'lucide-react'
+import { useApp } from '../../contexts/AppContext'
+import { trackEvent } from '../../lib/analytics'
+import { CheckCircle, User, Globe, Briefcase, Clock, DollarSign, Shield, Loader2, Save, RefreshCw } from 'lucide-react'
 
 export const ProfileSetup: React.FC = () => {
-  const { profile, loading, updateProfile } = useUserProfile()
+  const { user } = useApp()
+  const { profile, loading, updateProfile, loadProfile } = useUserProfile()
   const [formData, setFormData] = useState({
     name: '',
     region: '',
@@ -17,6 +20,7 @@ export const ProfileSetup: React.FC = () => {
   })
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   // Update form data when profile loads
   useEffect(() => {
@@ -36,20 +40,55 @@ export const ProfileSetup: React.FC = () => {
     e.preventDefault()
     setSaving(true)
     setSaveSuccess(false)
+    setSaveError('')
 
-    const { error } = await updateProfile(formData)
-    
-    if (!error) {
-      setSaveSuccess(true)
-      // Hide success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000)
+    try {
+      console.log('Saving profile data:', formData)
+      
+      const { data, error } = await updateProfile(formData)
+      
+      if (error) {
+        setSaveError(error)
+        console.error('Profile save error:', error)
+      } else {
+        setSaveSuccess(true)
+        console.log('Profile saved successfully:', data)
+        
+        // Track successful profile update
+        trackEvent('profile_updated', {
+          user_id: user?.id,
+          completion_percentage: data?.completion_percentage || 0,
+          has_business_type: !!formData.business_type,
+          has_region: !!formData.region
+        })
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => setSaveSuccess(false), 3000)
+        
+        // Reload profile to ensure consistency
+        setTimeout(() => loadProfile(), 500)
+      }
+    } catch (err: any) {
+      setSaveError(err.message || 'Failed to save profile')
+      console.error('Profile save exception:', err)
+    } finally {
+      setSaving(false)
     }
-    
-    setSaving(false)
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear any previous errors when user starts typing
+    if (saveError) setSaveError('')
+  }
+
+  const handleRefresh = async () => {
+    setSaving(true)
+    try {
+      await loadProfile()
+    } finally {
+      setSaving(false)
+    }
   }
 
   const businessTypes = [
@@ -64,6 +103,7 @@ export const ProfileSetup: React.FC = () => {
     'Finance',
     'Education',
     'Real Estate',
+    'Food & Beverage',
     'Other'
   ]
 
@@ -97,9 +137,18 @@ export const ProfileSetup: React.FC = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="font-['Orbitron'] font-black text-[#ffff] text-2xl lg:text-3xl mb-2 drop-shadow-lg drop-shadow-[#6ad040]/50">
-          SIGMA PROFILE SETUP
-        </h2>
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <h2 className="font-['Orbitron'] font-black text-[#ffff] text-2xl lg:text-3xl drop-shadow-lg drop-shadow-[#6ad040]/50">
+            SIGMA PROFILE SETUP
+          </h2>
+          <Button
+            onClick={handleRefresh}
+            disabled={saving}
+            className="p-2 h-auto bg-transparent hover:bg-[#6ad040]/20 text-[#6ad040] border border-[#6ad040]/50"
+          >
+            <RefreshCw className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
         <p className="font-['Space_Mono'] text-[#b7ffab] text-sm opacity-90">
           Configure your business automation preferences
         </p>
@@ -124,9 +173,33 @@ export const ProfileSetup: React.FC = () => {
         <div className="bg-green-500/10 backdrop-blur-md border border-green-500/30 rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-400" />
-            <p className="font-['Space_Mono'] text-green-400 text-sm font-bold">
-              Profile saved successfully! Your automation preferences have been updated.
-            </p>
+            <div>
+              <p className="font-['Space_Mono'] text-green-400 text-sm font-bold">
+                Profile saved successfully!
+              </p>
+              <p className="font-['Space_Mono'] text-green-300 text-xs">
+                Your automation preferences have been updated and synced to the database.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {saveError && (
+        <div className="bg-red-500/10 backdrop-blur-md border border-red-500/30 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs">!</span>
+            </div>
+            <div>
+              <p className="font-['Space_Mono'] text-red-400 text-sm font-bold">
+                Save failed
+              </p>
+              <p className="font-['Space_Mono'] text-red-300 text-xs">
+                {saveError}
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -145,7 +218,7 @@ export const ProfileSetup: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
-                  Name (or alias)
+                  Name (or Business Name) *
                 </label>
                 <Input
                   type="text"
@@ -153,17 +226,19 @@ export const ProfileSetup: React.FC = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Your sigma name..."
                   className="bg-black/40 border-[#6ad040]/50 text-[#b7ffab] placeholder:text-[#b7ffab]/60"
+                  required
                 />
               </div>
 
               <div>
                 <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
-                  Region
+                  Region *
                 </label>
                 <select
                   value={formData.region}
                   onChange={(e) => handleInputChange('region', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  required
                 >
                   <option value="">Select your region</option>
                   {regions.map(region => (
@@ -188,12 +263,13 @@ export const ProfileSetup: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
-                  Business Type
+                  Business Type *
                 </label>
                 <select
                   value={formData.business_type}
                   onChange={(e) => handleInputChange('business_type', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  required
                 >
                   <option value="">Select business type</option>
                   {businessTypes.map(type => (
@@ -204,12 +280,13 @@ export const ProfileSetup: React.FC = () => {
 
               <div>
                 <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
-                  Time Commitment
+                  Time Commitment *
                 </label>
                 <select
                   value={formData.time_commitment}
                   onChange={(e) => handleInputChange('time_commitment', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  required
                 >
                   <option value="">How much time can you dedicate?</option>
                   {timeCommitments.map(time => (
@@ -220,12 +297,13 @@ export const ProfileSetup: React.FC = () => {
 
               <div>
                 <label className="block font-['Space_Mono'] text-[#b7ffab] text-sm mb-2">
-                  Capital Level
+                  Capital Level *
                 </label>
                 <select
                   value={formData.capital_level}
                   onChange={(e) => handleInputChange('capital_level', e.target.value)}
                   className="w-full h-10 px-3 bg-black/40 border-2 border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:border-[#6ad040] focus:outline-none"
+                  required
                 >
                   <option value="">Available capital?</option>
                   {capitalLevels.map(capital => (
@@ -276,7 +354,7 @@ export const ProfileSetup: React.FC = () => {
         {/* Save Button */}
         <Button
           type="submit"
-          disabled={saving || loading}
+          disabled={saving || loading || !formData.name || !formData.region || !formData.business_type || !formData.time_commitment || !formData.capital_level}
           className="w-full font-['Orbitron'] font-black text-lg px-8 py-4 rounded-full bg-[#6ad040] hover:bg-[#79e74c] text-[#161616] border-2 border-[#6ad040]/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#6ad040]/60 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {saving ? (
@@ -285,9 +363,22 @@ export const ProfileSetup: React.FC = () => {
               Saving Profile...
             </>
           ) : (
-            'Save Profile'
+            <>
+              <Save className="w-5 h-5 mr-2" />
+              Save Profile
+            </>
           )}
         </Button>
+
+        {/* Database Status */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 bg-black/30 rounded-full px-4 py-2 border border-[#6ad040]/30">
+            <div className={`w-2 h-2 rounded-full ${profile ? 'bg-[#6ad040] animate-pulse' : 'bg-gray-500'}`} />
+            <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
+              {profile ? 'Connected to Database' : 'Connecting...'}
+            </span>
+          </div>
+        </div>
       </form>
     </div>
   )

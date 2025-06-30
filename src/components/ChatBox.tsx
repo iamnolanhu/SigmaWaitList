@@ -17,7 +17,8 @@ import {
   Loader2,
   Sparkles,
   Settings,
-  FileText
+  FileText,
+  Database
 } from 'lucide-react'
 
 interface ChatMessage extends MistralMessage {
@@ -32,7 +33,7 @@ interface ChatBoxProps {
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   const { user, setAppMode, appMode } = useApp()
-  const { profile, updateProfile } = useUserProfile()
+  const { profile, updateProfile, createBusinessProfile } = useUserProfile()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -76,23 +77,37 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
     setInputValue('')
     setIsLoading(true)
 
-    // Track chat interaction
+    // Track chat interaction with profile context
     trackEvent('chat_interaction', {
       message_type: 'user_message',
       message_length: inputValue.length,
       user_authenticated: !!user,
-      has_profile: !!profile
+      has_profile: !!profile,
+      profile_completion: profile?.completion_percentage || 0
     })
 
     try {
       // Analyze intent
       const intent = mistralAI.analyzeIntent(inputValue)
       
-      // Get AI response
-      const aiResponse = await mistralAI.chat([
+      // Get AI response with profile context
+      const contextualMessages = [
         ...messages.slice(-5), // Keep last 5 messages for context
         userMessage
-      ])
+      ]
+
+      // Add profile context to the conversation if available
+      if (profile && profile.completion_percentage && profile.completion_percentage > 0) {
+        const profileContext = `User Profile Context: Name: ${profile.name || 'Not set'}, Business Type: ${profile.business_type || 'Not set'}, Region: ${profile.region || 'Not set'}, Completion: ${profile.completion_percentage}%`
+        contextualMessages.unshift({
+          id: 'context',
+          role: 'system',
+          content: profileContext,
+          timestamp: new Date()
+        })
+      }
+      
+      const aiResponse = await mistralAI.chat(contextualMessages)
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -108,7 +123,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
       trackEvent('chat_ai_response', {
         intent_type: intent.type,
         intent_confidence: intent.confidence,
-        response_length: aiResponse.length
+        response_length: aiResponse.length,
+        profile_completion: profile?.completion_percentage || 0
       })
 
       // Auto-trigger actions based on high-confidence intents
@@ -170,12 +186,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
   }
 
   const getProfileCompletionStatus = () => {
-    if (!profile) return { percentage: 0, message: 'Profile not created' }
+    if (!profile) return { percentage: 0, message: 'Profile not created', ready: false }
     
     const completion = profile.completion_percentage || 0
-    if (completion < 50) return { percentage: completion, message: 'Profile incomplete' }
-    if (completion < 80) return { percentage: completion, message: 'Almost ready' }
-    return { percentage: completion, message: 'Profile complete' }
+    if (completion < 50) return { percentage: completion, message: 'Profile incomplete', ready: false }
+    if (completion < 80) return { percentage: completion, message: 'Almost ready', ready: false }
+    return { percentage: completion, message: 'Profile complete', ready: true }
   }
 
   const profileStatus = getProfileCompletionStatus()
@@ -249,6 +265,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                       <span className="font-['Space_Mono'] text-[#b7ffab] text-xs">
                         {profile?.name || 'Sigma User'}
                       </span>
+                      <div className="flex items-center gap-1">
+                        <Database className="w-3 h-3 text-[#6ad040]" />
+                        <span className="font-['Space_Mono'] text-[#6ad040] text-xs">
+                          DB
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
@@ -257,7 +279,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                           {profileStatus.percentage}%
                         </span>
                       </div>
-                      {profileStatus.percentage >= 80 && (
+                      {profileStatus.ready && (
                         <Button
                           onClick={() => setAppMode({ isAppMode: true, hasAccess: true })}
                           className="text-xs px-2 py-1 h-auto bg-[#6ad040] hover:bg-[#79e74c] text-[#161616]"
@@ -268,7 +290,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
                       )}
                     </div>
                   </div>
-                  {profileStatus.percentage < 80 && (
+                  {!profileStatus.ready && (
                     <div className="mt-1">
                       <div className="h-1 bg-black/50 rounded-full overflow-hidden">
                         <div 
@@ -356,7 +378,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ className = '' }) => {
               </div>
 
               {/* Quick Actions */}
-              {user && profileStatus.percentage < 80 && (
+              {user && !profileStatus.ready && (
                 <div className="px-4 py-2 border-t border-[#6ad040]/20">
                   <div className="flex gap-2">
                     <Button

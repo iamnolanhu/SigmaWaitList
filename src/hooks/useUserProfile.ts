@@ -43,7 +43,10 @@ export const useUserProfile = () => {
           // Profile doesn't exist yet - create it
           const { data: newProfile, error: createError } = await supabase
             .from('user_profiles')
-            .insert({ id: user.id })
+            .insert({ 
+              id: user.id,
+              completion_percentage: 0
+            })
             .select()
             .single()
 
@@ -85,7 +88,7 @@ export const useUserProfile = () => {
     return Math.round((completed / fields.length) * 100)
   }
 
-  // Update user profile
+  // Update user profile with proper error handling and real-time sync
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user?.id) {
       return { data: null, error: 'User not authenticated' }
@@ -102,7 +105,8 @@ export const useUserProfile = () => {
       // Include completion percentage in the update
       const finalUpdates = {
         ...updates,
-        completion_percentage: completion
+        completion_percentage: completion,
+        updated_at: new Date().toISOString()
       }
 
       // First, ensure the profile exists
@@ -119,20 +123,28 @@ export const useUserProfile = () => {
         if (createError) throw createError
 
         setProfile(newProfile)
+        console.log('Profile created successfully:', newProfile)
         return { data: newProfile, error: null }
       }
 
-      // Update existing profile
+      // Update existing profile with upsert to handle race conditions
       const { data, error } = await supabase
         .from('user_profiles')
-        .update(finalUpdates)
-        .eq('id', user.id)
+        .upsert({ 
+          id: user.id,
+          ...finalUpdates
+        })
         .select()
         .single()
 
       if (error) throw error
 
       setProfile(data)
+      console.log('Profile updated successfully:', data)
+      
+      // Force a small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       return { data, error: null }
     } catch (err: any) {
       setError(err.message)
@@ -148,6 +160,7 @@ export const useUserProfile = () => {
     if (!profile || !user?.id) return null
 
     return {
+      id: profile.id,
       user_id: user.id,
       business_name: profile.name || '',
       business_type: profile.business_type || '',
@@ -182,8 +195,10 @@ export const useUserProfile = () => {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Profile updated:', payload)
+          console.log('Profile updated via real-time:', payload)
           if (payload.eventType === 'UPDATE' && payload.new) {
+            setProfile(payload.new as UserProfile)
+          } else if (payload.eventType === 'INSERT' && payload.new) {
             setProfile(payload.new as UserProfile)
           }
         }
