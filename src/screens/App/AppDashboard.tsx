@@ -210,9 +210,7 @@ Format:
                 <div className="flex items-center justify-center gap-2">
                   <Activity className="w-4 h-4" />
                   <span>Dashboard</span>
-                  {getShortcutDisplay && (
-                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'd', cmd: true, ctrl: true })} />
-                  )}
+                  <ShortcutHint shortcut="⌘D" />
                 </div>
               </button>
               <button
@@ -226,9 +224,7 @@ Format:
                 <div className="flex items-center justify-center gap-2">
                   <Zap className="w-4 h-4" />
                   <span>Automation</span>
-                  {getShortcutDisplay && (
-                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'a', cmd: true, ctrl: true })} />
-                  )}
+                  <ShortcutHint shortcut="⌘A" />
                 </div>
               </button>
               <button
@@ -242,9 +238,7 @@ Format:
                 <div className="flex items-center justify-center gap-2">
                   <User className="w-4 h-4" />
                   <span>Profile</span>
-                  {getShortcutDisplay && (
-                    <ShortcutHint shortcut={getShortcutDisplay({ key: 'p', cmd: true, ctrl: true })} />
-                  )}
+                  <ShortcutHint shortcut="⌘P" />
                 </div>
               </button>
             </div>
@@ -666,7 +660,7 @@ Format:
           ].map((module, index) => (
             <div
               key={index}
-              onClick={() => module.ready && setCurrentView(module.tab as TabType)}
+              onClick={() => module.ready && setCurrentView('automation')}
               className={`bg-black/20 backdrop-blur-md rounded-xl border p-4 transition-all duration-300 text-center ${
                 module.ready 
                   ? 'border-[#6ad040] shadow-lg shadow-[#6ad040]/20 hover:scale-105 cursor-pointer' 
