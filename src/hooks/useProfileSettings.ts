@@ -21,7 +21,7 @@ export interface ProfileSettings {
     marketing: boolean
   }
   email_verified?: boolean
-  // Existing fields
+  // Existing fields from user_profiles
   language?: string
   region?: string
   stealth_mode?: boolean
@@ -42,85 +42,76 @@ export const useProfileSettings = () => {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  // Create a simple fallback profile
-  const createDefaultProfile = (): ProfileSettings => {
-    return {
-      id: user?.id || '',
-      name: '',
-      username: '',
-      bio: '',
-      profile_visibility: 'public',
-      contact_preferences: {
-        email: true,
-        phone: false,
-        marketing: false
-      },
-      notification_preferences: {
-        email: true,
-        push: true,
-        in_app: true,
-        marketing: false
-      },
-      email_verified: false,
-      language: 'en',
-      region: '',
-      stealth_mode: false,
-      sdg_goals: [],
-      low_tech_access: false,
-      business_type: '',
-      time_commitment: '',
-      capital_level: '',
-      completion_percentage: 0
-    }
-  }
-
-  // Super simple load function
+  // Load user profile
   const loadProfile = async () => {
-    console.log('=== LOADING PROFILE START ===')
-    
     if (!user?.id) {
-      console.log('No user ID, stopping loading')
       setLoading(false)
       return
     }
 
+    setError(null)
+
     try {
-      console.log('Querying user_profiles for user:', user.id)
-      
-      // Try to get profile with a promise timeout
-      const profilePromise = supabase
-        .from('profiles')
+      // First check if user_profiles entry exists
+      const { data: userProfile, error: userProfileError } = await supabase
+        .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
 
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Query timeout')), 3000)
-      )
-
-      // Race the query against the timeout
-      const result = await Promise.race([profilePromise, timeoutPromise]) as any
-
-      console.log('Query result:', result)
-
-      if (result.data) {
-        console.log('Found profile, setting it')
-        setProfile(result.data)
-      } else {
-        console.log('No profile found, creating default')
-        const defaultProfile = createDefaultProfile()
-        setProfile(defaultProfile)
+      if (userProfileError && userProfileError.code !== 'PGRST116') {
+        throw userProfileError
       }
 
+      // Also get basic profile info
+      const { data: basicProfile, error: basicProfileError } = await supabase
+        .from('profiles')
+        .select('name, email, image, has_access, created_at, updated_at')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (basicProfileError && basicProfileError.code !== 'PGRST116') {
+        throw basicProfileError
+      }
+
+      // Merge the data from both tables
+      const mergedProfile: ProfileSettings = {
+        id: user.id,
+        name: basicProfile?.name || userProfile?.name || '',
+        username: userProfile?.username || '',
+        bio: userProfile?.bio || '',
+        profile_picture_url: userProfile?.profile_picture_url || basicProfile?.image || '',
+        profile_visibility: userProfile?.profile_visibility || 'public',
+        contact_preferences: userProfile?.contact_preferences || {
+          email: true,
+          phone: false,
+          marketing: false
+        },
+        notification_preferences: userProfile?.notification_preferences || {
+          email: true,
+          push: true,
+          in_app: true,
+          marketing: false
+        },
+        email_verified: userProfile?.email_verified || false,
+        language: userProfile?.language || 'en',
+        region: userProfile?.region || '',
+        stealth_mode: userProfile?.stealth_mode || false,
+        sdg_goals: userProfile?.sdg_goals || [],
+        low_tech_access: userProfile?.low_tech_access || false,
+        business_type: userProfile?.business_type || '',
+        time_commitment: userProfile?.time_commitment || '',
+        capital_level: userProfile?.capital_level || '',
+        completion_percentage: userProfile?.completion_percentage || 0,
+        created_at: userProfile?.created_at || basicProfile?.created_at,
+        updated_at: userProfile?.updated_at || basicProfile?.updated_at
+      }
+
+      setProfile(mergedProfile)
     } catch (err: any) {
       console.error('Error loading profile:', err)
-      console.log('Creating fallback profile due to error')
-      setError(err.message)
-      const defaultProfile = createDefaultProfile()
-      setProfile(defaultProfile)
+      setError(err.message || 'Failed to load profile')
     } finally {
-      console.log('=== LOADING PROFILE END - Setting loading to false ===')
       setLoading(false)
     }
   }
@@ -133,19 +124,81 @@ export const useProfileSettings = () => {
     setError(null)
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single()
+      // Separate updates for different tables
+      const userProfileUpdates: any = {}
+      const basicProfileUpdates: any = {}
 
-      if (error) throw error
+      // Map fields to the correct table
+      Object.entries(updates).forEach(([key, value]) => {
+        switch (key) {
+          case 'name':
+            basicProfileUpdates.name = value
+            userProfileUpdates.name = value
+            break
+          case 'username':
+          case 'bio':
+          case 'profile_picture_url':
+          case 'profile_visibility':
+          case 'contact_preferences':
+          case 'notification_preferences':
+          case 'email_verified':
+          case 'language':
+          case 'region':
+          case 'stealth_mode':
+          case 'sdg_goals':
+          case 'low_tech_access':
+          case 'business_type':
+          case 'time_commitment':
+          case 'capital_level':
+          case 'completion_percentage':
+            userProfileUpdates[key] = value
+            break
+          default:
+            userProfileUpdates[key] = value
+        }
+      })
 
-      setProfile(data)
-      return { data, error: null }
+      // Update basic profile if needed
+      if (Object.keys(basicProfileUpdates).length > 0) {
+        const { error: basicError } = await supabase
+          .from('profiles')
+          .update(basicProfileUpdates)
+          .eq('id', user.id)
+
+        if (basicError) throw basicError
+      }
+
+      // Update user profile
+      if (Object.keys(userProfileUpdates).length > 0) {
+        // First try to update
+        const { data: updateData, error: updateError } = await supabase
+          .from('user_profiles')
+          .update(userProfileUpdates)
+          .eq('id', user.id)
+          .select()
+          .maybeSingle()
+
+        if (updateError && updateError.code === 'PGRST116') {
+          // No rows found, create the profile
+          const { data: insertData, error: insertError } = await supabase
+            .from('user_profiles')
+            .insert([{ id: user.id, ...userProfileUpdates }])
+            .select()
+            .single()
+
+          if (insertError) throw insertError
+        } else if (updateError) {
+          throw updateError
+        }
+      }
+
+      // Reload profile to get updated data
+      await loadProfile()
+      
+      return { data: profile, error: null }
     } catch (err: any) {
-      setError(err.message)
+      console.error('Error updating profile:', err)
+      setError(err.message || 'Failed to update profile')
       return { data: null, error: err.message }
     } finally {
       setSaving(false)
@@ -158,7 +211,7 @@ export const useProfileSettings = () => {
 
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('username')
         .eq('username', username.toLowerCase())
         .neq('id', user?.id || '')
@@ -172,9 +225,27 @@ export const useProfileSettings = () => {
     }
   }
 
-  // Simplified upload function
+  // Upload profile picture (simplified for now)
   const uploadProfilePicture = async (file: File): Promise<{ url?: string; error?: string }> => {
-    return { error: 'Profile picture upload coming soon!' }
+    if (!user?.id) return { error: 'User not authenticated' }
+
+    try {
+      // Validate file
+      if (!file.type.startsWith('image/')) {
+        return { error: 'Please select an image file' }
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        return { error: 'Image size must be less than 5MB' }
+      }
+
+      // For now, return a placeholder message
+      // TODO: Implement actual file upload to Supabase Storage
+      return { error: 'Profile picture upload coming soon!' }
+    } catch (err: any) {
+      console.error('Error uploading profile picture:', err)
+      return { error: err.message }
+    }
   }
 
   // Delete profile picture
@@ -205,48 +276,36 @@ export const useProfileSettings = () => {
     if (!user?.id) return
 
     try {
-      await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
+      // Only auto-save to user_profiles table
+      const userProfileUpdates: any = {}
+      
+      Object.entries(updates).forEach(([key, value]) => {
+        if (key !== 'id') {
+          userProfileUpdates[key] = value
+        }
+      })
 
-      setProfile(prev => prev ? { ...prev, ...updates } : null)
+      if (Object.keys(userProfileUpdates).length > 0) {
+        await supabase
+          .from('user_profiles')
+          .upsert({ id: user.id, ...userProfileUpdates })
+
+        // Update local state
+        setProfile(prev => prev ? { ...prev, ...updates } : null)
+      }
     } catch (err) {
       console.error('Auto-save failed:', err)
     }
   }
 
-  // Effect with absolute timeout guarantee
   useEffect(() => {
-    console.log('useProfileSettings effect running, user:', user?.id)
-
-    if (!user?.id) {
+    if (user?.id) {
+      loadProfile()
+    } else {
       setLoading(false)
       setProfile(null)
-      return
-    }
-
-    // Absolute timeout - no matter what, stop loading after 2 seconds
-    const absoluteTimeout = setTimeout(() => {
-      console.log('ABSOLUTE TIMEOUT: Force stopping loading')
-      setLoading(false)
-      if (!profile) {
-        console.log('No profile loaded, creating default')
-        setProfile(createDefaultProfile())
-      }
-    }, 2000)
-
-    // Load the profile
-    loadProfile().finally(() => {
-      clearTimeout(absoluteTimeout)
-    })
-
-    return () => {
-      clearTimeout(absoluteTimeout)
     }
   }, [user?.id])
-
-  console.log('useProfileSettings state:', { loading, profile: !!profile, error })
 
   return {
     profile,
