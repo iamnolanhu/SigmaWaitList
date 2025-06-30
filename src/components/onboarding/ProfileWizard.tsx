@@ -12,10 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
-  Upload,
   Globe,
-  Zap,
-  X
+  Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -26,8 +24,8 @@ interface ProfileWizardProps {
 
 const steps = [
   { id: 1, title: 'Personal Info', icon: User },
-  { id: 2, title: 'Business Interests', icon: Briefcase },
-  { id: 3, title: 'Skill Assessment', icon: Target },
+  { id: 2, title: 'Business Setup', icon: Briefcase },
+  { id: 3, title: 'Experience & Goals', icon: Target },
   { id: 4, title: 'Preferences', icon: Settings }
 ]
 
@@ -39,36 +37,55 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
     // Step 1: Personal Info
     name: profile?.name || '',
     bio: profile?.bio || '',
-    profile_picture_url: profile?.profile_picture_url || '',
     
-    // Step 2: Business Interests
+    // Step 2: Business Setup
+    business_type: profile?.business_type || '',
     industry: profile?.industry || '',
-    business_goals: profile?.business_goals || [],
+    time_commitment: profile?.time_commitment || '',
     
-    // Step 3: Skill Assessment
+    // Step 3: Experience & Goals
     skill_level: profile?.skill_level || 'beginner',
+    capital_level: profile?.capital_level || '',
     
     // Step 4: Preferences
-    stealth_mode: profile?.stealth_mode || false,
-    notification_preferences: profile?.notification_preferences || {
-      email: true,
-      push: true,
-      in_app: true,
-      marketing: false
-    }
+    region: profile?.region || '',
+    language: profile?.language || 'en',
+    stealth_mode: profile?.stealth_mode || false
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
-  const industries = [
-    'Technology', 'E-commerce', 'Healthcare', 'Finance', 'Education',
-    'Real Estate', 'Marketing', 'Consulting', 'Manufacturing', 'Other'
+  const businessTypes = [
+    'Solo Entrepreneur', 'Small Team (2-5)', 'Startup', 'Growing Business', 
+    'Side Hustle', 'Freelancer/Consultant', 'E-commerce Store', 'SaaS/Tech Company'
   ]
 
-  const businessGoals = [
-    'Launch MVP', 'Scale Operations', 'Automate Workflows', 'Build Brand',
-    'Generate Revenue', 'Raise Funding', 'Expand Market', 'Build Team'
+  const industries = [
+    'Technology & Software', 'E-commerce & Retail', 'Healthcare & Wellness', 
+    'Finance & Fintech', 'Education & Training', 'Real Estate', 
+    'Marketing & Advertising', 'Consulting & Services', 'Manufacturing', 
+    'Food & Hospitality', 'Creative & Media', 'Other'
+  ]
+
+  const timeCommitments = [
+    'Part-time (10-20 hrs/week)', 'Full-time (40+ hrs/week)', 
+    'Weekends only', 'Flexible hours', 'Just getting started'
+  ]
+
+  const skillLevels = [
+    'Complete beginner', 'Some business experience', 
+    'Running a small business', 'Experienced entrepreneur'
+  ]
+
+  const capitalLevels = [
+    'Bootstrap/No funding', 'Under $1K', '$1K - $10K', 
+    '$10K - $50K', '$50K+', 'Seeking investors'
+  ]
+
+  const regions = [
+    'United States', 'Canada', 'United Kingdom', 'European Union', 
+    'Australia/New Zealand', 'Asia Pacific', 'Latin America', 'Other'
   ]
 
   const validateStep = (step: number): boolean => {
@@ -77,14 +94,19 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
     switch (step) {
       case 1:
         if (!formData.name?.trim()) newErrors.name = 'Name is required'
-        if (!formData.bio?.trim()) newErrors.bio = 'Bio is required'
+        if (!formData.bio?.trim()) newErrors.bio = 'Tell us a bit about yourself'
         break
       case 2:
+        if (!formData.business_type) newErrors.business_type = 'Please select your business type'
         if (!formData.industry) newErrors.industry = 'Please select an industry'
-        if (formData.business_goals.length === 0) newErrors.business_goals = 'Select at least one goal'
+        if (!formData.time_commitment) newErrors.time_commitment = 'Please select your time commitment'
         break
       case 3:
-        if (!formData.skill_level) newErrors.skill_level = 'Please select your skill level'
+        if (!formData.skill_level) newErrors.skill_level = 'Please select your experience level'
+        if (!formData.capital_level) newErrors.capital_level = 'Please select your capital level'
+        break
+      case 4:
+        if (!formData.region) newErrors.region = 'Please select your region'
         break
     }
     
@@ -111,11 +133,18 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
   const handleComplete = async () => {
     setLoading(true)
     try {
+      // Calculate completion percentage based on filled fields
+      const totalFields = 9
+      const completedFields = Object.values(formData).filter(value => value && value !== '').length
+      const completionPercentage = Math.round((completedFields / totalFields) * 100)
+      
       await updateProfile({
         ...formData,
+        completion_percentage: Math.max(completionPercentage, 25),
         wizard_completed: true,
         wizard_step: steps.length,
-        wizard_data: formData
+        wizard_data: formData,
+        updated_at: new Date().toISOString()
       })
       onComplete?.()
     } catch (error) {
@@ -123,30 +152,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleSkip = async () => {
-    setLoading(true)
-    try {
-      await updateProfile({
-        wizard_step: currentStep,
-        wizard_data: formData
-      })
-      onSkip?.()
-    } catch (error) {
-      console.error('Error saving progress:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const toggleGoal = (goal: string) => {
-    setFormData(prev => ({
-      ...prev,
-      business_goals: prev.business_goals.includes(goal)
-        ? prev.business_goals.filter(g => g !== goal)
-        : [...prev.business_goals, goal]
-    }))
   }
 
   const renderStepContent = () => {
@@ -159,7 +164,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
                 Let's get to know you
               </h3>
               <p className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">
-                Your personal information helps us tailor your experience
+                Tell us about yourself to personalize your experience
               </p>
             </div>
 
@@ -194,33 +199,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
                   <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.bio}</p>
                 )}
               </div>
-
-              <div>
-                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
-                  Profile Picture (Optional)
-                </label>
-                <div className="flex items-center gap-4">
-                  {formData.profile_picture_url ? (
-                    <img 
-                      src={formData.profile_picture_url} 
-                      alt="Profile" 
-                      className="w-20 h-20 rounded-full border-2 border-[#6ad040]"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full border-2 border-[#6ad040]/50 bg-black/30 flex items-center justify-center">
-                      <User className="w-8 h-8 text-[#6ad040]/50" />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#6ad040]/50 text-[#b7ffab] hover:border-[#6ad040] hover:bg-[#6ad040]/10"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Photo
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
         )
@@ -230,14 +208,33 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
           <div className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="font-['Orbitron'] font-bold text-2xl text-[#b7ffab] mb-2">
-                Business Interests
+                Business Setup
               </h3>
               <p className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">
-                Help us understand your business aspirations
+                Tell us about your business goals and commitment
               </p>
             </div>
 
             <div className="space-y-4">
+              <div>
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Business Type
+                </label>
+                <select
+                  value={formData.business_type}
+                  onChange={(e) => setFormData({ ...formData, business_type: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="">Select your business type</option>
+                  {businessTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                {errors.business_type && (
+                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.business_type}</p>
+                )}
+              </div>
+
               <div>
                 <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
                   Industry
@@ -258,26 +255,21 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
               </div>
 
               <div>
-                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-3 block">
-                  Business Goals (Select all that apply)
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Time Commitment
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {businessGoals.map(goal => (
-                    <button
-                      key={goal}
-                      onClick={() => toggleGoal(goal)}
-                      className={`p-3 rounded-lg border-2 transition-all duration-200 text-sm font-['Space_Mono'] ${
-                        formData.business_goals.includes(goal)
-                          ? 'border-[#6ad040] bg-[#6ad040]/20 text-[#6ad040]'
-                          : 'border-[#6ad040]/30 bg-black/30 text-[#b7ffab]/70 hover:border-[#6ad040]/50'
-                      }`}
-                    >
-                      {goal}
-                    </button>
+                <select
+                  value={formData.time_commitment}
+                  onChange={(e) => setFormData({ ...formData, time_commitment: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="">Select your time commitment</option>
+                  {timeCommitments.map(commitment => (
+                    <option key={commitment} value={commitment}>{commitment}</option>
                   ))}
-                </div>
-                {errors.business_goals && (
-                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-2">{errors.business_goals}</p>
+                </select>
+                {errors.time_commitment && (
+                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.time_commitment}</p>
                 )}
               </div>
             </div>
@@ -289,42 +281,50 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
           <div className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="font-['Orbitron'] font-bold text-2xl text-[#b7ffab] mb-2">
-                Skill Assessment
+                Experience & Goals
               </h3>
               <p className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">
-                This helps us provide the right level of guidance
+                Help us tailor the experience to your level
               </p>
             </div>
 
             <div className="space-y-4">
-              <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-3 block">
-                How would you rate your business experience?
-              </label>
-              
-              <div className="space-y-3">
-                {[
-                  { value: 'beginner', label: 'Beginner', desc: 'New to business, eager to learn' },
-                  { value: 'intermediate', label: 'Intermediate', desc: 'Some experience, looking to scale' },
-                  { value: 'advanced', label: 'Advanced', desc: 'Experienced entrepreneur, seeking automation' },
-                  { value: 'expert', label: 'Expert', desc: 'Serial entrepreneur, optimizing operations' }
-                ].map(level => (
-                  <button
-                    key={level.value}
-                    onClick={() => setFormData({ ...formData, skill_level: level.value })}
-                    className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
-                      formData.skill_level === level.value
-                        ? 'border-[#6ad040] bg-[#6ad040]/20'
-                        : 'border-[#6ad040]/30 bg-black/30 hover:border-[#6ad040]/50'
-                    }`}
-                  >
-                    <div className="font-['Space_Grotesk'] font-bold text-[#b7ffab] mb-1">
-                      {level.label}
-                    </div>
-                    <div className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">
-                      {level.desc}
-                    </div>
-                  </button>
-                ))}
+              <div>
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Experience Level
+                </label>
+                <select
+                  value={formData.skill_level}
+                  onChange={(e) => setFormData({ ...formData, skill_level: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="">Select your experience level</option>
+                  {skillLevels.map(level => (
+                    <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+                {errors.skill_level && (
+                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.skill_level}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Available Capital
+                </label>
+                <select
+                  value={formData.capital_level}
+                  onChange={(e) => setFormData({ ...formData, capital_level: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="">Select your capital level</option>
+                  {capitalLevels.map(level => (
+                    <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+                {errors.capital_level && (
+                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.capital_level}</p>
+                )}
               </div>
             </div>
           </div>
@@ -338,13 +338,49 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
                 Preferences
               </h3>
               <p className="font-['Space_Mono'] text-[#b7ffab]/70 text-sm">
-                Customize your BasedSigma experience
+                Finalize your BasedSigma setup
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Region
+                </label>
+                <select
+                  value={formData.region}
+                  onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="">Select your region</option>
+                  {regions.map(region => (
+                    <option key={region} value={region}>{region}</option>
+                  ))}
+                </select>
+                {errors.region && (
+                  <p className="font-['Space_Mono'] text-red-500 text-xs mt-1">{errors.region}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="font-['Space_Mono'] text-[#b7ffab] text-sm mb-2 block">
+                  Language
+                </label>
+                <select
+                  value={formData.language}
+                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/50 border border-[#6ad040]/50 rounded-lg text-[#b7ffab] focus:outline-none focus:border-[#6ad040] transition-colors"
+                >
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="pt">Português</option>
+                </select>
+              </div>
+
               <div className="bg-black/30 rounded-lg p-4 border border-[#6ad040]/30">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Globe className="w-5 h-5 text-[#6ad040]" />
                     <div>
@@ -362,51 +398,11 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
                       formData.stealth_mode ? 'bg-[#6ad040]' : 'bg-[#6ad040]/30'
                     }`}
                   >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                      formData.stealth_mode ? 'translate-x-6' : 'translate-x-1'
+                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
+                      formData.stealth_mode ? 'translate-x-6' : 'translate-x-0.5'
                     }`} />
                   </button>
                 </div>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-['Space_Grotesk'] font-bold text-[#b7ffab]">
-                  Notification Preferences
-                </h4>
-                
-                {[
-                  { key: 'email', label: 'Email Notifications', icon: Zap },
-                  { key: 'push', label: 'Push Notifications', icon: Zap },
-                  { key: 'in_app', label: 'In-App Notifications', icon: Zap },
-                  { key: 'marketing', label: 'Marketing Updates', icon: Zap }
-                ].map(pref => (
-                  <div key={pref.key} className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <pref.icon className="w-4 h-4 text-[#6ad040]" />
-                      <span className="font-['Space_Mono'] text-[#b7ffab] text-sm">
-                        {pref.label}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setFormData({
-                        ...formData,
-                        notification_preferences: {
-                          ...formData.notification_preferences,
-                          [pref.key]: !formData.notification_preferences[pref.key as keyof typeof formData.notification_preferences]
-                        }
-                      })}
-                      className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${
-                        formData.notification_preferences[pref.key as keyof typeof formData.notification_preferences]
-                          ? 'bg-[#6ad040]' : 'bg-[#6ad040]/30'
-                      }`}
-                    >
-                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                        formData.notification_preferences[pref.key as keyof typeof formData.notification_preferences]
-                          ? 'translate-x-5' : 'translate-x-0.5'
-                      }`} />
-                    </button>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -460,68 +456,63 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete, onSkip
             </div>
             
             <button
-              onClick={handleSkip}
-              className="text-[#b7ffab]/50 hover:text-[#b7ffab] transition-colors"
-              disabled={loading}
+              onClick={onSkip || (() => {})}
+              className="font-['Space_Mono'] text-[#b7ffab]/60 hover:text-[#b7ffab] text-sm transition-colors"
             >
-              <X className="w-5 h-5" />
+              Skip for now
             </button>
           </div>
 
-          {/* Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderStepContent()}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between mt-8">
-            <button
-              onClick={handleSkip}
-              className="font-['Space_Mono'] text-[#b7ffab]/50 hover:text-[#b7ffab] text-sm transition-colors"
-              disabled={loading}
-            >
-              Complete Later
-            </button>
-
-            <div className="flex items-center gap-3">
-              {currentStep > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={loading}
-                  className="border-[#6ad040]/50 text-[#b7ffab] hover:border-[#6ad040] hover:bg-[#6ad040]/10"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
-                </Button>
-              )}
-              
-              <Button
-                onClick={handleNext}
-                disabled={loading}
-                className="bg-[#6ad040] text-black hover:bg-[#79e74c] font-['Space_Grotesk'] font-bold"
+          {/* Step Content */}
+          <div className="mb-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
               >
-                {currentStep === steps.length ? (
-                  <>
-                    Complete
-                    <Check className="w-4 h-4 ml-1" />
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </>
-                )}
+                {renderStepContent()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            {currentStep > 1 ? (
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={loading}
+                className="border-[#6ad040]/50 text-[#b7ffab] hover:border-[#6ad040] hover:bg-[#6ad040]/10"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
               </Button>
-            </div>
+            ) : (
+              <div></div>
+            )}
+            
+            <Button
+              onClick={handleNext}
+              disabled={loading}
+              className="bg-[#6ad040] text-black hover:bg-[#79e74c] font-['Space_Grotesk'] font-bold"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : currentStep === steps.length ? (
+                <>
+                  Complete Setup
+                  <Check className="w-4 h-4 ml-1" />
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </Card>

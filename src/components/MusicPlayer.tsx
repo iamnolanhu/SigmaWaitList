@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize2, Minimize2, Shuffle } from 'lucide-react'
+import { useMusicPlayer } from '../contexts/MusicPlayerContext'
 
 interface MusicPlayerProps {
   className?: string
@@ -7,163 +8,29 @@ interface MusicPlayerProps {
 }
 
 export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', variant = 'full' }) => {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [currentTrack, setCurrentTrack] = useState(0)
-  const [isShuffled, setIsShuffled] = useState(true) // Default to shuffle on
-  const [playedTracks, setPlayedTracks] = useState<number[]>([])
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const hasAutoPlayed = useRef(false)
-
-  // YouTube music tracks - you can replace these with your preferred tracks
-  const tracks = [
-    { id: 'MISvCT2xIZ4', title: 'are you a sigma?', artist: 'Honey B' },
-    { id: 'D5H4TnDEJXM', title: '99 tabs open', artist: 'Honey B' },
-    { id: 'iMoqzDPZYE8', title: 'aura', artist: 'Honey B' },
-    { id: 'jvLMvso-MEU', title: 'really really?', artist: 'Honey B' },
-    { id: 'zovIx38xT3A', title: 'mine', artist: 'Honey B' },
-    { id: 'ltbsbxM-dOE', title: 'Infinite Empire', artist: 'Honey B' },
-    { id: 'JwVa39FgKls', title: 'No', artist: 'Honey B' },
-    { id: 'o1_CTv_CSdE', title: 'No Ls', artist: 'Honey B' },
-    { id: 'kKgYvEImA1Y', title: 'Web Only', artist: 'Honey B' },
-    { id: 'xKmfCwjI164', title: 'Lone Web', artist: 'Honey B' },
-    { id: 'DzkkfL4kcsY', title: 'I am', artist: 'Honey B' },
-    { id: 'taA_XC3o3EE', title: 'Lone Wolf Vibes', artist: 'Honey B' },
-    { id: 'Gkb3z7VgW24', title: 'Pro Autonomy (2)', artist: 'Honey B' },
-    { id: '81dxJoQJSNY', title: 'Pro Autonomy', artist: 'YouTube Playlist' },
-    { id: 's8yvg9pDg1Y', title: 'Sigma Status', artist: 'YouTube Playlist' },
-    { id: 'aQyYK3i_qrQ', title: 'Sigma State of Mind', artist: 'YouTube Playlist' },
-    { id: 'QwwsBE1bIg8', title: 'untitled sigma 2', artist: 'YouTube Playlist' },
-    { id: 'JRBDRPueq0Q', title: 'untitled sigma', artist: 'YouTube Playlist' },
-    { id: 'j71NU1qE9yc', title: 'a song', artist: 'YouTube Playlist' }
-  ]
-
-  const currentVideoId = tracks[currentTrack].id
-
-  // Initialize and autoplay on mount
-  useEffect(() => {
-    if (!hasAutoPlayed.current) {
-      hasAutoPlayed.current = true
-      
-      // Select random track
-      const randomTrack = Math.floor(Math.random() * tracks.length)
-      setCurrentTrack(randomTrack)
-      setPlayedTracks([randomTrack])
-      
-      // Start autoplay after a short delay
-      const timer = setTimeout(() => {
-        if (iframeRef.current) {
-          setIsPlaying(true)
-          const videoId = tracks[randomTrack].id
-          iframeRef.current.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
-        }
-      }, 1000)
-      
-      return () => clearTimeout(timer)
-    }
-  }, [])
-  
-  // Cleanup on unmount - stop the player
-  useEffect(() => {
-    return () => {
-      if (iframeRef.current) {
-        // Stop the video by clearing the src
-        iframeRef.current.src = ''
-      }
-    }
-  }, [])
-
-  // Function to get next shuffled track
-  const getNextShuffledTrack = () => {
-    const unplayedTracks = tracks
-      .map((_, index) => index)
-      .filter(index => !playedTracks.includes(index) || playedTracks.length >= tracks.length)
-    
-    if (unplayedTracks.length === 0) {
-      // All tracks played, reset and continue shuffling
-      setPlayedTracks([currentTrack])
-      const availableTracks = tracks.map((_, index) => index).filter(index => index !== currentTrack)
-      return availableTracks[Math.floor(Math.random() * availableTracks.length)]
-    }
-    
-    return unplayedTracks[Math.floor(Math.random() * unplayedTracks.length)]
-  }
-
-  // Function to switch tracks and ensure auto-play
-  const switchTrack = (newTrackIndex: number) => {
-    const newTrack = newTrackIndex
-    setCurrentTrack(newTrack)
-    setIsPlaying(true)
-    
-    // Update played tracks for shuffle
-    if (isShuffled) {
-      setPlayedTracks(prev => [...prev, newTrack])
-    }
-    
-    // Reload iframe with new video and auto-play
-    if (iframeRef.current) {
-      const newVideoId = tracks[newTrack].id
-      iframeRef.current.src = `https://www.youtube.com/embed/${newVideoId}?enablejsapi=1&autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`
-    }
-  }
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-    // Send message to iframe to play/pause
-    if (iframeRef.current) {
-      const message = isPlaying ? '{"event":"command","func":"pauseVideo","args":""}' : '{"event":"command","func":"playVideo","args":""}'
-      iframeRef.current.contentWindow?.postMessage(message, '*')
-    }
-  }
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted)
-    if (iframeRef.current) {
-      const message = isMuted ? '{"event":"command","func":"unMute","args":""}' : '{"event":"command","func":"mute","args":""}'
-      iframeRef.current.contentWindow?.postMessage(message, '*')
-    }
-  }
-
-  const nextTrack = () => {
-    const newTrack = isShuffled ? getNextShuffledTrack() : (currentTrack + 1) % tracks.length
-    switchTrack(newTrack)
-  }
-
-  const prevTrack = () => {
-    const newTrack = isShuffled ? getNextShuffledTrack() : (currentTrack - 1 + tracks.length) % tracks.length
-    switchTrack(newTrack)
-  }
-
-  const toggleShuffle = () => {
-    setIsShuffled(!isShuffled)
-    if (!isShuffled) {
-      // Reset played tracks when enabling shuffle
-      setPlayedTracks([currentTrack])
-    }
-  }
+  const {
+    isPlaying,
+    isMuted,
+    currentTrack,
+    isShuffled,
+    tracks,
+    togglePlay,
+    toggleMute,
+    toggleShuffle,
+    nextTrack,
+    prevTrack,
+    selectTrack
+  } = useMusicPlayer()
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded)
-  }
-
-  // Handle track selection from expanded view
-  const selectTrack = (index: number) => {
-    switchTrack(index)
   }
 
   // Navbar variant - compact version
   if (variant === 'navbar') {
     return (
       <div className={`relative ${className}`}>
-        {/* YouTube iframe (hidden but functional) */}
-        <iframe
-          ref={iframeRef}
-          className="sr-only"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-
         {/* Compact Music Player */}
         <div className="flex items-center gap-2">
           {/* Track Info */}
@@ -266,7 +133,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
                 {tracks.map((track, index) => (
                   <button
                     key={track.id}
-                    onClick={() => switchTrack(index)}
+                    onClick={() => selectTrack(index)}
                     className={`text-left p-2 rounded-lg transition-colors ${
                       currentTrack === index
                         ? 'bg-[#6ad040]/20 text-[#6ad040] border border-[#6ad040]/40'
@@ -292,14 +159,6 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
   // Full variant - original implementation
   return (
     <div className={`fixed bottom-0 left-0 right-0 z-40 ${className}`}>
-      {/* YouTube iframe (hidden but functional) */}
-      <iframe
-        ref={iframeRef}
-        className="sr-only"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-
       {/* Music Player UI */}
       <div className={`bg-black/90 backdrop-blur-md border-t border-[#6ad040]/40 transition-all duration-300 ${
         isExpanded ? 'h-32' : 'h-16'
@@ -389,7 +248,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ className = '', varian
                 {tracks.map((track, index) => (
                   <button
                     key={track.id}
-                    onClick={() => switchTrack(index)}
+                    onClick={() => selectTrack(index)}
                     className={`text-left p-2 rounded-lg transition-colors ${
                       currentTrack === index
                         ? 'bg-[#6ad040]/20 text-[#6ad040] border border-[#6ad040]/40'

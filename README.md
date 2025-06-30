@@ -1,4 +1,6 @@
-# BasedSigma - 0 to CEO While You Sleep
+# BasedSigma - Your Tactical AI Co-founder
+
+**From zero to CEO on autopilot.**
 
 An AI-powered business automation platform that enables founders to ideate, legally register, brand, market, and monetize a business in under 10 minutes.
 

@@ -12,6 +12,11 @@ export class OpenRouterService {
       this.apiKey = keys.OPENROUTER_API_KEY || null
       
       if (!this.apiKey) {
+        console.error('OpenRouter API key validation failed', {
+          available_keys: Object.keys(keys),
+          expected_key: 'OPENROUTER_API_KEY',
+          env_vars: Object.keys(import.meta.env).filter(k => k.includes('OPENROUTER'))
+        })
         throw new Error('OpenRouter API key not found. Please set VITE_OPENROUTER_API_KEY environment variable.')
       }
     }
@@ -27,6 +32,29 @@ export class OpenRouterService {
     try {
       const apiKey = this.getAPIKey()
       
+      const requestBody = {
+        model: request.model,
+        messages: [
+          {
+            role: 'system',
+            content: this.getSystemPrompt(request.context?.task_type)
+          },
+          {
+            role: 'user',
+            content: request.prompt
+          }
+        ],
+        max_tokens: request.max_tokens || 4000,
+        temperature: request.temperature || 0.7,
+        stream: false
+      }
+      
+      console.log('Making OpenRouter request:', {
+        url: `${this.baseURL}/chat/completions`,
+        model: request.model,
+        prompt_length: request.prompt.length
+      })
+      
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -35,22 +63,7 @@ export class OpenRouterService {
           'HTTP-Referer': window.location.origin,
           'X-Title': 'BasedSigma AI Business Automation'
         },
-        body: JSON.stringify({
-          model: request.model,
-          messages: [
-            {
-              role: 'system',
-              content: this.getSystemPrompt(request.context?.task_type)
-            },
-            {
-              role: 'user',
-              content: request.prompt
-            }
-          ],
-          max_tokens: request.max_tokens || 4000,
-          temperature: request.temperature || 0.7,
-          stream: false
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
@@ -78,18 +91,17 @@ export class OpenRouterService {
       }
 
     } catch (error: any) {
-      console.error('OpenRouter completion error:', error)
+      console.error('OpenRouter completion error:', {
+        error: error.message,
+        stack: error.stack,
+        name: error.name,
+        request_model: request.model,
+        api_key_present: !!this.getAPIKey(),
+        base_url: this.baseURL
+      })
       
-      return {
-        content: '',
-        model_used: request.model,
-        tokens_used: 0,
-        cost: 0,
-        processing_time: Date.now() - startTime,
-        session_id: request.session_id,
-        confidence: 0,
-        reasoning: `Error: ${error.message}`
-      }
+      // Re-throw the error to let the retry logic handle it
+      throw error
     }
   }
 

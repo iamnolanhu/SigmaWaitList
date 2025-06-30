@@ -1,6 +1,7 @@
 import React from 'react'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useModuleActivation } from '../../hooks/useModuleActivation'
+import { getModuleById } from '../../lib/modules/moduleDefinitions'
 import { Card } from '../ui/card'
 import { 
   User, 
@@ -13,7 +14,9 @@ import {
   Zap,
   Building,
   CreditCard,
-  TrendingUp
+  TrendingUp,
+  Scale,
+  Building2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -74,20 +77,22 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, onShowWi
     // Priority 3: Continue active modules
     if (activeModules.length > 0) {
       const activeModule = activeModules[0]
+      const moduleDef = getModuleById(activeModule.module_id)
       const moduleIcons: Record<string, React.ElementType> = {
-        'Legal Setup': Briefcase,
-        'Brand Identity': Palette,
-        'Website Creation': Globe,
-        'Payment Processing': CreditCard,
-        'Business Banking': Building,
-        'Marketing Automation': TrendingUp
+        'Scale': Scale,
+        'Palette': Palette,
+        'Globe': Globe,
+        'CreditCard': CreditCard,
+        'Building': Building2,
+        'TrendingUp': TrendingUp,
+        'Briefcase': Briefcase
       }
       
       actions.push({
         id: 'continue-module',
-        title: `Continue ${activeModule.module_name}`,
+        title: `Continue ${moduleDef?.displayName || activeModule.module_name}`,
         description: `${activeModule.progress}% complete`,
-        icon: moduleIcons[activeModule.module_name] || Zap,
+        icon: moduleIcons[moduleDef?.icon || 'Briefcase'] || Zap,
         color: '#f59e0b',
         action: () => onNavigate('automation'),
         priority: 3
@@ -96,19 +101,35 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, onShowWi
     
     // Priority 4: Suggest next module based on completed ones
     const suggestNextModule = () => {
-      const completedNames = completedModules.map(m => m.module_name)
+      const completedIds = completedModules.map(m => m.module_id)
       
-      if (!completedNames.includes('Legal Setup')) {
-        return { name: 'Legal Setup', icon: Briefcase, desc: 'Register your business legally' }
-      }
-      if (!completedNames.includes('Brand Identity')) {
-        return { name: 'Brand Identity', icon: Palette, desc: 'Create your unique brand' }
-      }
-      if (!completedNames.includes('Website Creation')) {
-        return { name: 'Website Creation', icon: Globe, desc: 'Launch your online presence' }
-      }
-      if (completedNames.includes('Legal Setup') && !completedNames.includes('Business Banking')) {
-        return { name: 'Business Banking', icon: Building, desc: 'Set up business banking' }
+      // Suggest modules in order of importance
+      const suggestionOrder = [
+        { id: 'MOD_201', icon: Scale, desc: 'Register your business legally' },        // Legal Structure
+        { id: 'MOD_301', icon: Palette, desc: 'Create your unique brand' },           // Brand Identity
+        { id: 'MOD_501', icon: Globe, desc: 'Launch your online presence' },          // Website Builder
+        { id: 'MOD_401', icon: Building2, desc: 'Set up business banking' },          // Business Banking
+        { id: 'MOD_402', icon: CreditCard, desc: 'Accept customer payments' },        // Payment Processing
+        { id: 'MOD_503', icon: TrendingUp, desc: 'Automate your marketing' }          // Email Marketing
+      ]
+      
+      for (const suggestion of suggestionOrder) {
+        if (!completedIds.includes(suggestion.id)) {
+          const moduleDef = getModuleById(suggestion.id)
+          if (moduleDef) {
+            // Check dependencies
+            const dependenciesMet = !moduleDef.dependencies || 
+              moduleDef.dependencies.every(dep => completedIds.includes(dep))
+            
+            if (dependenciesMet) {
+              return { 
+                name: moduleDef.displayName, 
+                icon: suggestion.icon, 
+                desc: suggestion.desc 
+              }
+            }
+          }
+        }
       }
       return null
     }

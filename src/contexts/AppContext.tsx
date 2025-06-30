@@ -14,6 +14,12 @@ interface AppContextType {
   userProfile: any | null
   loading: boolean
   
+  // Onboarding state
+  needsOnboarding: boolean
+  isOnboarding: boolean
+  setIsOnboarding: (onboarding: boolean) => void
+  completeOnboarding: () => void
+  
   // Module progress
   moduleProgress: ModuleProgress
   updateModuleProgress: (module: string, progress: Partial<ModuleProgress[string]>) => void
@@ -39,6 +45,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [needsOnboarding, setNeedsOnboarding] = useState(false)
+  const [isOnboarding, setIsOnboarding] = useState(false)
   const [moduleProgress, setModuleProgress] = useState<ModuleProgress>({})
 
   // Initialize auth state with optimized service
@@ -62,6 +70,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         setUser(session?.user ?? null)
         if (session?.user) {
+          // Set app mode immediately for logged-in users
+          setAppMode({ isAppMode: true, hasAccess: true })
           loadUserProfile(session.user.id)
         } else {
           setLoading(false)
@@ -109,10 +119,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const profile = await OptimizedProfileService.getCompleteProfile(userId)
       
       setUserProfile(profile)
+      
+      // ONBOARDING DISABLED - Comment out to skip onboarding flow
+      // Check if user needs onboarding
+      // const profileCompletion = profile?.completion_percentage || 0
+      // const hasBasicInfo = profile?.name && profile?.business_type
+      
+      // if (!hasBasicInfo || profileCompletion < 20) {
+      //   // User needs onboarding
+      //   setNeedsOnboarding(true)
+      //   setIsOnboarding(true)
+      //   setAppMode({ 
+      //     isAppMode: false, // Don't allow app access until onboarding complete
+      //     hasAccess: true 
+      //   })
+      // } else {
+      //   // User has completed onboarding
+      //   setNeedsOnboarding(false)
+      //   setIsOnboarding(false)
+      //   setAppMode({ 
+      //     isAppMode: true, // Allow app access
+      //     hasAccess: true 
+      //   })
+      // }
+      
+      // Always allow app access (onboarding disabled)
+      setNeedsOnboarding(false)
+      setIsOnboarding(false)
       setAppMode({ 
-        isAppMode: false, // Start with waitlist view
-        hasAccess: true // User has access if they're authenticated
+        isAppMode: true, 
+        hasAccess: true 
       })
+      
       setLoading(false)
     } catch (error) {
       console.error('Error loading user profile:', error)
@@ -129,6 +167,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         last_updated: new Date().toISOString()
       }
     }))
+  }
+
+  const completeOnboarding = () => {
+    setNeedsOnboarding(false)
+    setIsOnboarding(false)
+    setAppMode({ 
+      isAppMode: true, 
+      hasAccess: true 
+    })
   }
 
   const signIn = async (email: string, password: string) => {
@@ -168,9 +215,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // If signup was successful and user was created, update the user state
       if (result.user) {
         setUser(result.user)
-        // For signup, we might not have a profile yet, so just set basic app mode
+        // ONBOARDING DISABLED - Skip onboarding for new users
+        // New users need onboarding
+        // setNeedsOnboarding(true)
+        // setIsOnboarding(true)
+        // setAppMode({ 
+        //   isAppMode: false, // Don't allow app access until onboarding complete
+        //   hasAccess: true 
+        // })
+        
+        // Direct access to app (onboarding disabled)
+        setNeedsOnboarding(false)
+        setIsOnboarding(false)
         setAppMode({ 
-          isAppMode: false, 
+          isAppMode: true, 
           hasAccess: true 
         })
         setLoading(false)
@@ -190,6 +248,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Reset all state
       setUser(null)
       setUserProfile(null)
+      setNeedsOnboarding(false)
+      setIsOnboarding(false)
       setAppMode({ isAppMode: false, hasAccess: false })
       setModuleProgress({})
       
@@ -208,6 +268,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     user,
     userProfile,
     loading,
+    needsOnboarding,
+    isOnboarding,
+    setIsOnboarding,
+    completeOnboarding,
     moduleProgress,
     updateModuleProgress,
     signIn,
